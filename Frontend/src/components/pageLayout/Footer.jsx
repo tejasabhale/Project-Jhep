@@ -89,14 +89,6 @@ export default function Footer() {
                   <Mail className="mt-1 h-5 w-5 flex-shrink-0 text-orange-600" />
                   <span>projectjhep@gmail.com</span>
                 </a>
-
-                <a
-                  href="tel:+919999999999"
-                  className="flex items-start gap-3 text-slate-600 transition hover:text-orange-600"
-                >
-                  <Phone className="mt-1 h-5 w-5 flex-shrink-0 text-orange-600" />
-                  <span>+91 99999 99999</span>
-                </a>
               </div>
             </div>
           </div>
