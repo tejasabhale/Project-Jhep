@@ -1,19 +1,33 @@
-import nodemailer from "nodemailer";
+import axios from "axios";
 
-export const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: process.env.EMAIL_PORT,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+export const sendEmail = async ({ to, subject, html }) => {
+  try {
+    const response = await axios.post(
+      "https://smtp.maileroo.com/api/v2/emails",
+      {
+        from: {
+          address: process.env.EMAIL_FROM,
+          display_name: process.env.EMAIL_FROM_NAME,
+        },
+        to: [
+          {
+            address: to,
+          },
+        ],
+        subject,
+        html,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": process.env.MAILEROO_API_KEY,
+        },
+      },
+    );
 
-transporter.verify((error, success) => {
-  if (error) {
-    console.error(error);
-  } else {
-    console.log("SMTP Server is ready");
+    return response.data;
+  } catch (error) {
+    console.error("Maileroo Error:", error.response?.data || error.message);
+    throw error;
   }
-});
+};
