@@ -12,7 +12,6 @@ const Topics = () => {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-
   const { logout } = useAuth();
 
   const handleLogout = async () => {
@@ -39,7 +38,6 @@ const Topics = () => {
         setTopics(response.data?.topics || []);
       } catch (error) {
         console.error("Failed to fetch topics:", error);
-
         setTopics([]);
       } finally {
         setLoading(false);
