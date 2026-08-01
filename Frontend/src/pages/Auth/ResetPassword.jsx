@@ -28,7 +28,9 @@ const ResetPassword = () => {
         confirmPassword: data.confirmPassword,
       });
 
-      toast.success("Password reset successfully");
+      toast.success("Password reset successfully", {
+        duration: 3000
+      });
 
       setTimeout(() => {
         navigate("/login");

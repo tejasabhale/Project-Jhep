@@ -1,22 +1,37 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { UserCircle, User, LogOut, ArrowLeft, ArrowRight } from "lucide-react";
 
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import useAuth from "../../hooks/useAuth";
 
 const AppNavbar = () => {
   const navigate = useNavigate();
 
-  const location = useLocation();
-
   const { user, logout } = useAuth();
 
   const [profileOpen, setProfileOpen] = useState(false);
 
+  const profileRef = useRef(null);
+
   const dashboardPath = user?.role === "admin" ? "/admin" : "/topics";
 
   const profilePath = user?.role === "admin" ? "/admin/profile" : "/profile";
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -60,7 +75,7 @@ const AppNavbar = () => {
         justify-between
         "
       >
-        {/* Logo + App Name */}
+        {/* Logo */}
 
         <button
           onClick={() => navigate(dashboardPath)}
@@ -83,10 +98,10 @@ const AppNavbar = () => {
           <div className="text-left">
             <h1
               className="
-            text-xl
-            font-extrabold
-            text-slate-800
-            "
+              text-xl
+              font-extrabold
+              text-slate-800
+              "
             >
               Project
               <span className="text-orange-600"> Jhep</span>
@@ -94,10 +109,10 @@ const AppNavbar = () => {
 
             <p
               className="
-            text-xs
-            text-orange-600
-            font-medium
-            "
+              text-xs
+              text-orange-600
+              font-medium
+              "
             >
               {user?.role === "admin" ? "Admin Panel" : "Learn English"}
             </p>
@@ -106,20 +121,20 @@ const AppNavbar = () => {
 
         <div
           className="
-        flex
-        items-center
-        gap-3
-        "
+          flex
+          items-center
+          gap-3
+          "
         >
           {/* Browser Navigation */}
 
           <div
             className="
-          hidden
-          md:flex
-          items-center
-          gap-2
-          "
+            hidden
+            md:flex
+            items-center
+            gap-2
+            "
           >
             <button
               onClick={goBack}
@@ -152,11 +167,11 @@ const AppNavbar = () => {
             </button>
           </div>
 
-          {/* Profile */}
+          {/* Profile Dropdown */}
 
-          <div className="relative">
+          <div ref={profileRef} className="relative">
             <button
-              onClick={() => setProfileOpen(!profileOpen)}
+              onClick={() => setProfileOpen((prev) => !prev)}
               className="
               flex
               items-center
@@ -195,18 +210,18 @@ const AppNavbar = () => {
             {profileOpen && (
               <div
                 className="
-                  absolute
-                  right-0
-                  mt-2
-                  w-48
-                  rounded-xl
-                  border
-                  border-orange-100
-                  bg-white
-                  shadow-xl
-                  z-50
-                  overflow-hidden
-                  "
+                absolute
+                right-0
+                mt-2
+                w-48
+                rounded-xl
+                border
+                border-orange-100
+                bg-white
+                shadow-xl
+                z-50
+                overflow-hidden
+                "
               >
                 <button
                   onClick={() => {
@@ -214,49 +229,49 @@ const AppNavbar = () => {
                     setProfileOpen(false);
                   }}
                   className="
-                    w-full
-                    flex
-                    items-center
-                    gap-3
-                    px-4
-                    py-3
-                    text-sm
-                    text-slate-700
-                    hover:bg-orange-50
-                    "
+                  w-full
+                  flex
+                  items-center
+                  gap-3
+                  px-4
+                  py-3
+                  text-sm
+                  text-slate-700
+                  hover:bg-orange-50
+                  "
                 >
                   <User
                     className="
-                      w-4
-                      h-4
-                      text-orange-500
-                      "
+                    w-4
+                    h-4
+                    text-orange-500
+                    "
                   />
                   Profile
                 </button>
 
                 <button
                   onClick={() => {
-                    handleLogout();
                     setProfileOpen(false);
+                    handleLogout();
                   }}
                   className="
-                    w-full
-                    flex
-                    items-center
-                    gap-3
-                    px-4
-                    py-3
-                    text-sm
-                    text-red-600
-                    hover:bg-red-50
-                    "
+                  w-full
+                  flex
+                  items-center
+                  gap-3
+                  px-4
+                  py-3
+                  text-sm
+                  text-red-600
+                  hover:bg-red-50
+                  "
                 >
                   <LogOut
                     className="
-                      w-4
-                      h-4
-                      "
+                    w-4
+                    h-4
+                    "
                   />
                   Logout
                 </button>

@@ -11,8 +11,14 @@ import ScrollToTop from "./components/common/ScrollToTop";
 createRoot(document.getElementById("root")).render(
   <AuthProvider>
     <BrowserRouter>
-    <ScrollToTop />
-      <Toaster position="top-right" reverseOrder={false} />
+      <ScrollToTop />
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+        }}
+        reverseOrder={false}
+      />
       <App />
     </BrowserRouter>
   </AuthProvider>,
