@@ -35,7 +35,7 @@ const Team = () => {
       image:
         "https://res.cloudinary.com/jwamgvca/image/upload/v1785572254/Dhanashree_img_ks0s4p.jpg",
       linkedin:
-        "https://www.linkedin.com/in/dhanashree-zanwar?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+        "https://www.linkedin.com/in/aditya-kambli-8ba08a385?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     },
     {
       name: "Aditya Kambli",
@@ -46,6 +46,16 @@ const Team = () => {
         "https://res.cloudinary.com/jwamgvca/image/upload/v1785578178/Aditya_img_kwzygr.jpg",
       linkedin:
         "https://www.linkedin.com/in/dhanashree-zanwar?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    },
+    {
+      name: "Aman Shejul",
+      role: "Creative Content designer",
+      description:
+        " I am a creative learner and Educational Content Creator, passionate about designing engaging videos and interactive content that make learning enjoyable and effective for children.",
+      image:
+        "https://res.cloudinary.com/jwamgvca/image/upload/v1785585273/Aman_img_t3slws.jpg",
+      linkedin:
+        "https://www.linkedin.com/in/aman-shejul-584021381?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     },
   ];
 
