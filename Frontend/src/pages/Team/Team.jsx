@@ -17,7 +17,7 @@ const Team = () => {
     },
     {
       name: "Tejas Abhale",
-      role: "Full Stack Developer",
+      role: "Tech Lead",
       description:
         "Full Stack Developer responsible for designing, developing, and maintaining Project Jhep's frontend, backend, database, and deployment infrastructure.",
       image:
@@ -51,11 +51,21 @@ const Team = () => {
       name: "Aman Shejul",
       role: "Creative Content designer",
       description:
-        " I am a creative learner and Educational Content Creator, passionate about designing engaging videos and interactive content that make learning enjoyable and effective for children.",
+        "I am a creative learner and Educational Content Creator, passionate about designing engaging videos and interactive content that make learning enjoyable and effective for children.",
       image:
         "https://res.cloudinary.com/jwamgvca/image/upload/v1785585273/Aman_img_t3slws.jpg",
       linkedin:
         "https://www.linkedin.com/in/aman-shejul-584021381?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    },
+    {
+      name: "Hinal Patil",
+      role: "Head of R&D",
+      description:
+        "Proficient in Java and Python, with a fresh start in DSA using Java. Passionate about content research, emerging technology trends, and eager to build strong software engineering skills, explore new technologies, and enjoy the journey of continuous learning.",
+      image:
+        "https://res.cloudinary.com/jwamgvca/image/upload/v1785604092/Hinal_img_iw8zrq.jpg",
+      linkedin:
+        " https://www.linkedin.com/in/hinal-patil-90a3ab385?utm_source=share_via&utm_content=profile&utm_medium=member_android",
     },
   ];
 
