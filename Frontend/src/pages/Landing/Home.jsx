@@ -39,7 +39,7 @@ function Home() {
       title: "Speak English Confidently",
       subtitle: "Improve speaking, reading, and writing skills step by step.",
       cta: {
-        label: "Start Learning",
+        label: "Start Exploing",
         onClick: () => {},
       },
     },

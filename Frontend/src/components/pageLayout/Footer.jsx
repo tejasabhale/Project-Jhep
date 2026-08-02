@@ -22,7 +22,7 @@ export default function Footer() {
                 </h2>
 
                 <p className="mt-1 text-sm text-slate-500">
-                  Powered by Sprough Hub Foundation
+                  Powered by Sproug Hub Foundation
                 </p>
               </div>
             </div>
@@ -97,7 +97,7 @@ export default function Footer() {
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-orange-200 pt-6 text-sm text-slate-500 md:flex-row">
           <p>
             © {new Date().getFullYear()}{" "}
-            <span className="font-medium">Sprough Hub Foundation</span>. All
+            <span className="font-medium">Sproug Hub Foundation</span>. All
             rights reserved.
           </p>
 
