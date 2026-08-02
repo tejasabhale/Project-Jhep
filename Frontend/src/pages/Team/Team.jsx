@@ -31,7 +31,7 @@ const Team = () => {
       name: "Dhanashree Zanwar",
       role: "Senior Associate",
       description:
-        "I'm a second-year Artificial Intelligence and Data Science student at Dr. D. Y. Patil Institute of Technology. Passionate about AI and Data Science, I enjoy learning new technologies, improving my skills, and working on innovative projects.",
+        "My role involves making educational content more engaging through interactive activities while also contributing to the design and development of the curriculum and syllabus.",
       image:
         "https://res.cloudinary.com/jwamgvca/image/upload/v1785572254/Dhanashree_img_ks0s4p.jpg",
       linkedin:
