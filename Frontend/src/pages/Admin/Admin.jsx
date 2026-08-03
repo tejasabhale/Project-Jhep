@@ -138,14 +138,8 @@ export default function Admin() {
 
       links: [
         {
-          name: "Add Quiz",
-          path: "/admin/quizzes/add",
-          icon: Plus,
-        },
-
-        {
           name: "Manage Quizzes",
-          path: "/admin/quizzes/manage",
+          path: "/admin/quizzes",
           icon: List,
         },
       ],
@@ -178,6 +172,27 @@ export default function Admin() {
         {
           name: "Add Member",
           path: "/admin/team/add",
+          icon: Plus,
+        },
+
+        {
+          name: "Manage Members",
+          path: "/admin/team/manage",
+          icon: List,
+        },
+      ],
+
+      icon: UserRound,
+    },
+    {
+      title: "Manage Users",
+
+      description: "Manage user roles.",
+
+      links: [
+        {
+          name: "Add Member",
+          path: "/admin/users/add",
           icon: Plus,
         },
 
