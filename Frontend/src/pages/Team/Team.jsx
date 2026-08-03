@@ -42,8 +42,8 @@ const Team = () => {
             <p className="text-orange-600 font-semibold mb-3">Our Team</p>
 
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-              Meet The People Behind
-              <span className="text-orange-600"> Project Jhep</span>
+              Meet The People Behind{" "}
+              <span className="text-orange-600">Project Jhep</span>
             </h1>
 
             <p className="mt-5 max-w-3xl mx-auto text-gray-600 text-lg leading-relaxed">
@@ -66,45 +66,50 @@ const Team = () => {
                 <Reveal key={member._id}>
                   <div
                     className="
-                    group
-                    h-full
-                    flex
-                    flex-col
-                    bg-white
-                    rounded-3xl
-                    border
-                    border-orange-100
-                    p-6
-                    text-center
-                    shadow-sm
-                    hover:shadow-xl
-                    hover:-translate-y-2
-                    transition-all
-                    duration-300
-                  "
+                      group
+                      h-full
+                      flex
+                      flex-col
+                      bg-white
+                      rounded-3xl
+                      border
+                      border-orange-100
+                      p-6
+                      text-center
+                      shadow-sm
+                      hover:shadow-xl
+                      hover:-translate-y-2
+                      transition-all
+                      duration-300
+                    "
                   >
                     {/* Image */}
                     <div className="flex justify-center">
                       <div
                         className="
-                        rounded-full
-                        p-1
-                        bg-gradient-to-br
-                        from-orange-400
-                        to-orange-600
-                      "
+                          rounded-full
+                          p-1
+                          bg-gradient-to-br
+                          from-orange-400
+                          to-orange-600
+                        "
                       >
                         <img
-                          src={member.photo?.url}
+                          src={
+                            member.photo?.url ||
+                            `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                              member.name,
+                            )}&background=f97316&color=ffffff&size=256`
+                          }
                           alt={member.name}
                           className="
-                          w-28
-                          h-28
-                          rounded-full
-                          object-cover
-                          border-4
-                          border-white
-                        "
+                            w-28
+                            h-28
+                            rounded-full
+                            object-cover
+                            border-4
+                            border-white
+                          "
                         />
                       </div>
                     </div>
@@ -112,13 +117,13 @@ const Team = () => {
                     {/* Name */}
                     <h3
                       className="
-                      mt-6
-                      text-xl
-                      font-bold
-                      text-gray-900
-                      group-hover:text-orange-600
-                      transition
-                    "
+                        mt-6
+                        text-xl
+                        font-bold
+                        text-gray-900
+                        group-hover:text-orange-600
+                        transition
+                      "
                     >
                       {member.name}
                     </h3>
@@ -146,18 +151,18 @@ const Team = () => {
                             rel="noopener noreferrer"
                             aria-label={`${member.name} LinkedIn`}
                             className="
-                            w-10
-                            h-10
-                            rounded-full
-                            bg-orange-50
-                            flex
-                            items-center
-                            justify-center
-                            text-gray-700
-                            hover:bg-orange-600
-                            hover:text-white
-                            transition
-                          "
+                              w-10
+                              h-10
+                              rounded-full
+                              bg-orange-50
+                              flex
+                              items-center
+                              justify-center
+                              text-gray-700
+                              hover:bg-orange-600
+                              hover:text-white
+                              transition
+                            "
                           >
                             <FaLinkedin size={18} />
                           </a>
@@ -170,18 +175,18 @@ const Team = () => {
                             rel="noopener noreferrer"
                             aria-label={`${member.name} GitHub`}
                             className="
-                            w-10
-                            h-10
-                            rounded-full
-                            bg-orange-50
-                            flex
-                            items-center
-                            justify-center
-                            text-gray-700
-                            hover:bg-orange-600
-                            hover:text-white
-                            transition
-                          "
+                              w-10
+                              h-10
+                              rounded-full
+                              bg-orange-50
+                              flex
+                              items-center
+                              justify-center
+                              text-gray-700
+                              hover:bg-orange-600
+                              hover:text-white
+                              transition
+                            "
                           >
                             <FaGithub size={18} />
                           </a>
@@ -194,18 +199,18 @@ const Team = () => {
                             rel="noopener noreferrer"
                             aria-label={`${member.name} X`}
                             className="
-                            w-10
-                            h-10
-                            rounded-full
-                            bg-orange-50
-                            flex
-                            items-center
-                            justify-center
-                            text-gray-700
-                            hover:bg-orange-600
-                            hover:text-white
-                            transition
-                          "
+                              w-10
+                              h-10
+                              rounded-full
+                              bg-orange-50
+                              flex
+                              items-center
+                              justify-center
+                              text-gray-700
+                              hover:bg-orange-600
+                              hover:text-white
+                              transition
+                            "
                           >
                             <FaTwitter size={18} />
                           </a>
@@ -216,18 +221,18 @@ const Team = () => {
                             href={`mailto:${member.email}`}
                             aria-label={`${member.name} Email`}
                             className="
-                            w-10
-                            h-10
-                            rounded-full
-                            bg-orange-50
-                            flex
-                            items-center
-                            justify-center
-                            text-gray-700
-                            hover:bg-orange-600
-                            hover:text-white
-                            transition
-                          "
+                              w-10
+                              h-10
+                              rounded-full
+                              bg-orange-50
+                              flex
+                              items-center
+                              justify-center
+                              text-gray-700
+                              hover:bg-orange-600
+                              hover:text-white
+                              transition
+                            "
                           >
                             <Mail size={18} />
                           </a>
