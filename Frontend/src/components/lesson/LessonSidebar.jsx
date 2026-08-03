@@ -7,19 +7,14 @@ const tabs = [
     label: "Content",
     icon: BookOpen,
   },
-  // {
-  //   id: "quiz",
-  //   label: "Quiz",
-  //   icon: ClipboardList,
-  // },
+  {
+    id: "quiz",
+    label: "Quiz",
+    icon: ClipboardList,
+  },
 ];
 
-const LessonSidebar = ({
-  activeTab,
-  onTabChange,
-  isOpen,
-  onClose,
-}) => {
+const LessonSidebar = ({ activeTab, onTabChange, isOpen, onClose }) => {
   useEffect(() => {
     const handleEscape = (event) => {
       if (event.key === "Escape") {
@@ -34,153 +29,190 @@ const LessonSidebar = ({
     };
   }, [onClose]);
 
+  const handleTabClick = (id) => {
+    onTabChange(id);
+
+    onClose();
+  };
 
   const sidebarContent = (
     <nav
       className="
         flex
-        flex-col
         h-full
+        flex-col
         bg-white
-        border-r
-        border-gray-100
-        py-6
         px-4
+        py-6
       "
     >
-      {/* Mobile Close Button */}
+      {/* Close Button */}
+
       <button
-        className="
-          lg:hidden
-          self-end
-          mb-4
-          text-gray-500
-          hover:text-gray-700
-        "
         onClick={onClose}
+        className="
+          mb-4
+          self-end
+          rounded-lg
+          p-2
+          text-gray-500
+          transition
+          hover:bg-orange-100
+          hover:text-orange-600
+        "
         aria-label="Close sidebar"
       >
-        <X size={24} />
+        <X size={22} />
       </button>
 
-
-      {/* Sidebar Title */}
       <h2
         className="
-          text-xs
-          font-semibold
-          text-gray-400
-          uppercase
-          tracking-wider
           mb-6
           px-2
+          text-xs
+          font-semibold
+          uppercase
+          tracking-wider
+          text-gray-400
         "
       >
         Lesson Menu
       </h2>
 
+      <div className="space-y-2">
+        {tabs.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => handleTabClick(id)}
+            className={`
 
-      {/* Navigation Tabs */}
-      {tabs.map(({ id, label, icon: Icon }) => (
-        <button
-          key={id}
-          onClick={() => onTabChange(id)}
-          className={`
-            flex
-            items-center
-            gap-3
-            px-4
-            py-3
-            rounded-xl
-            text-sm
-            font-medium
-            transition
-
-            ${
-              activeTab === id
-                ? "bg-orange-50 text-orange-600"
-                : "text-gray-600 hover:bg-gray-50"
-            }
-          `}
-        >
-          <Icon size={20} />
-
-          <span>
-            {label}
-          </span>
+                group
+                flex
+                w-full
+                items-center
+                gap-3
+                rounded-xl
+                px-4
+                py-3
+                text-left
+                text-sm
+                font-medium
+                transition-all
 
 
-          {activeTab === id && (
-            <span
+                ${
+                  activeTab === id
+                    ? "bg-orange-50 text-orange-600 shadow-sm"
+                    : "text-gray-600 hover:bg-orange-50 hover:text-orange-600"
+                }
+
+              `}
+          >
+            <Icon
+              size={20}
               className="
-                ml-auto
-                w-1.5
-                h-5
-                rounded-full
-                bg-orange-500
-              "
+                  transition-transform
+                  group-hover:scale-110
+                "
             />
-          )}
-        </button>
-      ))}
+
+            <span className="flex-1">{label}</span>
+
+            {activeTab === id && (
+              <span
+                className="
+                      h-5
+                      w-1.5
+                      rounded-full
+                      bg-orange-500
+                    "
+              />
+            )}
+          </button>
+        ))}
+      </div>
     </nav>
   );
-
 
   return (
     <>
       {/* Desktop Sidebar */}
+
       <aside
-        className="
+        className={`
+
           hidden
           lg:flex
           lg:flex-col
-          lg:w-64
-          lg:flex-shrink-0
-        "
+
+          border-r
+          border-orange-100
+
+          transition-all
+          duration-300
+
+
+          ${isOpen ? "w-64" : "w-0 overflow-hidden"}
+
+        `}
       >
         {sidebarContent}
       </aside>
 
+      {/* Mobile Overlay */}
+
+      <div
+        onClick={onClose}
+        className={`
+
+          fixed
+          inset-0
+          z-40
+          bg-black/40
+          backdrop-blur-sm
+
+          transition-opacity
+
+          lg:hidden
+
+
+          ${
+            isOpen
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          }
+
+        `}
+      />
 
       {/* Mobile Sidebar */}
-      {isOpen && (
-        <div
-          className="
-            fixed
-            inset-0
-            z-40
-            lg:hidden
-          "
-        >
 
-          {/* Overlay */}
-          <div
-            className="
-              absolute
-              inset-0
-              bg-black/30
-            "
-            onClick={onClose}
-          />
+      <aside
+        className={`
+
+          fixed
+          left-0
+          top-0
+          z-50
+          h-full
+          w-72
+          bg-white
+          shadow-xl
 
 
-          {/* Sidebar */}
-          <aside
-            className="
-              relative
-              z-50
-              w-72
-              h-full
-              bg-white
-              shadow-xl
-            "
-          >
-            {sidebarContent}
-          </aside>
+          transition-transform
+          duration-300
 
-        </div>
-      )}
+
+          lg:hidden
+
+
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+
+        `}
+      >
+        {sidebarContent}
+      </aside>
     </>
   );
 };

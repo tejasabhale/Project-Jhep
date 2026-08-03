@@ -4,10 +4,11 @@ import { getLessonById } from "../api/lesson.api";
 
 export default function useLesson(lessonId) {
   const [lesson, setLesson] = useState(null);
+
   const [contents, setContents] = useState([]);
-  const [quiz, setQuiz] = useState(null);
 
   const [loading, setLoading] = useState(true);
+
   const [error, setError] = useState("");
 
   const loadLesson = useCallback(async () => {
@@ -15,24 +16,20 @@ export default function useLesson(lessonId) {
 
     try {
       setLoading(true);
+
       setError("");
 
       const response = await getLessonById(lessonId);
 
-      const lessonData = response?.data?.lesson;
+      const lessonData =
+        response?.data?.lesson || response?.data?.data || response?.data;
+
       const lessonContents = response?.data?.contents || [];
 
       setLesson(lessonData);
 
-      // Everything except quiz goes to Content tab
+      // Only PPT / PDF / Video content
       setContents(lessonContents.filter((item) => item.blockType !== "quiz"));
-
-      // Quiz block
-      const quizBlock = lessonContents.find(
-        (item) => item.blockType === "quiz",
-      );
-
-      setQuiz(quizBlock?.metadata || null);
     } catch (err) {
       console.error("Lesson Load Error:", err);
 
@@ -51,10 +48,13 @@ export default function useLesson(lessonId) {
 
   return {
     lesson,
+
     contents,
-    quiz,
+
     loading,
+
     error,
+
     retry: loadLesson,
   };
 }

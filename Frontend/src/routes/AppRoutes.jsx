@@ -46,6 +46,13 @@ import About from "../pages/About/About";
 import TermsAndConditions from "../pages/TermsAndConditions/TermsAndConditions";
 import PrivacyPolicy from "../pages/Privacy Policy/PrivacyPolicy";
 import Team from "../pages/Team/Team";
+import ManageQuizzes from "../pages/Admin/Quizzes/ManageQuizzes";
+import AddQuiz from "../pages/Admin/Quizzes/AddQuiz";
+import EditQuiz from "../pages/Admin/Quizzes/EditQuiz";
+import Activity from "../pages/Admin/Activity/Activity";
+import AddTeamMember from "../pages/Admin/Team/AddTeamMember";
+import ManageTeamMembers from "../pages/Admin/Team/ManageTeamMembers";
+import EditTeamMember from "../pages/Admin/Team/EditTeamMember";
 
 const AppRoutes = () => {
   const { loading } = useAuth();
@@ -136,6 +143,26 @@ const AppRoutes = () => {
             path="/admin/lesson-content/edit/:lessonId/:contentId"
             element={<EditLessonContent />}
           />
+
+          {/* Quiz Management */}
+
+          <Route path="/admin/quizzes" element={<ManageQuizzes />} />
+
+          <Route path="/admin/quizzes/add/:lessonId" element={<AddQuiz />} />
+
+          <Route path="/admin/quizzes/edit/:lessonId" element={<EditQuiz />} />
+
+          {/* User Activity  */}
+
+          <Route path="/admin/activity" element={<Activity />} />
+
+          {/* Team Members  */}
+
+          <Route path="/admin/team/add" element={<AddTeamMember />} />
+
+          <Route path="/admin/team/manage" element={<ManageTeamMembers />} />
+
+          <Route path="/admin/team/edit/:teamId" element={<EditTeamMember />} />
         </Route>
       </Route>
 

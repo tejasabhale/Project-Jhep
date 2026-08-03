@@ -6,6 +6,7 @@ const lessonContentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Lesson",
       required: true,
+      index: true,
     },
 
     blockType: {
@@ -18,6 +19,7 @@ const lessonContentSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      maxlength: 150,
     },
 
     file: {
@@ -65,5 +67,7 @@ const lessonContentSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+lessonContentSchema.index({ lesson: 1, order: 1 }, { unique: true });
 
 export default mongoose.model("LessonContent", lessonContentSchema);

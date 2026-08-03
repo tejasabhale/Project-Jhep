@@ -11,18 +11,26 @@ export default function LessonForm({
   loading,
   showTopic = true,
 }) {
+  if (!form) {
+    return null;
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target;
 
     setForm((prev) => ({
       ...prev,
-
       [name]: value,
     }));
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSubmit(form);
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {showTopic && (
         <TopicSelect
           topics={topics}
@@ -41,11 +49,11 @@ export default function LessonForm({
           required
           placeholder="Example: Introduction to English"
           className="
-          w-full
-          rounded-xl
-          border
-          px-4
-          py-3
+            w-full
+            rounded-xl
+            border
+            px-4
+            py-3
           "
         />
       </div>
@@ -59,11 +67,11 @@ export default function LessonForm({
           onChange={handleChange}
           rows="4"
           className="
-          w-full
-          rounded-xl
-          border
-          px-4
-          py-3
+            w-full
+            rounded-xl
+            border
+            px-4
+            py-3
           "
         />
       </div>
@@ -78,11 +86,11 @@ export default function LessonForm({
           value={form.order}
           onChange={handleChange}
           className="
-          w-full
-          rounded-xl
-          border
-          px-4
-          py-3
+            w-full
+            rounded-xl
+            border
+            px-4
+            py-3
           "
         />
       </div>
@@ -92,8 +100,7 @@ export default function LessonForm({
         onChange={(e) =>
           setForm((prev) => ({
             ...prev,
-
-            thumbnail: e.target.files[0],
+            thumbnail: e.target.files?.[0] || null,
           }))
         }
       />
@@ -105,7 +112,6 @@ export default function LessonForm({
           onChange={(e) =>
             setForm((prev) => ({
               ...prev,
-
               isPublished: e.target.checked,
             }))
           }
@@ -115,19 +121,22 @@ export default function LessonForm({
       </div>
 
       <button
+        type="submit"
         disabled={loading}
         className="
-        flex
-        w-full
-        items-center
-        justify-center
-        gap-2
-        rounded-xl
-        bg-orange-500
-        py-3
-        font-semibold
-        text-white
-        hover:bg-orange-600
+          flex
+          w-full
+          items-center
+          justify-center
+          gap-2
+          rounded-xl
+          bg-orange-500
+          py-3
+          font-semibold
+          text-white
+          hover:bg-orange-600
+          disabled:cursor-not-allowed
+          disabled:opacity-60
         "
       >
         <Save size={18} />

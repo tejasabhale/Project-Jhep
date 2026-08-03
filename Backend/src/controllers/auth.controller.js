@@ -11,6 +11,7 @@ import {
   sendPasswordChangedEmail,
   sendPasswordResetEmail,
 } from "../services/email.service.js";
+import UserActivity from "../models/userActivity.model.js";
 
 const OTP_EXPIRY = 5 * 60 * 1000;
 const OTP_COOLDOWN = 60 * 1000;
@@ -313,6 +314,12 @@ const login = asyncHandler(async (req, res) => {
 
   const loggedInUser = await User.findById(user._id);
 
+  const activity = await UserActivity.create({
+    user: user._id,
+    loginTime: new Date(),
+    status: "active",
+  });
+
   return res
     .status(200)
     .cookie("accessToken", accessToken, cookieOptions)
@@ -335,6 +342,19 @@ const logout = asyncHandler(async (req, res) => {
       refreshToken: 1,
     },
   });
+
+  await UserActivity.findOneAndUpdate(
+    {
+      user: req.user._id,
+      status: "active",
+    },
+
+    {
+      logoutTime: new Date(),
+      status: "offline",
+    },
+  );
+
   return res
     .status(200)
     .clearCookie("accessToken", clearCookieOptions)

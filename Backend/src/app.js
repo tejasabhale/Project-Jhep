@@ -8,7 +8,8 @@ import topicRouter from "./routes/topic.routes.js";
 import lessonRouter from "./routes/lesson.routes.js";
 import lessonContentRouter from "./routes/lessonContent.routes.js";
 import quizRouter from "./routes/quiz.routes.js";
-import adminContentRouter from "./routes/adminContent.routes.js";
+import adminRouter from "./routes/admin.routes.js";
+import teamRouter from "./routes/team.routes.js";
 
 import { errorHandler } from "./middlewares/errorHandler.js";
 
@@ -33,7 +34,8 @@ app.use("/api/v1/topics", topicRouter);
 app.use("/api/v1/lessons", lessonRouter);
 app.use("/api/v1/lesson-content", lessonContentRouter);
 app.use("/api/v1/quizzes", quizRouter);
-app.use("/api/v1/admin/content", adminContentRouter);
+app.use("/api/v1/admin", adminRouter);
+app.use("/api/v1/team", teamRouter);
 
 // Error Handler
 app.use(errorHandler);

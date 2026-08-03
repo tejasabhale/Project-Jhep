@@ -281,8 +281,6 @@ const updateLesson = asyncHandler(async (req, res) => {
     lesson.order = newOrder;
   }
 
-  // Update Thumbnail
-
   if (req.file) {
     if (lesson.thumbnail?.publicId) {
       try {
@@ -294,7 +292,7 @@ const updateLesson = asyncHandler(async (req, res) => {
 
     const uploadedThumbnail = await uploadOnCloudinary(
       req.file.path,
-
+      "image",
       "lesson-thumbnails",
     );
 
@@ -325,8 +323,6 @@ const deleteLesson = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Lesson not found.");
   }
 
-  // delete lesson thumbnail
-
   if (lesson.thumbnail?.publicId) {
     try {
       await deleteFromCloudinary(lesson.thumbnail.publicId);
@@ -334,8 +330,6 @@ const deleteLesson = asyncHandler(async (req, res) => {
       console.log("Thumbnail delete failed", error);
     }
   }
-
-  // delete lesson contents
 
   await LessonContent.deleteMany({
     lesson: lessonId,

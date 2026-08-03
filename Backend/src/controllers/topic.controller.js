@@ -58,7 +58,11 @@ export const createTopic = asyncHandler(async (req, res) => {
   };
 
   if (req.file) {
-    const uploaded = await uploadOnCloudinary(req.file.path, "image", "topics-thumbnail");
+    const uploaded = await uploadOnCloudinary(
+      req.file.path,
+      "image",
+      "topics-thumbnail",
+    );
 
     if (!uploaded?.secure_url) {
       throw new ApiError(500, "Failed to upload thumbnail.");
@@ -204,7 +208,6 @@ export const updateTopic = asyncHandler(async (req, res) => {
   description = description?.trim();
   grade = grade?.trim();
 
-  // Check duplicate title
   if (title) {
     const existingTopic = await Topic.findOne({
       _id: { $ne: topicId },
@@ -232,7 +235,6 @@ export const updateTopic = asyncHandler(async (req, res) => {
     topic.grade = grade;
   }
 
-  // Check duplicate order
   if (order !== undefined) {
     const existingOrder = await Topic.findOne({
       _id: { $ne: topicId },
@@ -254,9 +256,12 @@ export const updateTopic = asyncHandler(async (req, res) => {
     topic.isPublished = isPublished;
   }
 
-  // Replace thumbnail
   if (req.file) {
-    const uploaded = await uploadOnCloudinary(req.file.path, "topics");
+    const uploaded = await uploadOnCloudinary(
+      req.file.path,
+      "image",
+      "topics-thumbnail",
+    );
 
     if (!uploaded?.secure_url) {
       throw new ApiError(500, "Failed to upload thumbnail.");

@@ -1,153 +1,89 @@
-import { useState } from "react";
-import { CheckCircle, XCircle, RefreshCw, ClipboardList } from "lucide-react";
+import {
+  ClipboardCheck,
+  Clock,
+  HelpCircle,
+  Trophy,
+  Play,
+  AlertCircle,
+} from "lucide-react";
 
 import Card from "../common/Card";
-import Button from "../common/Button";
 import EmptyState from "../common/EmptyState";
 
-export default function QuizTab({ quiz }) {
-  if (!quiz?.questions || quiz.questions.length === 0) {
+export default function QuizTab({ lesson, quiz, onStart }) {
+  if (!quiz) {
     return (
       <EmptyState
-        icon={ClipboardList}
-        message="No quiz available for this lesson."
+        icon={ClipboardCheck}
+        message="No quiz has been added for this lesson yet."
       />
     );
   }
 
-  const questions = quiz.questions;
-
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
-  const [score, setScore] = useState(0);
-  const [completed, setCompleted] = useState(false);
-
-  const question = questions[currentQuestion];
-
-  const submitAnswer = () => {
-    if (selectedAnswer === question.correctAnswer) {
-      setScore((prev) => prev + 1);
-    }
-
-    setSubmitted(true);
-  };
-
-  const nextQuestion = () => {
-    if (currentQuestion === questions.length - 1) {
-      setCompleted(true);
-      return;
-    }
-
-    setCurrentQuestion((prev) => prev + 1);
-    setSelectedAnswer(null);
-    setSubmitted(false);
-  };
-
-  const restartQuiz = () => {
-    setCurrentQuestion(0);
-    setSelectedAnswer(null);
-    setSubmitted(false);
-    setScore(0);
-    setCompleted(false);
-  };
-
-  if (completed) {
-    const percentage = Math.round((score / questions.length) * 100);
-
-    return (
-      <Card className="mx-auto max-w-xl text-center py-10">
-        <CheckCircle className="mx-auto text-green-500" size={60} />
-
-        <h2 className="mt-5 text-3xl font-bold">Quiz Completed</h2>
-
-        <p className="mt-3 text-slate-600">You scored</p>
-
-        <h1 className="mt-2 text-6xl font-extrabold text-orange-500">
-          {percentage}%
-        </h1>
-
-        <p className="mt-4 text-slate-600">
-          {score} / {questions.length} Correct
-        </p>
-
-        <Button className="mt-8" onClick={restartQuiz}>
-          <RefreshCw size={18} className="mr-2" />
-          Retry Quiz
-        </Button>
-      </Card>
-    );
-  }
+  const questions = quiz?.metadata?.questions || [];
+  const totalQuestions = questions.length;
+  const passingMarks =
+    quiz?.metadata?.passingMarks ?? Math.ceil(totalQuestions * 0.6);
+  const timeLimit = quiz?.metadata?.timeLimit ?? Math.max(5, totalQuestions);
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-bold">Question {currentQuestion + 1}</h2>
+    <Card>
+      <div className="space-y-8">
+        <div className="text-center">
+          <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-orange-100">
+            <ClipboardCheck className="text-orange-500" size={40} />
+          </div>
+          <h2 className="mt-5 text-3xl font-bold text-slate-800">
+            {quiz?.metadata?.title || "Lesson Quiz"}
+          </h2>
+          <p className="mt-3 text-slate-600">
+            Test what you've learned before moving to the next lesson.
+          </p>
+        </div>
 
-        <span className="rounded-full bg-orange-100 px-4 py-2 text-sm font-semibold text-orange-600">
-          {currentQuestion + 1} / {questions.length}
-        </span>
+        <div className="grid gap-4 sm:grid-cols-2 md:max-w-[400px] md:mx-auto">
+          <div className="rounded-2xl border border-orange-100 bg-orange-50 p-5 text-center">
+            <HelpCircle className="mx-auto text-orange-500" size={30} />
+            <p className="mt-2 text-sm text-slate-500">Questions</p>
+            <h3 className="text-2xl font-bold text-slate-800">
+              {totalQuestions}
+            </h3>
+          </div>
+          <div className="rounded-2xl border border-orange-100 bg-orange-50 p-5 text-center">
+            <Trophy className="mx-auto text-orange-500" size={30} />
+            <p className="mt-2 text-sm text-slate-500">Passing Score</p>
+            <h3 className="text-2xl font-bold text-slate-800">
+              {passingMarks}/{totalQuestions}
+            </h3>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-5">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-1 text-yellow-600" size={22} />
+            <div>
+              <h4 className="font-semibold text-slate-800">Instructions</h4>
+              <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600">
+                <li>Read every question carefully.</li>
+                <li>Select the best answer.</li>
+                <li>You can move between questions.</li>
+                <li>Submit the quiz after answering.</li>
+                <li>Your score will be shown immediately.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <button
+            onClick={onStart}
+            className="flex items-center gap-3 rounded-full bg-orange-500 px-8 py-4 text-lg font-semibold text-white transition hover:bg-orange-600"
+          >
+            <Play size={22} />
+            Start Quiz
+          </button>
+        </div>
       </div>
-
-      <Card>
-        <h3 className="mb-8 text-2xl font-bold text-slate-800">
-          {question.question}
-        </h3>
-
-        <div className="space-y-4">
-          {question.options.map((option, index) => {
-            const selected = selectedAnswer === index;
-            const correct = index === question.correctAnswer;
-
-            let style = "border-slate-200 hover:border-orange-300";
-
-            if (submitted) {
-              if (correct) {
-                style = "border-green-400 bg-green-50";
-              } else if (selected) {
-                style = "border-red-400 bg-red-50";
-              }
-            } else if (selected) {
-              style = "border-orange-500 bg-orange-50";
-            }
-
-            return (
-              <button
-                key={index}
-                disabled={submitted}
-                onClick={() => setSelectedAnswer(index)}
-                className={`w-full rounded-xl border-2 p-5 text-left transition ${style}`}
-              >
-                <div className="flex items-center">
-                  <span className="flex-1">{option}</span>
-
-                  {submitted && correct && (
-                    <CheckCircle className="text-green-500" size={20} />
-                  )}
-
-                  {submitted && selected && !correct && (
-                    <XCircle className="text-red-500" size={20} />
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-8 flex justify-end">
-          {!submitted ? (
-            <Button disabled={selectedAnswer === null} onClick={submitAnswer}>
-              Submit
-            </Button>
-          ) : (
-            <Button onClick={nextQuestion}>
-              {currentQuestion === questions.length - 1
-                ? "Finish Quiz"
-                : "Next Question"}
-            </Button>
-          )}
-        </div>
-      </Card>
-    </div>
+    </Card>
   );
 }
