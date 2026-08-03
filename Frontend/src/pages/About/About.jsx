@@ -4,7 +4,6 @@ import {
   HeartHandshake,
   Target,
   Lightbulb,
-  GraduationCap,
 } from "lucide-react";
 
 import Reveal from "../../components/ui/Reveal";
@@ -15,70 +14,96 @@ const About = () => {
       icon: Target,
       title: "Our Mission",
       description:
-        "To make quality English learning accessible for every student, especially children from rural and underserved communities.",
+        "To make quality education accessible for every learner through innovative learning experiences, with a special focus on underserved communities.",
     },
     {
       icon: BookOpen,
       title: "Interactive Learning",
       description:
-        "We provide lessons, conversations, activities, quizzes, and engaging content to make learning simple and enjoyable.",
+        "We create engaging lessons, activities, stories, quizzes, and digital learning resources that inspire curiosity and lifelong learning.",
     },
     {
       icon: Users,
       title: "Community Driven",
       description:
-        "Teachers, volunteers, and creators work together to build better learning experiences for students.",
+        "Teachers, volunteers, creators, and partners collaborate to build meaningful educational experiences for students.",
     },
     {
       icon: HeartHandshake,
       title: "Social Impact",
       description:
-        "We aim to reduce language barriers and create better opportunities through education.",
+        "We believe education can transform lives by reducing barriers and creating better opportunities for future generations.",
     },
   ];
 
   return (
     <div className="min-h-screen bg-orange-50">
-      {/* Hero Section */}
-
+      {/* Foundation Banner */}
       <Reveal>
-        <section className="bg-white py-16">
-          <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
-            <div>
-              <p className="text-orange-600 font-semibold mb-3">
-                About Project Jhep
-              </p>
+        <section className="bg-orange-100 border-b border-orange-200 py-4">
+          <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
+            <HeartHandshake className="w-5 h-5 text-orange-600" />
 
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
-                Making English Learning
-                <span className="text-orange-600"> Simple & Accessible</span>
-              </h1>
-
-              <p className="mt-6 text-gray-600 text-lg leading-relaxed">
-                Project Jhep is an educational initiative focused on helping
-                students improve their English communication skills through
-                simple explanations, activities, and practical learning methods.
-              </p>
-
-              <p className="mt-4 text-gray-600 leading-relaxed">
-                Our goal is to support students who may not have access to
-                quality learning resources and create a platform where every
-                child can learn with confidence.
-              </p>
-            </div>
-
-            <div className="bg-orange-100 rounded-3xl p-10 flex justify-center">
-              <GraduationCap
-                className="w-40 h-40 text-orange-600"
-                strokeWidth={1.5}
-              />
-            </div>
+            <p className="text-gray-700">
+              <span className="font-semibold text-orange-700">
+                Empowering Communities Through Education, Innovation &
+                Opportunity
+              </span>
+            </p>
           </div>
         </section>
       </Reveal>
 
-      {/* Vision Section */}
+      {/* Hero Section */}
+      <Reveal>
+        <section className="bg-white py-16">
+          <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+            <div>
+              <p className="text-orange-600 font-semibold uppercase tracking-widest mb-3">
+                ABOUT US
+              </p>
 
+              <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight">
+                <span className="text-orange-600">Sproug Hub</span>
+                <br />
+                Foundation
+              </h1>
+
+              <p className="mt-6 text-gray-600 text-lg leading-relaxed">
+                <span className="font-semibold text-orange-700">
+                  Sproug Hub Foundation
+                </span>{" "}
+                is a non-profit organization committed to creating equal
+                opportunities through education, innovation, and technology. We
+                strive to empower children and communities by making quality
+                learning accessible, engaging, and impactful.
+              </p>
+
+              <p className="mt-4 text-gray-600 leading-relaxed">
+                One of our flagship initiatives,
+                <span className="font-semibold text-gray-900">
+                  {" "}
+                  Project Jhep
+                </span>
+                , focuses on helping students improve their English
+                communication skills through interactive lessons, conversations,
+                stories, activities, quizzes, and practical learning
+                experiences—especially for children from rural and underserved
+                communities.
+              </p>
+            </div>
+
+            {/* Logo */}
+            <img
+              src="https://res.cloudinary.com/jwamgvca/image/upload/v1785740728/LOGO.jpg_1_io5dvd.jpg"
+              alt="Sproug Hub Foundation Logo"
+              className="w-96 h-96 object-contain"
+            />
+          </div>
+        </section>
+      </Reveal>
+
+      {/* Vision */}
       <Reveal>
         <section className="py-16">
           <div className="max-w-5xl mx-auto px-6 text-center">
@@ -87,17 +112,17 @@ const About = () => {
             <h2 className="text-3xl font-bold text-gray-900">Our Vision</h2>
 
             <p className="mt-5 text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              We believe education should not depend on someone's location or
-              background. Project Jhep aims to create a learning environment
-              where students can improve their skills, build confidence, and
-              prepare themselves for future opportunities.
+              We envision a future where every learner, regardless of their
+              background or location, has access to quality education and the
+              opportunity to achieve their full potential. Through innovation,
+              collaboration, and community-driven initiatives, we aim to create
+              lasting social impact.
             </p>
           </div>
         </section>
       </Reveal>
 
-      {/* Values Cards */}
-
+      {/* Values */}
       <Reveal>
         <section className="bg-white py-16">
           <div className="max-w-6xl mx-auto px-6">
@@ -111,30 +136,8 @@ const About = () => {
 
                 return (
                   <Reveal key={index}>
-                    <div
-                      className="
-                        bg-orange-50
-                        rounded-2xl
-                        p-6
-                        border
-                        border-orange-100
-                        hover:shadow-md
-                        transition
-                        h-full
-                      "
-                    >
-                      <div
-                        className="
-                          bg-orange-600
-                          w-12
-                          h-12
-                          rounded-xl
-                          flex
-                          items-center
-                          justify-center
-                          mb-5
-                        "
-                      >
+                    <div className="bg-orange-50 rounded-2xl p-6 border border-orange-100 hover:shadow-md transition h-full">
+                      <div className="bg-orange-600 w-12 h-12 rounded-xl flex items-center justify-center mb-5">
                         <Icon className="text-white w-6 h-6" />
                       </div>
 
@@ -155,26 +158,18 @@ const About = () => {
       </Reveal>
 
       {/* CTA */}
-
       <Reveal>
         <section className="py-16">
           <div className="max-w-5xl mx-auto px-6">
-            <div
-              className="
-                bg-orange-600
-                rounded-3xl
-                p-10
-                text-center
-                text-white
-              "
-            >
+            <div className="bg-orange-600 rounded-3xl p-10 text-center text-white">
               <h2 className="text-3xl font-bold">
-                Join Us in Building Better Learning Opportunities
+                Join Us in Creating a Better Future
               </h2>
 
               <p className="mt-4 text-orange-100 max-w-2xl mx-auto">
-                Together, we can help students learn, grow, and communicate
-                confidently.
+                Together, we can empower children, strengthen communities, and
+                create meaningful learning opportunities through education and
+                innovation.
               </p>
             </div>
           </div>

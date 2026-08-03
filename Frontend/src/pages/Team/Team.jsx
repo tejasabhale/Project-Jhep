@@ -11,7 +11,7 @@ const Team = () => {
       description:
         "Leads the development of creative educational content, activities, and resources designed for effective student learning.",
       image:
-        "https://res.cloudinary.com/jwamgvca/image/upload/v1785581805/Yashraj_img_gaqt5o.jpg",
+        "https://res.cloudinary.com/jwamgvca/image/upload/v1785740283/Yashraj_img_zjckse.jpg",
       linkedin: "https://www.linkedin.com/in/yashraj-bhogade-95231b385/",
       github: "https://github.com/itsthemaverick",
     },
@@ -66,6 +66,24 @@ const Team = () => {
         "https://res.cloudinary.com/jwamgvca/image/upload/v1785604092/Hinal_img_iw8zrq.jpg",
       linkedin:
         " https://www.linkedin.com/in/hinal-patil-90a3ab385?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    },
+    {
+      name: "Shavan Bairagi",
+      role: "Senior Associate",
+      description:
+        "My role focuses on creating engaging learning experiences through interactive methods while supporting the planning, development, and refinement of curriculum and syllabus content.",
+      image:
+        "https://res.cloudinary.com/jwamgvca/image/upload/v1785739179/Shravan_img_it4kro.png",
+      linkedin: "https://www.linkedin.com/in/shravan-bairagi-713a93384/",
+    },
+    {
+      name: "Aarti Dundagekar ",
+      role: "Content Writer.",
+      description:
+        "My role involves creating engaging and informative content across various platforms while contributing to content strategy, research, and editorial planning.",
+      image: "https://placehold.co/200x200?text=Profile",
+      linkedin: "https://www.linkedin.com/in/aarti-dundagekar-b75092385",
+      email: "aartidundgekar@gmail.com",
     },
   ];
 
