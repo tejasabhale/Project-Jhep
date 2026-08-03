@@ -30,10 +30,6 @@ export const createTeamMember = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Role is required.");
   }
 
-  if (!req.file) {
-    throw new ApiError(400, "Profile photo is required.");
-  }
-
   const existingMember = await Team.findOne({
     name: {
       $regex: new RegExp(`^${name.trim()}$`, "i"),
