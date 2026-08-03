@@ -29,7 +29,7 @@ router.post(
   createTeamMember,
 );
 
-router.put(
+router.patch(
   "/:teamId",
   verifyJWT,
   authorizeRoles("admin"),
