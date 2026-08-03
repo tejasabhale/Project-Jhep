@@ -39,12 +39,13 @@ export const createTeamMember = asyncHandler(async (req, res) => {
   if (existingMember) {
     throw new ApiError(409, "Team member already exists.");
   }
-
-  const uploaded = await uploadOnCloudinary(
-    req.file.path,
-    "image",
-    "team-members",
-  );
+  if (req.file) {
+    const uploaded = await uploadOnCloudinary(
+      req.file.path,
+      "image",
+      "team-members",
+    );
+  }
 
   if (!uploaded?.secure_url) {
     throw new ApiError(500, "Failed to upload profile photo.");
