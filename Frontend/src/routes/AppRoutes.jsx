@@ -79,7 +79,7 @@ const AppRoutes = () => {
       <Route element={<GuestRoute />}>
         <Route path="/login" element={<Login />} />
 
-        <Route path="/register" element={<Register />} />
+        {/* <Route path="/register" element={<Register />} /> */}
 
         <Route path="/verify-otp" element={<VerifyOtp />} />
 

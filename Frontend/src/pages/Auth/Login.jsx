@@ -136,12 +136,12 @@ const Login = () => {
 
           {/* Links */}
           <div className="mt-6 flex items-center justify-between text-sm">
-            <Link
+            {/* <Link
               to="/register"
               className="font-medium text-orange-600 hover:underline"
             >
               Create Account
-            </Link>
+            </Link> */}
 
             <Link
               to="/forgot-password"
