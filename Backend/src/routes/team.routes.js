@@ -17,14 +17,14 @@ const router = Router();
 
 router.get("/", getAllTeamMembers);
 
-router.get("/admin", verifyJWT, authorizeRoles("admin"), getAllTeamMembersAdmin);
+router.get("/admin", verifyJWT, authorizeRoles("admin", "owner"), getAllTeamMembersAdmin);
 
-router.get("/:teamId", verifyJWT, authorizeRoles("admin"), getTeamMemberById);
+router.get("/:teamId", verifyJWT, authorizeRoles("admin", "owner"), getTeamMemberById);
 
 router.post(
   "/",
   verifyJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "owner"),
   upload.single("photo"),
   createTeamMember,
 );
@@ -32,11 +32,11 @@ router.post(
 router.patch(
   "/:teamId",
   verifyJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "owner"),
   upload.single("photo"),
   updateTeamMember,
 );
 
-router.delete("/:teamId", verifyJWT, authorizeRoles("admin"), deleteTeamMember);
+router.delete("/:teamId", verifyJWT, authorizeRoles("admin", "owner"), deleteTeamMember);
 
 export default router;

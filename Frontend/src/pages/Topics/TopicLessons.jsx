@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { UserCircle, LogOut, User } from "lucide-react";
+import { UserCircle, LogOut, User, Loader } from "lucide-react";
 
 import { getLessonsByTopic } from "../../api/lesson.api";
 
@@ -56,7 +56,7 @@ const TopicLessons = () => {
   }, [topicId]);
 
   if (loading) {
-    return <div className="p-10">Loading lessons...</div>;
+    return <Loader />;
   }
 
   return (
@@ -68,7 +68,6 @@ const TopicLessons = () => {
       py-8
       "
     >
-
       {/* Topic Header */}
 
       <div className="mx-auto max-w-6xl mt-10">

@@ -16,7 +16,7 @@ const router = Router();
 router.post(
   "/:lessonId",
   verifyJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "owner"),
   validateObjectId("lessonId"),
   createQuiz,
 );
@@ -31,7 +31,7 @@ router.get(
 router.patch(
   "/:lessonId",
   verifyJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "owner"),
   validateObjectId("lessonId"),
   updateQuiz,
 );
@@ -39,7 +39,7 @@ router.patch(
 router.delete(
   "/:lessonId",
   verifyJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "owner"),
   validateObjectId("lessonId"),
   deleteQuiz,
 );

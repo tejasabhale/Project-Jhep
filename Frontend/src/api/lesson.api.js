@@ -1,8 +1,8 @@
 import api from "./axios";
 
 export const getLessonById = async (lessonId) => {
-  const { data } = await api.get(`/lessons/${lessonId}`);
-  return data;
+  const response = await api.get(`/lessons/${lessonId}`);
+  return response.data;
 };
 
 export const getLessonsByTopic = async (topicId) => {

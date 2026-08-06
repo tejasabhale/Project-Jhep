@@ -7,19 +7,21 @@ import { createLesson } from "../../../api/lesson.api";
 import LessonHeader from "../../../components/admin/lesson/LessonHeader";
 import LessonForm from "../../../components/admin/lesson/LessonForm";
 
+const initialForm = {
+  topic: "",
+  title: "",
+  description: "",
+  order: 1,
+  isPublished: false,
+  thumbnail: null,
+};
+
 export default function AddLesson() {
   const [topics, setTopics] = useState([]);
   const [topicLoading, setTopicLoading] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  const [form, setForm] = useState({
-    topic: "",
-    title: "",
-    description: "",
-    order: 1,
-    isPublished: false,
-    thumbnail: null,
-  });
+  const [form, setForm] = useState(initialForm);
 
   useEffect(() => {
     loadTopics();
@@ -29,26 +31,17 @@ export default function AddLesson() {
     try {
       setTopicLoading(true);
 
-      const res = await getAllTopics();
+      const { data } = await getAllTopics();
 
-      let topicList = [];
+      const topicList =
+        data?.data?.topics || data?.data || data?.topics || data || [];
 
-      if (Array.isArray(res.data)) {
-        topicList = res.data;
-      } else if (Array.isArray(res.data.data)) {
-        topicList = res.data.data;
-      } else if (Array.isArray(res.data.data?.topics)) {
-        topicList = res.data.data.topics;
-      } else if (Array.isArray(res.data.topics)) {
-        topicList = res.data.topics;
-      }
-
-      const formattedTopics = topicList.map((topic) => ({
-        _id: topic._id || topic.id,
-        title: topic.title,
-      }));
-
-      setTopics(formattedTopics);
+      setTopics(
+        topicList.map((topic) => ({
+          _id: topic._id ?? topic.id,
+          title: topic.title,
+        })),
+      );
     } catch (error) {
       console.error(error);
 
@@ -60,8 +53,14 @@ export default function AddLesson() {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (form) => {
+    if (!form.topic) {
+      return toast.error("Please select a topic.");
+    }
+
+    if (!form.title.trim()) {
+      return toast.error("Lesson title is required.");
+    }
 
     const toastId = toast.loading("Creating lesson...");
 
@@ -71,12 +70,12 @@ export default function AddLesson() {
       const data = new FormData();
 
       data.append("topicId", form.topic);
-      data.append("title", form.title);
-      data.append("description", form.description);
-      data.append("order", form.order);
+      data.append("title", form.title.trim());
+      data.append("description", form.description.trim());
+      data.append("order", Number(form.order));
       data.append("isPublished", form.isPublished);
 
-      if (form.thumbnail) {
+      if (form.thumbnail instanceof File) {
         data.append("thumbnail", form.thumbnail);
       }
 
@@ -86,18 +85,11 @@ export default function AddLesson() {
         id: toastId,
       });
 
-      setForm({
-        topic: "",
-        title: "",
-        description: "",
-        order: 1,
-        isPublished: false,
-        thumbnail: null,
-      });
+      setForm(initialForm);
     } catch (error) {
       console.error(error);
 
-      toast.error(error.response?.data?.message || "Something went wrong.", {
+      toast.error(error.response?.data?.message || "Failed to create lesson.", {
         id: toastId,
       });
     } finally {
@@ -106,23 +98,72 @@ export default function AddLesson() {
   };
 
   return (
-    <div className="min-h-screen bg-orange-50 p-6">
-      <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-lg p-8">
-        <LessonHeader />
-
-        {topicLoading ? (
-          <div className="text-center py-10 text-slate-500">
-            Loading topics...
+    <div
+      className="
+        min-h-screen
+        bg-gradient-to-br
+        from-orange-50
+        via-white
+        to-orange-100
+        px-4
+        py-8
+        sm:px-6
+        lg:px-8
+      "
+    >
+      <div
+        className="
+          mx-auto
+          max-w-4xl
+        "
+      >
+        <div
+          className="
+            overflow-hidden
+            rounded-3xl
+            border
+            border-orange-100
+            bg-white
+            shadow-xl
+          "
+        >
+          <div
+            className="
+              border-b
+              border-orange-100
+              bg-gradient-to-r
+              from-orange-50
+              to-white
+              p-8
+            "
+          >
+            <LessonHeader />
           </div>
-        ) : (
-          <LessonForm
-            topics={topics}
-            form={form}
-            setForm={setForm}
-            onSubmit={handleSubmit}
-            loading={loading}
-          />
-        )}
+
+          <div className="p-8">
+            {topicLoading ? (
+              <div
+                className="
+                  flex
+                  items-center
+                  justify-center
+                  py-20
+                  text-slate-500
+                "
+              >
+                Loading topics...
+              </div>
+            ) : (
+              <LessonForm
+                topics={topics}
+                form={form}
+                setForm={setForm}
+                onSubmit={handleSubmit}
+                loading={loading}
+              />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

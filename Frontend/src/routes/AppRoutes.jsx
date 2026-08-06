@@ -53,6 +53,7 @@ import Activity from "../pages/Admin/Activity/Activity";
 import AddTeamMember from "../pages/Admin/Team/AddTeamMember";
 import ManageTeamMembers from "../pages/Admin/Team/ManageTeamMembers";
 import EditTeamMember from "../pages/Admin/Team/EditTeamMember";
+import Users from "../pages/Admin/Users/Users";
 
 const AppRoutes = () => {
   const { loading } = useAuth();
@@ -163,6 +164,10 @@ const AppRoutes = () => {
           <Route path="/admin/team/manage" element={<ManageTeamMembers />} />
 
           <Route path="/admin/team/edit/:teamId" element={<EditTeamMember />} />
+
+          {/* User Management  */}
+
+          <Route path="admin/users/add" element={<Users/>} />
         </Route>
       </Route>
 

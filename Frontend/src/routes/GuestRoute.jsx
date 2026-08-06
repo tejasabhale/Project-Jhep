@@ -11,7 +11,7 @@ const GuestRoute = () => {
 
   if (isAuthenticated) {
     return (
-      <Navigate to={user?.role === "admin" ? "/admin" : "/topics"} replace />
+      <Navigate to={["admin", "owner"].includes(user.role) ? "/admin" : "/topics"} replace />
     );
   }
 

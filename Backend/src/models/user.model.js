@@ -24,17 +24,6 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
-    avatar: {
-      url: {
-        type: String,
-        default: "",
-      },
-      publicId: {
-        type: String,
-        default: "",
-      },
-    },
-
     email: {
       type: String,
       required: true,
@@ -69,39 +58,17 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
     isVerified: {
       type: Boolean,
-      default: false,
+      default: true,
       required: true,
       index: true,
     },
-
-    // ===== Admin Approval =====
-
-    isApproved: {
-      type: Boolean,
-      default: false,
-      index: true,
-    },
-
-    approvedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
-
-    approvedAt: {
-      type: Date,
-      default: null,
-    },
-
-    blocked: {
-      type: Boolean,
-      default: false,
-      index: true,
-    },
-
-    // ===== Authentication =====
 
     refreshToken: {
       type: String,
@@ -123,36 +90,6 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-// Compound Indexes
-userSchema.index({
-  isApproved: 1,
-  blocked: 1,
-});
-
-userSchema.index({
-  role: 1,
-  isApproved: 1,
-});
-
-// Virtual Status
-userSchema.virtual("status").get(function () {
-  if (this.blocked) return "Blocked";
-
-  if (!this.isApproved) return "Pending";
-
-  return "Approved";
-});
-
-// Include virtuals in JSON
-userSchema.set("toJSON", {
-  virtuals: true,
-});
-
-userSchema.set("toObject", {
-  virtuals: true,
-});
-
-// Hash Password
 userSchema.pre("save", async function () {
   if (this.role === "admin") {
     this.isApproved = true;
@@ -165,12 +102,10 @@ userSchema.pre("save", async function () {
   this.password = await bcrypt.hash(this.password, 10);
 });
 
-// Compare Password
 userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-// Access Token
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
@@ -186,7 +121,6 @@ userSchema.methods.generateAccessToken = function () {
   );
 };
 
-// Refresh Token
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {

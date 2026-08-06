@@ -8,7 +8,7 @@ import authorizeRoles from "../middlewares/role.middleware.js";
 
 const router = express.Router();
 
-router.get("/stats", verifyJWT, authorizeRoles("admin"), getAdminStats);
-router.get("/activity", verifyJWT, authorizeRoles("admin"), getUserActivity);
+router.get("/stats", verifyJWT, authorizeRoles("admin", "owner"), getAdminStats);
+router.get("/activity", verifyJWT, authorizeRoles("admin", "owner"), getUserActivity);
 
 export default router;

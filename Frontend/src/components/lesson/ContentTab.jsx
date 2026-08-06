@@ -2,7 +2,9 @@ import Card from "../common/Card";
 import EmptyState from "../common/EmptyState";
 import PPTViewer from "./PPTViewer";
 
-import { FileText, ImageOff, VideoOff, Music2 } from "lucide-react";
+import { FileText, VideoOff, Music2 } from "lucide-react";
+
+import { getEmbedUrl } from "../../utils/embedUrl";
 
 export default function ContentTab({ contents }) {
   if (!contents || contents.length === 0) {
@@ -36,9 +38,10 @@ export default function ContentTab({ contents }) {
 
                 {item.file?.url ? (
                   <iframe
-                    src={item.file.url}
+                    src={getEmbedUrl(item.file.url)}
                     title={item.title}
                     className="aspect-video w-full rounded-xl border"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
                 ) : (

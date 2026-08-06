@@ -7,26 +7,18 @@ import { createQuiz } from "../../../api/quiz.api";
 
 export default function AddQuiz() {
   const { lessonId } = useParams();
-
   const navigate = useNavigate();
 
   const [quiz, setQuiz] = useState({
     title: "",
-
     description: "",
-
     passingMarks: 0,
-
     questions: [
       {
         question: "",
-
         options: ["", "", "", ""],
-
         answer: 0,
-
         points: 1,
-
         explanation: "",
       },
     ],
@@ -35,7 +27,6 @@ export default function AddQuiz() {
   const handleQuizChange = (e) => {
     setQuiz((prev) => ({
       ...prev,
-
       [e.target.name]:
         e.target.name === "passingMarks"
           ? Number(e.target.value)
@@ -50,7 +41,6 @@ export default function AddQuiz() {
 
     setQuiz((prev) => ({
       ...prev,
-
       questions: updatedQuestions,
     }));
   };
@@ -62,7 +52,6 @@ export default function AddQuiz() {
 
     setQuiz((prev) => ({
       ...prev,
-
       questions: updatedQuestions,
     }));
   };
@@ -70,19 +59,13 @@ export default function AddQuiz() {
   const addQuestion = () => {
     setQuiz((prev) => ({
       ...prev,
-
       questions: [
         ...prev.questions,
-
         {
           question: "",
-
           options: ["", "", "", ""],
-
           answer: 0,
-
           points: 1,
-
           explanation: "",
         },
       ],
@@ -92,7 +75,6 @@ export default function AddQuiz() {
   const removeQuestion = (index) => {
     setQuiz((prev) => ({
       ...prev,
-
       questions: prev.questions.filter((_, i) => i !== index),
     }));
   };
@@ -100,26 +82,22 @@ export default function AddQuiz() {
   const validateQuiz = () => {
     if (!quiz.title.trim()) {
       toast.error("Quiz title is required");
-
       return false;
     }
 
     if (!quiz.questions.length) {
       toast.error("Add at least one question");
-
       return false;
     }
 
     for (const question of quiz.questions) {
       if (!question.question.trim()) {
         toast.error("Question text is required");
-
         return false;
       }
 
       if (question.options.some((option) => !option.trim())) {
         toast.error("All options are required");
-
         return false;
       }
     }
@@ -147,26 +125,8 @@ export default function AddQuiz() {
 
   return (
     <div className="min-h-screen bg-orange-50 p-6">
-      <div
-        className="
-        mx-auto
-        max-w-5xl
-        rounded-2xl
-        bg-white
-        p-8
-        shadow
-      "
-      >
-        <h1
-          className="
-          mb-6
-          text-3xl
-          font-bold
-          text-slate-800
-        "
-        >
-          Add Quiz
-        </h1>
+      <div className="mx-auto max-w-5xl rounded-2xl bg-white p-8 shadow">
+        <h1 className="mb-6 text-3xl font-bold text-slate-800">Add Quiz</h1>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <input
@@ -174,12 +134,7 @@ export default function AddQuiz() {
             value={quiz.title}
             onChange={handleQuizChange}
             placeholder="Quiz title"
-            className="
-              w-full
-              rounded-xl
-              border
-              p-3
-            "
+            className="w-full rounded-xl border p-3"
           />
 
           <textarea
@@ -187,45 +142,15 @@ export default function AddQuiz() {
             value={quiz.description}
             onChange={handleQuizChange}
             placeholder="Quiz description"
-            className="
-              w-full
-              rounded-xl
-              border
-              p-3
-            "
-          />
-
-          <input
-            type="number"
-            name="passingMarks"
-            value={quiz.passingMarks}
-            onChange={handleQuizChange}
-            placeholder="Passing marks"
-            className="
-              w-full
-              rounded-xl
-              border
-              p-3
-            "
+            className="w-full rounded-xl border p-3"
           />
 
           {quiz.questions.map((question, index) => (
             <div
               key={index}
-              className="
-              rounded-2xl
-              border
-              border-orange-100
-              p-5
-              "
+              className="rounded-2xl border border-orange-100 p-5"
             >
-              <div
-                className="
-                mb-4
-                flex
-                justify-between
-              "
-              >
+              <div className="mb-4 flex justify-between">
                 <h2 className="font-semibold">Question {index + 1}</h2>
 
                 {quiz.questions.length > 1 && (
@@ -245,13 +170,7 @@ export default function AddQuiz() {
                   handleQuestionChange(index, "question", e.target.value)
                 }
                 placeholder="Question"
-                className="
-                mb-4
-                w-full
-                rounded-xl
-                border
-                p-3
-                "
+                className="mb-4 w-full rounded-xl border p-3"
               />
 
               {question.options.map((option, optionIndex) => (
@@ -262,13 +181,7 @@ export default function AddQuiz() {
                     handleOptionChange(index, optionIndex, e.target.value)
                   }
                   placeholder={`Option ${optionIndex + 1}`}
-                  className="
-                    mb-2
-                    w-full
-                    rounded-xl
-                    border
-                    p-3
-                    "
+                  className="mb-2 w-full rounded-xl border p-3"
                 />
               ))}
 
@@ -277,20 +190,11 @@ export default function AddQuiz() {
                 onChange={(e) =>
                   handleQuestionChange(index, "answer", Number(e.target.value))
                 }
-                className="
-                mt-3
-                w-full
-                rounded-xl
-                border
-                p-3
-                "
+                className="mt-3 w-full rounded-xl border p-3"
               >
                 <option value={0}>Option 1</option>
-
                 <option value={1}>Option 2</option>
-
                 <option value={2}>Option 3</option>
-
                 <option value={3}>Option 4</option>
               </select>
 
@@ -301,13 +205,7 @@ export default function AddQuiz() {
                   handleQuestionChange(index, "points", Number(e.target.value))
                 }
                 placeholder="Points"
-                className="
-                mt-3
-                w-full
-                rounded-xl
-                border
-                p-3
-                "
+                className="mt-3 w-full rounded-xl border p-3"
               />
 
               <textarea
@@ -316,13 +214,7 @@ export default function AddQuiz() {
                   handleQuestionChange(index, "explanation", e.target.value)
                 }
                 placeholder="Explanation"
-                className="
-                mt-3
-                w-full
-                rounded-xl
-                border
-                p-3
-                "
+                className="mt-3 w-full rounded-xl border p-3"
               />
             </div>
           ))}
@@ -330,16 +222,7 @@ export default function AddQuiz() {
           <button
             type="button"
             onClick={addQuestion}
-            className="
-            flex
-            items-center
-            gap-2
-            rounded-xl
-            bg-orange-100
-            px-5
-            py-3
-            text-orange-600
-            "
+            className="flex items-center gap-2 rounded-xl bg-orange-100 px-5 py-3 text-orange-600"
           >
             <Plus size={18} />
             Add Question
@@ -347,15 +230,7 @@ export default function AddQuiz() {
 
           <button
             type="submit"
-            className="
-            rounded-xl
-            bg-orange-500
-            px-6
-            py-3
-            font-semibold
-            text-white
-            hover:bg-orange-600
-            "
+            className="rounded-xl bg-orange-500 px-6 py-3 font-semibold text-white hover:bg-orange-600"
           >
             Create Quiz
           </button>

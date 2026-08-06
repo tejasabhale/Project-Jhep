@@ -11,7 +11,7 @@ const AdminRoutes = () => {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.role !== "admin") {
+  if (user.role == "user") {
     return <Navigate to="/topics" replace />;
   }
 

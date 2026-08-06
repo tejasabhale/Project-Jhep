@@ -30,7 +30,7 @@ router.get(
 router.post(
   "/",
   verifyJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "owner"),
   upload.single("thumbnail"),
   validateObjectId("topicId", "body"),
   createLesson,
@@ -39,7 +39,7 @@ router.post(
 router.patch(
   "/:lessonId",
   verifyJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "owner"),
   upload.single("thumbnail"),
   validateObjectId("lessonId"),
   updateLesson,
@@ -48,7 +48,7 @@ router.patch(
 router.delete(
   "/:lessonId",
   verifyJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "owner"),
   validateObjectId("lessonId"),
   deleteLesson,
 );

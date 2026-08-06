@@ -17,13 +17,18 @@ const router = Router();
 router.post(
   "/",
   verifyJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "owner"),
   upload.single("file"),
   validateObjectId("lesson", "body"),
   createLessonContent,
 );
 
-router.get("/", verifyJWT, authorizeRoles("admin"), getAllLessonContents);
+router.get(
+  "/",
+  verifyJWT,
+  authorizeRoles("admin", "owner"),
+  getAllLessonContents,
+);
 
 router.get(
   "/:lessonId",
@@ -35,7 +40,7 @@ router.get(
 router.patch(
   "/:contentId",
   verifyJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "owner"),
   validateObjectId("contentId"),
   upload.single("file"),
   updateLessonContent,
@@ -51,7 +56,7 @@ router.get(
 router.delete(
   "/:contentId",
   verifyJWT,
-  authorizeRoles("admin"),
+  authorizeRoles("admin", "owner"),
   validateObjectId("contentId"),
   deleteLessonContent,
 );

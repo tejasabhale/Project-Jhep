@@ -1,13 +1,5 @@
 export default function UrlInput({ value, onChange, blockType }) {
-  const placeholder =
-    blockType === "video"
-      ? "https://www.youtube.com/watch?v=..."
-      : "https://drive.google.com/...";
-
-  const helperText =
-    blockType === "video"
-      ? "Paste a YouTube video URL."
-      : "Paste a Google Drive sharing URL.";
+  const isVideo = blockType === "video";
 
   return (
     <div>
@@ -20,11 +12,35 @@ export default function UrlInput({ value, onChange, blockType }) {
         name="fileUrl"
         value={value}
         onChange={onChange}
-        placeholder={placeholder}
-        className="w-full rounded-xl border border-orange-200 bg-white px-4 py-3 text-slate-700 outline-none transition-all duration-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+        required
+        placeholder={
+          isVideo
+            ? "https://www.youtube.com/watch?v=..."
+            : "https://drive.google.com/file/d/..."
+        }
+        className="
+          w-full
+          rounded-xl
+          border
+          border-orange-200
+          bg-white
+          px-4
+          py-3
+          text-slate-700
+          outline-none
+          transition-all
+          duration-200
+          focus:border-orange-500
+          focus:ring-2
+          focus:ring-orange-100
+        "
       />
 
-      <p className="mt-2 text-sm text-slate-500">{helperText}</p>
+      <p className="mt-2 text-sm text-slate-500">
+        {isVideo
+          ? "Paste a YouTube video URL."
+          : "Paste a Google Drive or Google Slides sharing URL."}
+      </p>
     </div>
   );
 }

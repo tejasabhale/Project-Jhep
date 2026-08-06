@@ -158,7 +158,6 @@ export default function Lesson() {
 
             {activeTab === TABS.quiz && !quizStarted && !quizResult && (
               <QuizTab
-                lesson={lesson}
                 quiz={quiz}
                 onStart={() => setQuizStarted(true)}
               />

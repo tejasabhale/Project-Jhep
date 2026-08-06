@@ -1,7 +1,6 @@
 import { Otp } from "../models/otp.model.js";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
-import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -12,6 +11,7 @@ import {
   sendPasswordResetEmail,
 } from "../services/email.service.js";
 import UserActivity from "../models/userActivity.model.js";
+import { User } from "../models/user.model.js";
 
 const OTP_EXPIRY = 5 * 60 * 1000;
 const OTP_COOLDOWN = 60 * 1000;

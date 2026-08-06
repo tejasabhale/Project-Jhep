@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Loader2, Save } from "lucide-react";
+import toast from "react-hot-toast";
 
 import { createLessonContent } from "../../../api/lessonContent.api";
 
 import TypeSelector from "./TypeSelector";
 import UrlInput from "./UrlInput";
-import toast from "react-hot-toast";
 
 const initialState = {
   title: "",
@@ -24,7 +24,6 @@ export default function ContentForm({
   buttonText = "Save Content",
 }) {
   const [formData, setFormData] = useState(initialData);
-
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -36,7 +35,6 @@ export default function ContentForm({
 
     setFormData((prev) => ({
       ...prev,
-
       [name]: value,
     }));
   };
@@ -44,20 +42,46 @@ export default function ContentForm({
   const handleTypeChange = (type) => {
     setFormData((prev) => ({
       ...prev,
-
       blockType: type,
-
       fileUrl: "",
+      fileName: "",
     }));
+  };
+
+  const validateUrl = (url, type) => {
+    if (type === "video") {
+      return url.includes("youtube.com") || url.includes("youtu.be");
+    }
+
+    return url.includes("drive.google.com") || url.includes("docs.google.com");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.title.trim() || !formData.fileUrl.trim() || !formData.order) {
-      alert("Please fill all required fields.");
+    const title = formData.title.trim();
+    const fileUrl = formData.fileUrl.trim();
+    const fileName = formData.fileName.trim();
+    const order = Number(formData.order);
 
-      return;
+    if (!title) {
+      return toast.error("Content title is required.");
+    }
+
+    if (!fileUrl) {
+      return toast.error("Content URL is required.");
+    }
+
+    if (!validateUrl(fileUrl, formData.blockType)) {
+      return toast.error(
+        formData.blockType === "video"
+          ? "Please enter a valid YouTube URL."
+          : "Please enter a valid Google Drive or Google Slides URL.",
+      );
+    }
+
+    if (!order || order < 1) {
+      return toast.error("Display order must be at least 1.");
     }
 
     try {
@@ -65,16 +89,11 @@ export default function ContentForm({
 
       const payload = {
         lesson: lessonId,
-
-        title: formData.title.trim(),
-
+        title,
         blockType: formData.blockType,
-
-        fileUrl: formData.fileUrl.trim(),
-
-        fileName: formData.fileName.trim(),
-
-        order: Number(formData.order),
+        fileUrl,
+        fileName,
+        order,
       };
 
       if (onSubmit) {
@@ -86,12 +105,12 @@ export default function ContentForm({
 
         setFormData(initialState);
 
-        if (onSuccess) {
-          onSuccess();
-        }
+        onSuccess?.();
       }
     } catch (error) {
-      alert(error?.response?.data?.message || "Failed to save lesson content.");
+      toast.error(
+        error?.response?.data?.message || "Failed to save lesson content.",
+      );
     } finally {
       setLoading(false);
     }
@@ -101,12 +120,12 @@ export default function ContentForm({
     <form
       onSubmit={handleSubmit}
       className="
-      rounded-2xl
-      border
-      border-orange-100
-      bg-white
-      p-6
-      shadow-sm
+        rounded-2xl
+        border
+        border-orange-100
+        bg-white
+        p-6
+        shadow-sm
       "
     >
       <div className="space-y-6">
@@ -118,18 +137,22 @@ export default function ContentForm({
           <input
             type="text"
             name="title"
+            required
             value={formData.title}
             onChange={handleChange}
             placeholder="Introduction to Greetings"
             className="
-            w-full
-            rounded-xl
-            border
-            border-orange-200
-            px-4
-            py-3
-            outline-none
-            focus:border-orange-500
+              w-full
+              rounded-xl
+              border
+              border-orange-200
+              px-4
+              py-3
+              outline-none
+              transition-all
+              focus:border-orange-500
+              focus:ring-2
+              focus:ring-orange-100
             "
           />
         </div>
@@ -154,14 +177,17 @@ export default function ContentForm({
             onChange={handleChange}
             placeholder="Lesson 1 Presentation"
             className="
-            w-full
-            rounded-xl
-            border
-            border-orange-200
-            px-4
-            py-3
-            outline-none
-            focus:border-orange-500
+              w-full
+              rounded-xl
+              border
+              border-orange-200
+              px-4
+              py-3
+              outline-none
+              transition-all
+              focus:border-orange-500
+              focus:ring-2
+              focus:ring-orange-100
             "
           />
         </div>
@@ -174,46 +200,52 @@ export default function ContentForm({
           <input
             type="number"
             min={1}
+            required
             name="order"
             value={formData.order}
             onChange={handleChange}
             className="
-            w-32
-            rounded-xl
-            border
-            border-orange-200
-            px-4
-            py-3
-            outline-none
-            focus:border-orange-500
+              w-32
+              rounded-xl
+              border
+              border-orange-200
+              px-4
+              py-3
+              outline-none
+              transition-all
+              focus:border-orange-500
+              focus:ring-2
+              focus:ring-orange-100
             "
           />
         </div>
 
         <div
           className="
-        flex
-        justify-end
-        border-t
-        border-orange-100
-        pt-6
-        "
+            flex
+            justify-end
+            border-t
+            border-orange-100
+            pt-6
+          "
         >
           <button
             type="submit"
             disabled={loading || externalLoading}
             className="
-            inline-flex
-            items-center
-            gap-2
-            rounded-xl
-            bg-orange-500
-            px-6
-            py-3
-            font-medium
-            text-white
-            hover:bg-orange-600
-            disabled:opacity-60
+              inline-flex
+              items-center
+              gap-2
+              rounded-xl
+              bg-orange-500
+              px-6
+              py-3
+              font-medium
+              text-white
+              transition
+              hover:bg-orange-600
+              disabled:cursor-not-allowed
+              disabled:opacity-60
             "
           >
             {loading || externalLoading ? (
@@ -224,7 +256,6 @@ export default function ContentForm({
             ) : (
               <>
                 <Save className="h-5 w-5" />
-
                 {buttonText}
               </>
             )}

@@ -78,12 +78,6 @@ export default function Admin() {
 
       links: [
         {
-          name: "Add Topic",
-          path: "/admin/topics/add",
-          icon: Plus,
-        },
-
-        {
           name: "Manage Topics",
           path: "/admin/topics/manage",
           icon: List,
@@ -100,12 +94,6 @@ export default function Admin() {
 
       links: [
         {
-          name: "Add Lesson",
-          path: "/admin/lessons/add",
-          icon: Plus,
-        },
-
-        {
           name: "Manage Lessons",
           path: "/admin/lessons/manage",
           icon: List,
@@ -114,23 +102,6 @@ export default function Admin() {
 
       icon: FileText,
     },
-
-    {
-      title: "Lesson Content",
-
-      description: "Manage PPT, PDF, videos and activities inside lessons.",
-
-      links: [
-        {
-          name: "Manage Lesson Content",
-          path: "/admin/lessons/content",
-          icon: FileText,
-        },
-      ],
-
-      icon: FileText,
-    },
-
     {
       title: "Quizzes",
 
@@ -170,12 +141,6 @@ export default function Admin() {
 
       links: [
         {
-          name: "Add Member",
-          path: "/admin/team/add",
-          icon: Plus,
-        },
-
-        {
           name: "Manage Members",
           path: "/admin/team/manage",
           icon: List,
@@ -191,15 +156,9 @@ export default function Admin() {
 
       links: [
         {
-          name: "Add Member",
+          name: "Manage Users",
           path: "/admin/users/add",
           icon: Plus,
-        },
-
-        {
-          name: "Manage Members",
-          path: "/admin/team/manage",
-          icon: List,
         },
       ],
 

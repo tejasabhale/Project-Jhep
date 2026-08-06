@@ -11,9 +11,7 @@ export default function LessonForm({
   loading,
   showTopic = true,
 }) {
-  if (!form) {
-    return null;
-  }
+  if (!form) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -43,18 +41,13 @@ export default function LessonForm({
         <label className="mb-2 block font-medium">Lesson Title</label>
 
         <input
+          type="text"
           name="title"
           value={form.title}
           onChange={handleChange}
           required
           placeholder="Example: Introduction to English"
-          className="
-            w-full
-            rounded-xl
-            border
-            px-4
-            py-3
-          "
+          className="w-full rounded-xl border border-orange-200 px-4 py-3 outline-none focus:border-orange-500"
         />
       </div>
 
@@ -65,14 +58,8 @@ export default function LessonForm({
           name="description"
           value={form.description}
           onChange={handleChange}
-          rows="4"
-          className="
-            w-full
-            rounded-xl
-            border
-            px-4
-            py-3
-          "
+          rows={4}
+          className="w-full rounded-xl border border-orange-200 px-4 py-3 outline-none focus:border-orange-500"
         />
       </div>
 
@@ -81,17 +68,11 @@ export default function LessonForm({
 
         <input
           type="number"
-          min="1"
+          min={1}
           name="order"
           value={form.order}
           onChange={handleChange}
-          className="
-            w-full
-            rounded-xl
-            border
-            px-4
-            py-3
-          "
+          className="w-full rounded-xl border border-orange-200 px-4 py-3 outline-none focus:border-orange-500"
         />
       </div>
 
@@ -123,24 +104,9 @@ export default function LessonForm({
       <button
         type="submit"
         disabled={loading}
-        className="
-          flex
-          w-full
-          items-center
-          justify-center
-          gap-2
-          rounded-xl
-          bg-orange-500
-          py-3
-          font-semibold
-          text-white
-          hover:bg-orange-600
-          disabled:cursor-not-allowed
-          disabled:opacity-60
-        "
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 font-semibold text-white hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <Save size={18} />
-
         {loading ? "Saving..." : "Save Lesson"}
       </button>
     </form>
