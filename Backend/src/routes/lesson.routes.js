@@ -7,6 +7,8 @@ import {
   updateLesson,
   getLessonsByTopic,
   getAllLessons,
+  getFeaturedLessons,
+  toggleFeaturedLesson,
 } from "../controllers/lesson.controller.js";
 
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -19,6 +21,8 @@ const router = Router();
 router.get("/", verifyJWT, getAllLessons);
 
 router.get("/topic/:topicId", validateObjectId("topicId"), getLessonsByTopic);
+
+router.get("/featured", getFeaturedLessons);
 
 router.get(
   "/:lessonId",
@@ -51,6 +55,13 @@ router.delete(
   authorizeRoles("admin", "owner"),
   validateObjectId("lessonId"),
   deleteLesson,
+);
+
+router.patch(
+  "/:lessonId/featured",
+  verifyJWT,
+  authorizeRoles("admin", "owner"),
+  toggleFeaturedLesson,
 );
 
 export default router;

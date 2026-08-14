@@ -12,7 +12,7 @@ const AdminRoutes = () => {
   }
 
   if (user.role == "user") {
-    return <Navigate to="/topics" replace />;
+    return <Navigate to="/content" replace />;
   }
 
   return <Outlet />;

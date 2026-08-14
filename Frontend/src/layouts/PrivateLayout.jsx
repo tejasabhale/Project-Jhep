@@ -4,7 +4,7 @@ import AppNavbar from "../components/pageLayout/AppNavbar";
 
 const PrivateLayout = () => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100">
       <AppNavbar />
       <Outlet />
       <Footer />

@@ -28,6 +28,32 @@ const lessonSchema = new mongoose.Schema(
       },
     },
 
+    file: {
+      type: {
+        type: String,
+        enum: ["pptx", "video"],
+        required: true,
+      },
+
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      url: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+
+      duration: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+    },
+
     description: {
       type: String,
       default: "",
@@ -45,10 +71,15 @@ const lessonSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 lessonSchema.index({ topic: 1, title: 1 }, { unique: true });

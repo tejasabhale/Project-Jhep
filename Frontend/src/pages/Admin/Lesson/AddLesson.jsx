@@ -1,168 +1,148 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
+import LessonForm from "../../../components/admin/lesson/LessonForm";
 import { getAllTopics } from "../../../api/topic.api";
 import { createLesson } from "../../../api/lesson.api";
 
-import LessonHeader from "../../../components/admin/lesson/LessonHeader";
-import LessonForm from "../../../components/admin/lesson/LessonForm";
-
-const initialForm = {
-  topic: "",
-  title: "",
-  description: "",
-  order: 1,
-  isPublished: false,
-  thumbnail: null,
-};
-
 export default function AddLesson() {
-  const [topics, setTopics] = useState([]);
-  const [topicLoading, setTopicLoading] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [form, setForm] = useState(initialForm);
+  const topicIdFromUrl = searchParams.get("topicId");
+
+  const [topics, setTopics] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+
+  const [form, setForm] = useState({
+    topic: topicIdFromUrl || "",
+    title: "",
+    description: "",
+    order: 1,
+    thumbnail: null,
+    fileType: "",
+    fileName: "",
+    fileUrl: "",
+    fileDuration: "",
+    isPublished: false,
+  });
 
   useEffect(() => {
     loadTopics();
   }, []);
 
+  useEffect(() => {
+    if (topicIdFromUrl) {
+      setForm((prev) => ({
+        ...prev,
+        topic: topicIdFromUrl,
+      }));
+    }
+  }, [topicIdFromUrl]);
+
   const loadTopics = async () => {
     try {
-      setTopicLoading(true);
+      setPageLoading(true);
 
-      const { data } = await getAllTopics();
+      const response = await getAllTopics();
 
-      const topicList =
-        data?.data?.topics || data?.data || data?.topics || data || [];
+      let list = [];
 
-      setTopics(
-        topicList.map((topic) => ({
-          _id: topic._id ?? topic.id,
-          title: topic.title,
-        })),
-      );
+      if (Array.isArray(response.data?.topics)) {
+        list = response.data.topics;
+      } else if (Array.isArray(response.data?.data?.topics)) {
+        list = response.data.data.topics;
+      } else if (Array.isArray(response.data)) {
+        list = response.data;
+      }
+
+      setTopics(list);
     } catch (error) {
       console.error(error);
 
-      toast.error(error.response?.data?.message || "Failed to load topics.");
-
-      setTopics([]);
+      toast.error(error.response?.data?.message || "Failed to load topics");
     } finally {
-      setTopicLoading(false);
+      setPageLoading(false);
     }
   };
 
-  const handleSubmit = async (form) => {
-    if (!form.topic) {
-      return toast.error("Please select a topic.");
-    }
-
-    if (!form.title.trim()) {
-      return toast.error("Lesson title is required.");
-    }
-
-    const toastId = toast.loading("Creating lesson...");
-
+  const handleSubmit = async (formData) => {
     try {
       setLoading(true);
 
       const data = new FormData();
 
-      data.append("topicId", form.topic);
-      data.append("title", form.title.trim());
-      data.append("description", form.description.trim());
-      data.append("order", Number(form.order));
-      data.append("isPublished", form.isPublished);
+      data.append("topicId", formData.topic);
+      data.append("title", formData.title.trim());
+      data.append("description", formData.description.trim());
+      data.append("order", formData.order);
+      data.append("fileType", formData.fileType);
+      data.append("fileName", formData.fileName.trim());
+      data.append("fileUrl", formData.fileUrl.trim());
+      data.append("fileDuration", formData.fileDuration?.trim() || "");
+      data.append("isPublished", String(Boolean(formData.isPublished)));
 
-      if (form.thumbnail instanceof File) {
-        data.append("thumbnail", form.thumbnail);
+      if (formData.thumbnail instanceof File) {
+        data.append("thumbnail", formData.thumbnail);
       }
 
       await createLesson(data);
 
-      toast.success("Lesson created successfully!", {
-        id: toastId,
-      });
+      toast.success("Lesson created successfully");
 
-      setForm(initialForm);
+      if (formData.topic) {
+        navigate(`/admin/lessons/manage?topicId=${formData.topic}`);
+      } else {
+        navigate("/admin/lessons/manage");
+      }
     } catch (error) {
       console.error(error);
 
-      toast.error(error.response?.data?.message || "Failed to create lesson.", {
-        id: toastId,
-      });
+      toast.error(error.response?.data?.message || "Failed to create lesson");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div
-      className="
-        min-h-screen
-        bg-gradient-to-br
-        from-orange-50
-        via-white
-        to-orange-100
-        px-4
-        py-8
-        sm:px-6
-        lg:px-8
-      "
-    >
-      <div
-        className="
-          mx-auto
-          max-w-4xl
-        "
-      >
-        <div
-          className="
-            overflow-hidden
-            rounded-3xl
-            border
-            border-orange-100
-            bg-white
-            shadow-xl
-          "
-        >
-          <div
-            className="
-              border-b
-              border-orange-100
-              bg-gradient-to-r
-              from-orange-50
-              to-white
-              p-8
-            "
-          >
-            <LessonHeader />
-          </div>
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen bg-orange-50 px-4 py-10">
+        <div className="mx-auto max-w-5xl">
+          <div className="rounded-3xl bg-white p-12 text-center shadow-sm">
+            <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-orange-100 border-t-orange-500" />
 
-          <div className="p-8">
-            {topicLoading ? (
-              <div
-                className="
-                  flex
-                  items-center
-                  justify-center
-                  py-20
-                  text-slate-500
-                "
-              >
-                Loading topics...
-              </div>
-            ) : (
-              <LessonForm
-                topics={topics}
-                form={form}
-                setForm={setForm}
-                onSubmit={handleSubmit}
-                loading={loading}
-              />
-            )}
+            <p className="font-medium text-slate-600">Loading...</p>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-orange-50 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-6 rounded-3xl bg-white p-6 shadow-sm sm:p-8">
+          <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
+            Add Lesson
+          </h1>
+
+          <p className="mt-2 text-sm text-slate-500">
+            Create a new lesson and add it to a topic.
+          </p>
+        </div>
+
+        <div className="rounded-3xl bg-white p-6 shadow-sm sm:p-8">
+          <LessonForm
+            topics={topics}
+            form={form}
+            setForm={setForm}
+            onSubmit={handleSubmit}
+            loading={loading}
+            showTopic={true}
+            lockedTopic={Boolean(topicIdFromUrl)}
+          />
         </div>
       </div>
     </div>

@@ -10,7 +10,7 @@ const HomeRoute = () => {
   }
 
   return (
-    <Navigate to={user?.role === "admin" ? "/admin" : "/topics"} replace />
+    <Navigate to={user?.role === "admin" ? "/admin" : "/content"} replace />
   );
 };
 

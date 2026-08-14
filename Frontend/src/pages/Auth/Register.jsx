@@ -51,7 +51,7 @@ const Register = () => {
     <>
       <Toaster position="top-right" />
 
-      <div className="flex min-h-screen items-center justify-center bg-orange-50 px-4">
+      <div className="flex min-h-screen items-center justify-center px-4">
         <form
           onSubmit={handleSubmit(onSubmit)}
           className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg"

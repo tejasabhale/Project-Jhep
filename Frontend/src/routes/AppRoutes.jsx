@@ -14,13 +14,11 @@ import AdminRoutes from "./AdminRoutes";
 import HomeRoute from "./HomeRoute";
 
 // Public / User Pages
-import Topics from "../pages/Topics/Topics";
 import TopicLessons from "../pages/Topics/TopicLessons";
-import Lesson from "../pages/Lesson/Lesson";
 
 // Auth Pages
 import Login from "../pages/Auth/Login";
-import Register from "../pages/Auth/Register";
+// import Register from "../pages/Auth/Register";
 import VerifyOtp from "../pages/Auth/VerifyOtp";
 import ForgotPassword from "../pages/Auth/ForgotPassword";
 import ResetPassword from "../pages/Auth/ResetPassword";
@@ -39,21 +37,21 @@ import AddLesson from "../pages/Admin/Lesson/AddLesson";
 import ManageLessons from "../pages/Admin/Lesson/ManageLessons";
 import EditLesson from "../pages/Admin/Lesson/EditLesson";
 
-import AddLessonContent from "../pages/Admin/LessonContent/AddLessonContent";
-import ManageLessonContent from "../pages/Admin/LessonContent/ManageLessonContent";
-import EditLessonContent from "../pages/Admin/LessonContent/EditLessonContent";
+import ManageSchools from "../pages/Admin/School/ManageSchools";
+
 import About from "../pages/About/About";
+import SprougHub from "../pages/SprougHub/SprougHub";
 import TermsAndConditions from "../pages/TermsAndConditions/TermsAndConditions";
-import PrivacyPolicy from "../pages/Privacy Policy/PrivacyPolicy";
+import PrivacyPolicy from "../pages/PrivacyPolicy/PrivacyPolicy";
 import Team from "../pages/Team/Team";
-import ManageQuizzes from "../pages/Admin/Quizzes/ManageQuizzes";
-import AddQuiz from "../pages/Admin/Quizzes/AddQuiz";
-import EditQuiz from "../pages/Admin/Quizzes/EditQuiz";
 import Activity from "../pages/Admin/Activity/Activity";
 import AddTeamMember from "../pages/Admin/Team/AddTeamMember";
 import ManageTeamMembers from "../pages/Admin/Team/ManageTeamMembers";
 import EditTeamMember from "../pages/Admin/Team/EditTeamMember";
 import Users from "../pages/Admin/Users/Users";
+import Content from "../pages/Content/Content";
+import GuestLayout from "../layouts/GuestLayout";
+import ManageTestimonials from "../pages/Admin/Testimonial/ManageTestimonials";
 
 const AppRoutes = () => {
   const { loading } = useAuth();
@@ -69,6 +67,7 @@ const AppRoutes = () => {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomeRoute />} />
         <Route path="/about" element={<About />} />
+        <Route path="/sproug" element={<SprougHub />} />
         <Route path="/tnc" element={<TermsAndConditions />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/team" element={<Team />} />
@@ -77,26 +76,26 @@ const AppRoutes = () => {
       {/* Guest Routes */}
 
       <Route element={<GuestRoute />}>
-        <Route path="/login" element={<Login />} />
+        <Route element={<GuestLayout />}>
+          <Route path="/login" element={<Login />} />
 
-        {/* <Route path="/register" element={<Register />} /> */}
+          {/* <Route path="/register" element={<Register />} /> */}
 
-        <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
 
-        <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+        </Route>
       </Route>
 
       {/* Protected User Routes */}
 
       <Route element={<ProtectedRoute />}>
         <Route element={<PrivateLayout />}>
-          <Route path="/topics" element={<Topics />} />
+          <Route path="/content" element={<Content />} />
 
           <Route path="/topics/:topicId/lessons" element={<TopicLessons />} />
-
-          <Route path="/lessons/:lessonId" element={<Lesson />} />
 
           <Route path="/profile" element={<Profile />} />
         </Route>
@@ -128,31 +127,6 @@ const AppRoutes = () => {
             element={<EditLesson />}
           />
 
-          {/* Lesson Content Management */}
-
-          <Route
-            path="/admin/lesson-content/add/:lessonId"
-            element={<AddLessonContent />}
-          />
-
-          <Route
-            path="/admin/lesson-content/manage/:lessonId"
-            element={<ManageLessonContent />}
-          />
-
-          <Route
-            path="/admin/lesson-content/edit/:lessonId/:contentId"
-            element={<EditLessonContent />}
-          />
-
-          {/* Quiz Management */}
-
-          <Route path="/admin/quizzes" element={<ManageQuizzes />} />
-
-          <Route path="/admin/quizzes/add/:lessonId" element={<AddQuiz />} />
-
-          <Route path="/admin/quizzes/edit/:lessonId" element={<EditQuiz />} />
-
           {/* User Activity  */}
 
           <Route path="/admin/activity" element={<Activity />} />
@@ -167,7 +141,18 @@ const AppRoutes = () => {
 
           {/* User Management  */}
 
-          <Route path="admin/users/add" element={<Users/>} />
+          <Route path="admin/users/add" element={<Users />} />
+
+          {/* Schools Management */}
+
+          <Route path="/admin/schools/manage" element={<ManageSchools />} />
+
+          {/* Testimonial Management */}
+
+          <Route
+            path="/admin/testimonials/manage"
+            element={<ManageTestimonials />}
+          />
         </Route>
       </Route>
 

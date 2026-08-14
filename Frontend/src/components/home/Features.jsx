@@ -1,248 +1,272 @@
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
-  BookOpen,
-  MessageCircle,
-  Brain,
-  Trophy,
-  BarChart3,
-  Users,
-  FileText,
-  Smartphone,
+  BookOpenCheck,
+  ClipboardCheck,
+  PlayCircle,
+  WifiOff,
+  Mic,
+  Award,
 } from "lucide-react";
-import Reveal from "../ui/Reveal";
 
-const Features = () => {
-  const features = [
-    {
-      icon: BookOpen,
-      title: "Structured Lessons",
-      description:
-        "Learn English through well-organized lessons covering vocabulary, conversations, stories, and activities.",
-    },
-    {
-      icon: MessageCircle,
-      title: "Real Conversations",
-      description:
-        "Practice practical English conversations with simple explanations and translations to improve communication skills.",
-    },
-    {
-      icon: Brain,
-      title: "Interactive Activities",
-      description:
-        "Engage with quizzes, matching activities, and learning exercises designed to make learning enjoyable.",
-    },
-    {
-      icon: Trophy,
-      title: "Track Progress",
-      description:
-        "Monitor learning improvement and encourage students to achieve their educational goals.",
-    },
-    {
-      icon: Users,
-      title: "Student Friendly Platform",
-      description:
-        "A simple and easy-to-use learning environment designed for students of different age groups.",
-    },
-    {
-      icon: FileText,
-      title: "Rich Learning Resources",
-      description:
-        "Access educational materials including presentations, documents, audio resources, and lesson content.",
-    },
-    {
-      icon: BarChart3,
-      title: "Learning Insights",
-      description:
-        "Help educators understand student performance and improve teaching strategies.",
-    },
-    {
-      icon: Smartphone,
-      title: "Accessible Anywhere",
-      description:
-        "Learn anytime and anywhere using a responsive platform available across devices.",
-    },
-  ];
+/**
+ * Project HEP — Feature Carousel
+ * ---------------------------------------------------------------
+ * Infinite, autoplaying carousel of feature cards, navigated only
+ * by the dots beneath it (no prev/next buttons). Built for an
+ * English-learning web app for students in under-resourced rural
+ * schools — the palette and copy lean toward "sunrise over the
+ * fields", low-bandwidth reality, and mentor visibility rather
+ * than generic ed-tech gloss.
+ * ---------------------------------------------------------------
+ */
+
+const FEATURES = [
+  {
+    icon: BookOpenCheck,
+    title: "Interactive Lessons",
+    description:
+      "Bite-sized lessons students tap and explore at their own pace, built to run smoothly on shared, low-power devices.",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Adaptive Quizzes",
+    description:
+      "Quick checks after every lesson that adjust in difficulty, so each student gets practice pitched right for them.",
+  },
+  {
+    icon: PlayCircle,
+    title: "Animated Story Videos",
+    description:
+      "Vocabulary taught through short, folk-tale style animations that turn new words into stories worth remembering.",
+  },
+  {
+    icon: WifiOff,
+    title: "Offline-First Access",
+    description:
+      "Lessons download once and keep working without signal — built for villages where connectivity comes and goes.",
+  },
+  {
+    icon: Mic,
+    title: "Voice Speaking Practice",
+    description:
+      "Students speak English aloud and get gentle pronunciation feedback — no reading required to get started.",
+  },
+  {
+    icon: Award,
+    title: "Progress for Mentors",
+    description:
+      "Teachers and parents see simple, visual progress reports, so encouragement can follow every small win.",
+  },
+];
+
+const AUTOPLAY_MS = 4200;
+const TRANSITION_MS = 650;
+
+export default function FeatureCarousel() {
+  const n = FEATURES.length;
+  // Clone last slide at the front and first slide at the back so the
+  // strip can slide "past the end" and be snapped back invisibly —
+  // this is what makes the loop feel infinite instead of resetting.
+  const slides = [FEATURES[n - 1], ...FEATURES, FEATURES[0]];
+
+  const [index, setIndex] = useState(1); // position within `slides`
+  const [withTransition, setWithTransition] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const realIndex = ((index - 1) % n + n) % n;
+
+  const goToReal = useCallback((i) => {
+    setWithTransition(true);
+    setIndex(i + 1);
+  }, []);
+
+  // Autoplay
+  useEffect(() => {
+    if (isPaused) return undefined;
+    const id = setInterval(() => {
+      setWithTransition(true);
+      setIndex((i) => i + 1);
+    }, AUTOPLAY_MS);
+    return () => clearInterval(id);
+  }, [isPaused, index]);
+
+  // Seamless wrap: when we land on a clone, jump instantly (no transition)
+  // to the matching real slide.
+  const handleTransitionEnd = () => {
+    if (index === slides.length - 1) {
+      setWithTransition(false);
+      setIndex(1);
+    } else if (index === 0) {
+      setWithTransition(false);
+      setIndex(n);
+    }
+  };
+
+  // Re-arm the transition on the next paint after a silent jump.
+  useEffect(() => {
+    if (withTransition) return undefined;
+    const raf1 = requestAnimationFrame(() => {
+      const raf2 = requestAnimationFrame(() => setWithTransition(true));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      return () => cancelAnimationFrame(raf2);
+    });
+    return () => cancelAnimationFrame(raf1);
+  }, [withTransition]);
 
   return (
-    <div className="min-h-screen bg-orange-50">
-      {/* Hero */}
+    <section
+      className="relative w-full overflow-hidden py-16 px-4 sm:px-8"
+      style={{
+        background:
+          "linear-gradient(180deg, #FBF7EE 0%, #F6EFE1 100%)",
+      }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap');
+        .hep-display { font-family: 'Fraunces', serif; }
+        .hep-body { font-family: 'Karla', sans-serif; }
+      `}</style>
 
-      <Reveal>
-        <section className="bg-white py-16">
-          <div className="max-w-6xl mx-auto px-6 text-center">
-            <p className="text-orange-600 font-semibold mb-3">
-              Project Jhep Features
-            </p>
+      {/* Signature backdrop: a quiet sunrise arc behind the carousel */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 1000 300"
+        className="pointer-events-none absolute left-1/2 top-6 -z-0 hidden -translate-x-1/2 sm:block"
+        style={{ width: "min(1100px, 130%)", opacity: 0.35 }}
+      >
+        <defs>
+          <linearGradient id="hepArc" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stopColor="#4F8B6E" stopOpacity="0" />
+            <stop offset="50%" stopColor="#F0A83A" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#1B2A4C" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M 20 260 A 480 480 0 0 1 980 260"
+          fill="none"
+          stroke="url(#hepArc)"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
 
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-              Learning Made
-              <span className="text-orange-600"> Simple & Effective</span>
-            </h1>
+      <div className="relative z-10 mx-auto max-w-5xl">
+        {/* Heading */}
+        <div className="mb-10 text-center">
+          <span
+            className="hep-body inline-block text-xs font-semibold uppercase tracking-[0.2em]"
+            style={{ color: "#4F8B6E" }}
+          >
+            Inside Project HEP
+          </span>
+          <h2
+            className="hep-display mt-3 text-3xl font-semibold sm:text-4xl"
+            style={{ color: "#1B2A4C" }}
+          >
+            Everything a first lesson in English needs
+          </h2>
+          <p
+            className="hep-body mx-auto mt-3 max-w-xl text-base"
+            style={{ color: "#5B5240" }}
+          >
+            Designed with rural classrooms in mind — light on data,
+            heavy on encouragement.
+          </p>
+        </div>
 
-            <p className="mt-5 max-w-3xl mx-auto text-gray-600 text-lg leading-relaxed">
-              Project Jhep provides a complete learning experience that helps
-              students improve their English skills through interactive content,
-              practice, and continuous learning.
-            </p>
-          </div>
-        </section>
-      </Reveal>
-
-      {/* Features */}
-
-      <section className="py-16">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
-
-              return (
-                <Reveal key={index}>
+        {/* Carousel */}
+        <div
+          className="relative"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
+          <div className="overflow-hidden rounded-3xl">
+            <div
+              className="flex"
+              style={{
+                transform: `translateX(-${index * 100}%)`,
+                transition: withTransition
+                  ? `transform ${TRANSITION_MS}ms cubic-bezier(0.65, 0, 0.35, 1)`
+                  : "none",
+              }}
+              onTransitionEnd={handleTransitionEnd}
+            >
+              {slides.map((feature, pos) => {
+                const Icon = feature.icon;
+                const isActive = pos === index;
+                return (
                   <div
-                    className="
-                      h-full
-                      bg-white
-                      rounded-2xl
-                      p-6
-                      border
-                      border-orange-100
-                      shadow-sm
-                      hover:shadow-md
-                      transition
-                      flex
-                      flex-col
-                    "
+                    key={pos}
+                    className="w-full flex-shrink-0 px-2 sm:px-4"
+                    aria-hidden={!isActive}
                   >
                     <div
-                      className="
-                        w-12
-                        h-12
-                        rounded-xl
-                        bg-orange-600
-                        flex
-                        items-center
-                        justify-center
-                        mb-5
-                        shrink-0
-                      "
+                      className="mx-auto flex max-w-2xl flex-col items-center gap-5 rounded-3xl border px-8 py-12 text-center sm:px-14"
+                      style={{
+                        background: "#FFFFFF",
+                        borderColor: "#EDE3CE",
+                        boxShadow: "0 18px 40px -22px rgba(27,42,76,0.35)",
+                        opacity: isActive ? 1 : 0.6,
+                        transform: isActive ? "scale(1)" : "scale(0.96)",
+                        transition: `opacity ${TRANSITION_MS}ms ease, transform ${TRANSITION_MS}ms ease`,
+                      }}
                     >
-                      <Icon className="text-white w-6 h-6" />
+                      <div
+                        className="flex h-16 w-16 items-center justify-center rounded-2xl"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, #F0A83A 0%, #E8902C 100%)",
+                        }}
+                      >
+                        <Icon size={30} color="#FFFFFF" strokeWidth={2} />
+                      </div>
+                      <h3
+                        className="hep-display text-2xl font-semibold"
+                        style={{ color: "#1B2A4C" }}
+                      >
+                        {feature.title}
+                      </h3>
+                      <p
+                        className="hep-body text-base leading-relaxed"
+                        style={{ color: "#5B5240" }}
+                      >
+                        {feature.description}
+                      </p>
                     </div>
-
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {feature.title}
-                    </h3>
-
-                    <p
-                      className="
-                        mt-3
-                        text-sm
-                        text-gray-600
-                        leading-relaxed
-                        flex-grow
-                      "
-                    >
-                      {feature.description}
-                    </p>
                   </div>
-                </Reveal>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Dots */}
+          <div className="mt-8 flex items-center justify-center gap-2.5">
+            {FEATURES.map((feature, i) => {
+              const active = i === realIndex;
+              return (
+                <button
+                  key={feature.title}
+                  type="button"
+                  onClick={() => goToReal(i)}
+                  aria-label={`Show feature: ${feature.title}`}
+                  aria-current={active}
+                  className="rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                  style={{
+                    height: 10,
+                    width: active ? 30 : 10,
+                    background: active
+                      ? "linear-gradient(90deg, #F0A83A, #E8902C)"
+                      : "#D9CDAE",
+                    transition:
+                      "width 400ms cubic-bezier(0.65,0,0.35,1), background 400ms ease",
+                    outlineColor: "#F0A83A",
+                  }}
+                />
               );
             })}
           </div>
         </div>
-      </section>
-
-      {/* Educator Section */}
-
-      <Reveal>
-        <section className="py-16 bg-orange-50">
-          <div className="max-w-5xl mx-auto px-6">
-            <div
-              className="
-                bg-white
-                rounded-3xl
-                border
-                border-orange-100
-                shadow-sm
-                p-8
-                md:p-12
-                text-center
-              "
-            >
-              <div
-                className="
-                  w-14
-                  h-14
-                  mx-auto
-                  rounded-2xl
-                  bg-orange-600
-                  flex
-                  items-center
-                  justify-center
-                  mb-6
-                "
-              >
-                <Users className="w-7 h-7 text-white" />
-              </div>
-
-              <h2 className="text-3xl font-bold text-slate-800">
-                Empowering Teachers & Learners
-              </h2>
-
-              <p className="mt-4 max-w-2xl mx-auto text-slate-600 leading-relaxed">
-                Project Jhep helps educators create and manage engaging English
-                learning content while providing students with interactive
-                lessons, activities, and resources for better learning outcomes.
-              </p>
-
-              <div className="mt-8 flex flex-wrap justify-center gap-4">
-                <div
-                  className="
-                    rounded-xl
-                    bg-orange-50
-                    px-5
-                    py-3
-                    text-sm
-                    font-medium
-                    text-orange-600
-                  "
-                >
-                  Easy Content Management
-                </div>
-
-                <div
-                  className="
-                    rounded-xl
-                    bg-orange-50
-                    px-5
-                    py-3
-                    text-sm
-                    font-medium
-                    text-orange-600
-                  "
-                >
-                  Interactive Learning
-                </div>
-
-                <div
-                  className="
-                    rounded-xl
-                    bg-orange-50
-                    px-5
-                    py-3
-                    text-sm
-                    font-medium
-                    text-orange-600
-                  "
-                >
-                  Student Growth Tracking
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </Reveal>
-    </div>
+      </div>
+    </section>
   );
-};
-
-export default Features;
+}

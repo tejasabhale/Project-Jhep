@@ -6,11 +6,11 @@ import authRouter from "./routes/auth.routes.js";
 import profileRouter from "./routes/profile.routes.js";
 import topicRouter from "./routes/topic.routes.js";
 import lessonRouter from "./routes/lesson.routes.js";
-import lessonContentRouter from "./routes/lessonContent.routes.js";
-import quizRouter from "./routes/quiz.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import teamRouter from "./routes/team.routes.js";
 import userRouter from "./routes/user.routes.js";
+import schoolRoutes from "./routes/school.routes.js";
+import testimonialRouter from "./routes/testimonial.routes.js";
 
 import { errorHandler } from "./middlewares/errorHandler.js";
 
@@ -33,11 +33,11 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/profile", profileRouter);
 app.use("/api/v1/topics", topicRouter);
 app.use("/api/v1/lessons", lessonRouter);
-app.use("/api/v1/lesson-content", lessonContentRouter);
-app.use("/api/v1/quizzes", quizRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/team", teamRouter);
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/schools", schoolRoutes);
+app.use("/api/v1/testimonials", testimonialRouter);
 
 // Error Handler
 app.use(errorHandler);

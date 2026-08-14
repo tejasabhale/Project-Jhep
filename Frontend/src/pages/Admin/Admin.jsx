@@ -9,6 +9,9 @@ import {
   Users,
   Activity,
   UserRound,
+  ArrowUpRight,
+  MessageSquareQuote,
+  School,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getAdminStats } from "../../api/admin.api";
@@ -16,15 +19,12 @@ import { getAdminStats } from "../../api/admin.api";
 export default function Admin() {
   const [stats, setStats] = useState({
     users: 0,
-
     topics: 0,
-
     lessons: 0,
-
     quizzes: 0,
-
     activeUsers: 0,
   });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -33,336 +33,191 @@ export default function Admin() {
         setStats(response.data);
       } catch (error) {
         console.log("Stats Error:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchStats();
   }, []);
 
   const statCards = [
-    {
-      title: "Users",
-      value: stats.users,
-      icon: Users,
-    },
-
-    {
-      title: "Topics",
-      value: stats.topics,
-      icon: BookOpen,
-    },
-
-    {
-      title: "Lessons",
-      value: stats.lessons,
-      icon: FileText,
-    },
-
-    {
-      title: "Quizzes",
-      value: stats.quizzes,
-      icon: ClipboardList,
-    },
-
-    {
-      title: "Active Users",
-      value: stats.activeUsers,
-      icon: Activity,
-    },
+    { title: "Total Users", value: stats.users, icon: Users },
+    { title: "Topics", value: stats.topics, icon: BookOpen },
+    { title: "Lessons", value: stats.lessons, icon: FileText },
+    { title: "Quizzes", value: stats.quizzes, icon: ClipboardList },
   ];
 
-  const cards = [
+  const sections = [
     {
-      title: "Topics",
-
-      description: "Create and manage English learning topics.",
-
-      links: [
+      label: "Content",
+      items: [
         {
-          name: "Manage Topics",
-          path: "/admin/topics/manage",
-          icon: List,
+          title: "Topics",
+          description: "Create and manage English learning topics.",
+          icon: BookOpen,
+          link: { name: "Manage Topics", path: "/admin/topics/manage" },
         },
       ],
-
-      icon: BookOpen,
     },
-
     {
-      title: "Lessons",
-
-      description: "Create and manage lessons under topics.",
-
-      links: [
+      label: "Community",
+      items: [
         {
-          name: "Manage Lessons",
-          path: "/admin/lessons/manage",
-          icon: List,
+          title: "Schools",
+          description: "Manage schools and their status.",
+          icon: School,
+          link: { name: "Manage Schools", path: "/admin/schools/manage" },
+        },
+        {
+          title: "Testimonials",
+          description: "Manage testimonials and their status.",
+          icon: MessageSquareQuote,
+          link: {
+            name: "Manage Testimonials",
+            path: "/admin/testimonials/manage",
+          },
+        },
+        {
+          title: "Team Members",
+          description: "Manage team member profiles and social links.",
+          icon: UserRound,
+          link: { name: "Manage Members", path: "/admin/team/manage" },
         },
       ],
-
-      icon: FileText,
     },
     {
-      title: "Quizzes",
-
-      description: "Create and manage quizzes for lessons.",
-
-      links: [
+      label: "People & Access",
+      items: [
         {
-          name: "Manage Quizzes",
-          path: "/admin/quizzes",
-          icon: List,
+          title: "Manage Users",
+          description: "Manage user roles and permissions.",
+          icon: UserRound,
+          link: { name: "Manage Users", path: "/admin/users/add" },
         },
-      ],
-
-      icon: ClipboardList,
-    },
-
-    {
-      title: "User Activity",
-
-      description: "Track login, logout and active members.",
-
-      links: [
         {
-          name: "View Activity",
-          path: "/admin/activity",
+          title: "User Activity",
+          description: "Track login, logout and active members.",
           icon: Activity,
+          link: { name: "View Activity", path: "/admin/activity" },
         },
       ],
-
-      icon: Users,
-    },
-
-    {
-      title: "Team Members",
-
-      description: "Manage team member profiles and social links.",
-
-      links: [
-        {
-          name: "Manage Members",
-          path: "/admin/team/manage",
-          icon: List,
-        },
-      ],
-
-      icon: UserRound,
-    },
-    {
-      title: "Manage Users",
-
-      description: "Manage user roles.",
-
-      links: [
-        {
-          name: "Manage Users",
-          path: "/admin/users/add",
-          icon: Plus,
-        },
-      ],
-
-      icon: UserRound,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-orange-50 p-6">
-      <div className="mx-auto max-w-6xl">
+    <div className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-6xl px-6 py-10">
         {/* Header */}
-
-        <div className="mb-8">
-          <h1
-            className="
-            text-3xl
-            font-bold
-            text-slate-800
-            "
-          >
-            Admin Dashboard
-          </h1>
-
-          <p
-            className="
-            mt-2
-            text-slate-600
-            "
-          >
-            Manage Sproug Hub Foundation learning platform.
-          </p>
+        <div className="mb-10 flex flex-col gap-1 border-b border-slate-200 pb-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-orange-600">
+              Admin
+            </p>
+            <h1 className="mt-1 text-2xl font-semibold text-slate-900">
+              Dashboard
+            </h1>
+            <p className="mt-1 text-sm text-slate-500">
+              Manage Sproug Hub Foundation's learning platform.
+            </p>
+          </div>
         </div>
 
         {/* Statistics */}
-
-        <div
-          className="
-          mb-8
-          grid
-          gap-5
-          sm:grid-cols-2
-          lg:grid-cols-5
-          "
-        >
+        <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {statCards.map((stat) => {
             const Icon = stat.icon;
-
             return (
               <div
                 key={stat.title}
-                className="
-                rounded-2xl
-                bg-white
-                border
-                border-orange-100
-                p-5
-                shadow-sm
-                "
+                className="rounded-xl border border-slate-200 bg-white p-5 transition hover:border-orange-200 hover:shadow-sm"
               >
-                <div
-                  className="
-                  flex
-                  items-center
-                  gap-4
-                  "
-                >
-                  <div
-                    className="
-                    flex
-                    h-12
-                    w-12
-                    items-center
-                    justify-center
-                    rounded-xl
-                    bg-orange-100
-                    text-orange-600
-                    "
-                  >
-                    <Icon size={24} />
-                  </div>
-
-                  <div>
-                    <p
-                      className="
-                      text-sm
-                      text-slate-500
-                      "
-                    >
-                      {stat.title}
-                    </p>
-
-                    <h2
-                      className="
-                      text-2xl
-                      font-bold
-                      text-slate-800
-                      "
-                    >
-                      {stat.value}
-                    </h2>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-slate-500">
+                    {stat.title}
+                  </p>
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-50 text-orange-600">
+                    <Icon size={16} strokeWidth={2.25} />
                   </div>
                 </div>
+                <h2 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
+                  {loading ? (
+                    <span className="inline-block h-8 w-14 animate-pulse rounded bg-slate-100 align-middle" />
+                  ) : (
+                    stat.value
+                  )}
+                </h2>
               </div>
             );
           })}
         </div>
 
-        {/* Management Cards */}
+        {/* Active users - highlighted live metric */}
+        <div className="mb-10 flex items-center justify-between rounded-xl border border-orange-100 bg-orange-50/60 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-400 opacity-75" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-orange-500" />
+            </span>
+            <p className="text-sm font-medium text-slate-700">
+              Active users right now
+            </p>
+          </div>
+          <p className="text-xl font-semibold text-slate-900">
+            {loading ? (
+              <span className="inline-block h-6 w-10 animate-pulse rounded bg-orange-100 align-middle" />
+            ) : (
+              stats.activeUsers
+            )}
+          </p>
+        </div>
 
-        <div
-          className="
-          grid
-          gap-6
-          md:grid-cols-2
-          lg:grid-cols-3
-          "
-        >
-          {cards.map((card) => {
-            const Icon = card.icon;
-
-            return (
-              <div
-                key={card.title}
-                className="
-                rounded-2xl
-                border
-                border-orange-100
-                bg-white
-                p-6
-                shadow-sm
-                "
-              >
-                <div
-                  className="
-                  mb-4
-                  flex
-                  h-12
-                  w-12
-                  items-center
-                  justify-center
-                  rounded-xl
-                  bg-orange-100
-                  text-orange-600
-                  "
-                >
-                  <Icon size={24} />
-                </div>
-
-                <h2
-                  className="
-                  text-xl
-                  font-semibold
-                  text-slate-800
-                  "
-                >
-                  {card.title}
-                </h2>
-
-                <p
-                  className="
-                  mt-2
-                  text-sm
-                  text-slate-600
-                  "
-                >
-                  {card.description}
-                </p>
-
-                <div
-                  className="
-                  mt-6
-                  space-y-3
-                  "
-                >
-                  {card.links.map((link) => {
-                    const LinkIcon = link.icon;
-
-                    return (
-                      <Link
-                        key={link.name}
-                        to={link.path}
-                        className="
-                        flex
-                        items-center
-                        gap-3
-                        rounded-xl
-                        bg-orange-50
-                        px-4
-                        py-3
-                        text-orange-600
-                        transition
-                        hover:bg-orange-100
-                        "
-                      >
-                        <LinkIcon size={18} />
-
-                        {link.name}
-                      </Link>
-                    );
-                  })}
-                </div>
+        {/* Management sections */}
+        <div className="space-y-10">
+          {sections.map((section) => (
+            <div key={section.label}>
+              <div className="mb-4 flex items-center gap-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  {section.label}
+                </h3>
+                <div className="h-px flex-1 bg-slate-200" />
               </div>
-            );
-          })}
+
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {section.items.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.title}
+                      to={item.link.path}
+                      className="group flex flex-col rounded-xl border border-slate-200 bg-white p-5 transition hover:border-orange-300 hover:shadow-sm"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-50 text-slate-500 transition group-hover:bg-orange-50 group-hover:text-orange-600">
+                          <Icon size={18} strokeWidth={2} />
+                        </div>
+                        <ArrowUpRight
+                          size={16}
+                          className="text-slate-300 transition group-hover:text-orange-500"
+                        />
+                      </div>
+
+                      <h4 className="mt-4 text-base font-semibold text-slate-900">
+                        {item.title}
+                      </h4>
+                      <p className="mt-1 text-sm leading-relaxed text-slate-500">
+                        {item.description}
+                      </p>
+
+                      <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-orange-600">
+                        <List size={14} />
+                        {item.link.name}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

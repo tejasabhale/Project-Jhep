@@ -2,7 +2,11 @@ import React from "react";
 import HeroCarousel from "../../components/home/HeroCarousel";
 import Features from "../../components/home/Features";
 import PartnerSchools from "../../components/home/PartnerSchools";
-import TestimonialCarousel from "../../components/home/TestimonialCarousel";
+import StudentTestimonials from "../../components/home/TestimonialCarousel";
+import JourneySteps from "../../components/home/JourneySteps";
+import LearningPreview from "../../components/home/LessonPreview/LearningPreview";
+import Hero from "../../components/home/Hero";
+import FinalCTA from "../../components/home/FinalCTA";
 
 function Home() {
   const slides = [
@@ -58,10 +62,14 @@ function Home() {
   ];
   return (
     <div>
-      <HeroCarousel slides={slides} interval={6000} height="90vh" />
-      <Features />
-      {/* <PartnerSchools /> */}
-      {/* <TestimonialCarousel /> */}
+      {/* <HeroCarousel slides={slides} interval={6000} height="85vh" /> */}
+      <Hero />
+      <JourneySteps />
+      {/* <Features /> */}
+      <LearningPreview />
+      <PartnerSchools />
+      <StudentTestimonials />
+      <FinalCTA />
     </div>
   );
 }

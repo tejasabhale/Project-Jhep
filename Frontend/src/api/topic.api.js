@@ -17,13 +17,13 @@ export const createTopic = async (payload) => {
   return data;
 };
 
-export const updateTopic = async (topicId, data) => {
-  const response = await api.patch(`/topics/${topicId}`, data, {
+export const updateTopic = async (topicId, payload) => {
+  const { data } = await api.patch(`/topics/${topicId}`, payload, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
   });
-  return response.data;
+  return data;
 };
 
 export const deleteTopic = async (topicId) => {

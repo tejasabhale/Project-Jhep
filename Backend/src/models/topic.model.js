@@ -13,11 +13,6 @@ const topicSchema = new mongoose.Schema(
       default: "",
     },
 
-    grade: {
-      type: String,
-      required: true,
-    },
-
     thumbnail: {
       url: {
         type: String,

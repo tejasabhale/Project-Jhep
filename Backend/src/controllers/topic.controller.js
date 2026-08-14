@@ -11,43 +11,33 @@ import {
 } from "../utils/cloudinary.js";
 
 export const createTopic = asyncHandler(async (req, res) => {
-  const { title, description, grade, order } = req.body;
+  const { title, description, order, isPublished } = req.body;
 
   if (!title?.trim()) {
     throw new ApiError(400, "Topic title is required.");
   }
 
-  if (!grade?.trim()) {
-    throw new ApiError(400, "Grade is required.");
-  }
-
   const normalizedTitle = title.trim();
-  const normalizedGrade = grade.trim();
 
   const existingTopic = await Topic.findOne({
     title: {
       $regex: new RegExp(`^${normalizedTitle}$`, "i"),
     },
-    grade: normalizedGrade,
   });
 
   if (existingTopic) {
-    throw new ApiError(
-      409,
-      `Topic "${normalizedTitle}" already exists in ${normalizedGrade}.`,
-    );
+    throw new ApiError(409, `Topic "${normalizedTitle}" already exists.`);
   }
 
   if (order !== undefined) {
     const existingOrder = await Topic.findOne({
-      grade: normalizedGrade,
       order: Number(order),
     });
 
     if (existingOrder) {
       throw new ApiError(
         409,
-        `Order ${order} already exists in ${normalizedGrade}.`,
+        `Order ${order} is already assigned to another topic.`,
       );
     }
   }
@@ -77,8 +67,8 @@ export const createTopic = asyncHandler(async (req, res) => {
   const topic = await Topic.create({
     title: normalizedTitle,
     description: description?.trim() || "",
-    grade: normalizedGrade,
     order: Number(order) || 0,
+    isPublished: isPublished === true || isPublished === "true",
     thumbnail,
     createdBy: req.user._id,
     updatedBy: req.user._id,
@@ -94,7 +84,6 @@ export const getTopics = asyncHandler(async (req, res) => {
     page = 1,
     limit = 20,
     search,
-    grade,
     isPublished,
     sort = "order",
     order = "asc",
@@ -109,16 +98,16 @@ export const getTopics = asyncHandler(async (req, res) => {
     };
   }
 
-  if (grade) {
-    filter.grade = grade.trim();
-  }
-
   if (isPublished !== undefined) {
     filter.isPublished = isPublished === "true";
   }
 
+  const allowedSortFields = ["title", "order", "createdAt", "updatedAt"];
+
+  const sortField = allowedSortFields.includes(sort) ? sort : "order";
+
   const sortOptions = {
-    [sort]: order === "desc" ? -1 : 1,
+    [sortField]: order === "desc" ? -1 : 1,
   };
 
   const pageNumber = Math.max(Number(page), 1);
@@ -141,7 +130,6 @@ export const getTopics = asyncHandler(async (req, res) => {
       200,
       {
         topics,
-
         pagination: {
           total: totalTopics,
           page: pageNumber,
@@ -169,8 +157,9 @@ export const getTopicById = asyncHandler(async (req, res) => {
     topic: topicId,
   };
 
-  // Only admins/content creators can see unpublished lessons
-  if (!req.user || !["owner", "contentCreator"].includes(req.user.role)) {
+  const isAdmin = req.user && ["admin", "owner"].includes(req.user.role);
+
+  if (!isAdmin) {
     lessonFilter.isPublished = true;
   }
 
@@ -202,26 +191,21 @@ export const updateTopic = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Topic not found.");
   }
 
-  let { title, description, grade, order, isPublished } = req.body;
+  let { title, description, order, isPublished } = req.body;
 
   title = title?.trim();
   description = description?.trim();
-  grade = grade?.trim();
 
   if (title) {
     const existingTopic = await Topic.findOne({
       _id: { $ne: topicId },
-      grade: grade || topic.grade,
       title: {
         $regex: new RegExp(`^${title}$`, "i"),
       },
     });
 
     if (existingTopic) {
-      throw new ApiError(
-        409,
-        `Topic "${title}" already exists in ${grade || topic.grade}.`,
-      );
+      throw new ApiError(409, `Topic "${title}" already exists.`);
     }
 
     topic.title = title;
@@ -231,29 +215,24 @@ export const updateTopic = asyncHandler(async (req, res) => {
     topic.description = description;
   }
 
-  if (grade) {
-    topic.grade = grade;
-  }
-
   if (order !== undefined) {
     const existingOrder = await Topic.findOne({
       _id: { $ne: topicId },
-      grade: grade || topic.grade,
       order: Number(order),
     });
 
     if (existingOrder) {
       throw new ApiError(
         409,
-        `Order ${order} already exists in ${grade || topic.grade}.`,
+        `Order ${order} is already assigned to another topic.`,
       );
     }
 
     topic.order = Number(order);
   }
 
-  if (typeof isPublished !== "undefined") {
-    topic.isPublished = isPublished;
+  if (isPublished !== undefined) {
+    topic.isPublished = isPublished === true || isPublished === "true";
   }
 
   if (req.file) {
@@ -299,31 +278,25 @@ export const deleteTopic = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Topic not found.");
   }
 
-  // Get all lessons of this topic
-  const lessons = await Lesson.find({ topic: topicId }).select("_id");
-
-  const lessonIds = lessons.map((lesson) => lesson._id);
-
-  // Delete lesson contents (when you create LessonContent model)
-  // await LessonContent.deleteMany({
-  //   lesson: { $in: lessonIds },
-  // });
-
-  // Delete lessons
-  await Lesson.deleteMany({
+  const hasLessons = await Lesson.exists({
     topic: topicId,
   });
 
-  // Delete topic thumbnail
+  if (hasLessons) {
+    throw new ApiError(
+      409,
+      "This topic cannot be deleted because it contains lessons. Delete all lessons first.",
+    );
+  }
+
   if (topic.thumbnail?.publicId) {
     try {
       await deleteFromCloudinary(topic.thumbnail.publicId);
     } catch (error) {
-      console.error("Failed to delete thumbnail:", error);
+      console.error("Thumbnail delete failed:", error);
     }
   }
 
-  // Delete topic
   await topic.deleteOne();
 
   return res

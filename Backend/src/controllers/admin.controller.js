@@ -2,18 +2,15 @@ import { User } from "../models/user.model.js";
 import UserActivity from "../models/userActivity.model.js";
 import Topic from "../models/topic.model.js";
 import Lesson from "../models/lesson.model.js";
-import Quiz from "../models/quiz.model.js";
 
 export const getAdminStats = async (req, res) => {
   try {
-    const [users, topics, lessons, quizzes, activeUsers] = await Promise.all([
+    const [users, topics, lessons, activeUsers] = await Promise.all([
       User.countDocuments(),
 
       Topic.countDocuments(),
 
       Lesson.countDocuments(),
-
-      Quiz.countDocuments(),
 
       UserActivity.countDocuments({
         status: "active",
@@ -29,8 +26,6 @@ export const getAdminStats = async (req, res) => {
         topics,
 
         lessons,
-
-        quizzes,
 
         activeUsers,
       },

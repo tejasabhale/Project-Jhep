@@ -1,9 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { ArrowLeft, BookOpen, Pencil, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  Pencil,
+  Loader2,
+} from "lucide-react";
 
-import { getLessonById, updateLesson } from "../../../api/lesson.api";
+import {
+  getLessonById,
+  updateLesson,
+} from "../../../api/lesson.api";
+
 import { getAllTopics } from "../../../api/topic.api";
 
 import LessonForm from "../../../components/admin/lesson/LessonForm";
@@ -20,43 +29,80 @@ export default function EditLesson() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [lessonId]);
 
   const loadData = async () => {
     try {
       setPageLoading(true);
 
-      const [lessonResponse, topicResponse] = await Promise.all([
-        getLessonById(lessonId),
-        getAllTopics(),
-      ]);
+      const [lessonResponse, topicResponse] =
+        await Promise.all([
+          getLessonById(lessonId),
+          getAllTopics(),
+        ]);
 
       const lesson =
-        lessonResponse.data?.lesson ||
-        lessonResponse.lesson ||
-        lessonResponse.data;
+        lessonResponse?.data?.lesson ||
+        lessonResponse?.lesson ||
+        lessonResponse?.data;
+
+      if (!lesson) {
+        throw new Error("Lesson not found");
+      }
 
       const topicData =
-        topicResponse.data?.topics || topicResponse.data?.data?.topics || [];
+        topicResponse?.data?.topics ||
+        topicResponse?.data?.data?.topics ||
+        topicResponse?.data ||
+        [];
 
       setTopics(
-        topicData.map((topic) => ({
-          _id: topic._id,
-          title: topic.title,
-        })),
+        Array.isArray(topicData)
+          ? topicData.map((topic) => ({
+              _id: topic._id,
+              title: topic.title,
+            }))
+          : []
       );
 
       setInitialData({
-        topic: lesson.topic?._id || lesson.topic || "",
+        topic:
+          lesson.topic?._id ||
+          lesson.topic ||
+          "",
+
         title: lesson.title || "",
-        description: lesson.description || "",
+
+        description:
+          lesson.description || "",
+
         order: lesson.order || 1,
-        isPublished: lesson.isPublished || false,
-        thumbnail: lesson.thumbnail?.url || null,
+
+        isPublished:
+          lesson.isPublished || false,
+
+        thumbnail:
+          lesson.thumbnail?.url || null,
+
+        fileType:
+          lesson.file?.type || "pptx",
+
+        fileName:
+          lesson.file?.name || "",
+
+        fileUrl:
+          lesson.file?.url || "",
+
+        fileDuration:
+          lesson.file?.duration || "",
       });
     } catch (error) {
       console.error(error);
-      toast.error("Failed to load lesson");
+
+      toast.error(
+        error?.response?.data?.message ||
+          "Failed to load lesson"
+      );
     } finally {
       setPageLoading(false);
     }
@@ -72,21 +118,55 @@ export default function EditLesson() {
       data.append("title", form.title);
       data.append("description", form.description);
       data.append("order", form.order);
-      data.append("isPublished", form.isPublished);
+      data.append(
+        "isPublished",
+        String(form.isPublished)
+      );
+
+      data.append(
+        "fileType",
+        form.fileType
+      );
+
+      data.append(
+        "fileName",
+        form.fileName
+      );
+
+      data.append(
+        "fileUrl",
+        form.fileUrl
+      );
+
+      data.append(
+        "fileDuration",
+        form.fileDuration || ""
+      );
 
       if (form.thumbnail instanceof File) {
-        data.append("thumbnail", form.thumbnail);
+        data.append(
+          "thumbnail",
+          form.thumbnail
+        );
       }
 
-      await updateLesson(lessonId, data);
+      await updateLesson(
+        lessonId,
+        data
+      );
 
-      toast.success("Lesson updated successfully");
+      toast.success(
+        "Lesson updated successfully"
+      );
 
       navigate("/admin/lessons/manage");
     } catch (error) {
       console.error(error);
 
-      toast.error(error.response?.data?.message || "Update failed");
+      toast.error(
+        error?.response?.data?.message ||
+          "Update failed"
+      );
     } finally {
       setLoading(false);
     }
@@ -101,7 +181,7 @@ export default function EditLesson() {
             size={42}
           />
 
-          <h2 className="text-xl font-semibold text-slate-700 text-center">
+          <h2 className="text-center text-xl font-semibold text-slate-700">
             Loading Lesson...
           </h2>
 
@@ -114,19 +194,23 @@ export default function EditLesson() {
   }
 
   return (
-    <div className="min-h-screen bg-orange-50 py-10 px-4">
+    <div className="min-h-screen bg-orange-50 px-4 py-10">
       <div className="mx-auto max-w-5xl">
-        {/* Top Header */}
-
         <div className="mb-8 flex flex-col gap-5 rounded-3xl bg-white p-8 shadow-sm md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-5">
             <div className="rounded-3xl bg-orange-100 p-5">
-              <BookOpen size={34} className="text-orange-600" />
+              <BookOpen
+                size={34}
+                className="text-orange-600"
+              />
             </div>
 
             <div>
               <div className="flex items-center gap-2">
-                <Pencil size={18} className="text-orange-500" />
+                <Pencil
+                  size={18}
+                  className="text-orange-500"
+                />
 
                 <span className="font-semibold uppercase tracking-wider text-orange-500">
                   Lesson Editor
@@ -138,35 +222,24 @@ export default function EditLesson() {
               </h1>
 
               <p className="mt-2 text-slate-500">
-                Update lesson information, thumbnail, order, publication status,
+                Update lesson information, file,
+                thumbnail, order, publication status,
                 and topic.
               </p>
             </div>
           </div>
 
           <button
-            onClick={() => navigate("/admin/lessons/manage")}
-            className="
-              flex
-              items-center
-              gap-2
-              rounded-2xl
-              border
-              border-orange-200
-              bg-orange-50
-              px-5
-              py-3
-              text-orange-600
-              transition
-              hover:bg-orange-100
-            "
+            type="button"
+            onClick={() =>
+              navigate("/admin/lessons/manage")
+            }
+            className="flex items-center gap-2 rounded-2xl border border-orange-200 bg-orange-50 px-5 py-3 text-orange-600 transition hover:bg-orange-100"
           >
             <ArrowLeft size={18} />
             Back
           </button>
         </div>
-
-        {/* Form Card */}
 
         <div className="rounded-3xl bg-white shadow-lg">
           <div className="border-b border-orange-100 px-8 py-6">
@@ -175,8 +248,8 @@ export default function EditLesson() {
             </h2>
 
             <p className="mt-2 text-slate-500">
-              Modify the lesson details below and click
-              <strong> Save Lesson</strong> when finished.
+              Modify the lesson details below and click{" "}
+              <strong>Save Lesson</strong> when finished.
             </p>
           </div>
 
