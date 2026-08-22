@@ -8,11 +8,10 @@ export const loginUser = (data) => api.post("/auth/login", data);
 
 export const logoutUser = () => api.post("/auth/logout");
 
-export const getSession = () => api.get("/auth/session");
-
 export const resendOtp = (data) => api.post("/auth/resend-otp", data);
 
 export const forgotPassword = (data) => api.post("/auth/forgot-password", data);
 
 export const resetPassword = (token, data) =>
   api.post(`/auth/reset-password/${token}`, data);
+

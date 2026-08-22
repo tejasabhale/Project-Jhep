@@ -3,40 +3,32 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import AuthContext from "./AuthContext";
 
 import {
-  getSession,
   loginUser,
   logoutUser,
   registerUser,
   verifyOtp,
 } from "../api/auth.api";
 
+import { getCurrentUser } from "../api/user.api";
+
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const checkSession = useCallback(async () => {
+  const fetchCurrentUser = useCallback(async () => {
     setLoading(true);
 
     try {
-      const res = await getSession();
+      const res = await getCurrentUser();
 
-      const session = res.data.data;
+      setUser(res.data.data);
+      setIsAuthenticated(true);
 
-      if (session?.authenticated) {
-        setUser(session.user);
-        setIsAuthenticated(true);
-
-        return session.user;
-      }
-
-      setUser(null);
-      setIsAuthenticated(false);
-
-      return null;
+      return res.data.data;
     } catch (error) {
-      if (!error.response) {
-        console.error("Session check failed:", error);
+      if (error.response?.status !== 401) {
+        console.error(error);
       }
 
       setUser(null);
@@ -48,16 +40,14 @@ const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const login = useCallback(async (credentials) => {
-    const res = await loginUser(credentials);
-
-    const loggedInUser = res.data.data.user;
-
-    setUser(loggedInUser);
-    setIsAuthenticated(true);
-
-    return loggedInUser;
-  }, []);
+  const login = useCallback(
+    async (credentials) => {
+      await loginUser(credentials);
+      const currentUser = await fetchCurrentUser();
+      return currentUser;
+    },
+    [fetchCurrentUser],
+  );
 
   const register = useCallback(async (data) => {
     const res = await registerUser(data);
@@ -65,16 +55,13 @@ const AuthProvider = ({ children }) => {
     return res.data.data;
   }, []);
 
-  const verifyAccount = useCallback(async (data) => {
-    const res = await verifyOtp(data);
-
-    const verifiedUser = res.data.data.user;
-
-    setUser(verifiedUser);
-    setIsAuthenticated(true);
-
-    return verifiedUser;
-  }, []);
+  const verifyAccount = useCallback(
+    async (data) => {
+      await verifyOtp(data);
+      return await fetchCurrentUser();
+    },
+    [fetchCurrentUser],
+  );
 
   const logout = useCallback(async () => {
     try {
@@ -86,12 +73,12 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   const refreshUser = useCallback(async () => {
-    return await checkSession();
-  }, [checkSession]);
+    return await fetchCurrentUser();
+  }, [fetchCurrentUser]);
 
   useEffect(() => {
-    checkSession();
-  }, [checkSession]);
+    fetchCurrentUser();
+  }, [fetchCurrentUser]);
 
   const value = useMemo(
     () => ({
@@ -108,7 +95,7 @@ const AuthProvider = ({ children }) => {
       verifyAccount,
 
       refreshUser,
-      checkSession,
+      fetchCurrentUser,
     }),
     [
       user,
@@ -119,7 +106,7 @@ const AuthProvider = ({ children }) => {
       register,
       verifyAccount,
       refreshUser,
-      checkSession,
+      fetchCurrentUser,
     ],
   );
 

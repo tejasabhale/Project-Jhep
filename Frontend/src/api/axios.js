@@ -35,36 +35,19 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    /*
-     * These requests should never trigger
-     * the access-token refresh flow.
-     */
-    const skipRefreshUrls = [
-      "/auth/session",
-      "/auth/refresh-access-token",
-      "/auth/login",
-      "/auth/register",
-      "/auth/verify-otp",
-    ];
-
-    const shouldSkipRefresh = skipRefreshUrls.some((url) =>
-      originalRequest.url?.includes(url),
-    );
-
     if (
       error.response?.status !== 401 ||
       originalRequest._retry ||
-      shouldSkipRefresh
+      originalRequest.url?.includes("/auth/refresh-access-token") ||
+      originalRequest.url?.includes("/auth/login") ||
+      originalRequest.url?.includes("/auth/register") ||
+      originalRequest.url?.includes("/auth/verify-otp")
     ) {
       return Promise.reject(error);
     }
 
     originalRequest._retry = true;
 
-    /*
-     * Another request is already refreshing the token.
-     * Wait until that request finishes.
-     */
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
         waitingRequests.push({
@@ -82,10 +65,10 @@ api.interceptors.response.use(
       processWaitingRequests();
 
       return api(originalRequest);
-    } catch (refreshError) {
-      processWaitingRequests(refreshError);
+    } catch (error) {
+      processWaitingRequests(error);
 
-      return Promise.reject(refreshError);
+      return Promise.reject(error);
     } finally {
       isRefreshing = false;
     }

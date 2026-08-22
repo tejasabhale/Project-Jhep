@@ -337,54 +337,29 @@ const login = asyncHandler(async (req, res) => {
 });
 
 const logout = asyncHandler(async (req, res) => {
-  const accessToken = req.cookies?.accessToken;
-  const refreshToken = req.cookies?.refreshToken;
+  await User.findByIdAndUpdate(req.user._id, {
+    $unset: {
+      refreshToken: 1,
+    },
+  });
 
-  let userId = null;
+  await UserActivity.findOneAndUpdate(
+    {
+      user: req.user._id,
+      status: "active",
+    },
 
-  if (accessToken) {
-    try {
-      const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-
-      userId = decoded._id;
-    } catch (error) {}
-  }
-
-  if (!userId && refreshToken) {
-    try {
-      const decoded = jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN_SECRET,
-      );
-
-      userId = decoded._id;
-    } catch (error) {}
-  }
-
-  if (userId) {
-    await User.findByIdAndUpdate(userId, {
-      $unset: {
-        refreshToken: 1,
-      },
-    });
-
-    await UserActivity.findOneAndUpdate(
-      {
-        user: userId,
-        status: "active",
-      },
-      {
-        logoutTime: new Date(),
-        status: "offline",
-      },
-    );
-  }
+    {
+      logoutTime: new Date(),
+      status: "offline",
+    },
+  );
 
   return res
     .status(200)
     .clearCookie("accessToken", clearCookieOptions)
     .clearCookie("refreshToken", clearCookieOptions)
-    .json(new ApiResponse(200, {}, "User logged out successfully."));
+    .json(new ApiResponse(200, {}, "User logged out."));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
@@ -632,105 +607,6 @@ const resetPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, null, "Password reset successfully."));
 });
 
-const getSession = asyncHandler(async (req, res) => {
-  const accessToken = req.cookies?.accessToken;
-  const refreshToken = req.cookies?.refreshToken;
-
-  if (!accessToken && !refreshToken) {
-    return res.status(200).json(
-      new ApiResponse(
-        200,
-        {
-          authenticated: false,
-          user: null,
-        },
-        "No active session",
-      ),
-    );
-  }
-
-  if (accessToken) {
-    try {
-      const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
-
-      const user = await User.findById(decoded._id);
-
-      if (user && user.isVerified) {
-        return res.status(200).json(
-          new ApiResponse(
-            200,
-            {
-              authenticated: true,
-              user,
-            },
-            "Active session",
-          ),
-        );
-      }
-    } catch (error) {
-      if (
-        error.name !== "TokenExpiredError" &&
-        error.name !== "JsonWebTokenError"
-      ) {
-        throw error;
-      }
-    }
-  }
-
-  if (refreshToken) {
-    try {
-      const decoded = jwt.verify(
-        refreshToken,
-        process.env.REFRESH_TOKEN_SECRET,
-      );
-
-      const user = await User.findById(decoded._id).select("+refreshToken");
-
-      if (user && user.isVerified && user.refreshToken === refreshToken) {
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-          await generateAccessAndRefreshTokens(user._id);
-
-        return res
-          .status(200)
-          .cookie("accessToken", newAccessToken, cookieOptions)
-          .cookie("refreshToken", newRefreshToken, cookieOptions)
-          .json(
-            new ApiResponse(
-              200,
-              {
-                authenticated: true,
-                user,
-              },
-              "Session restored",
-            ),
-          );
-      }
-    } catch (error) {
-      if (
-        error.name !== "TokenExpiredError" &&
-        error.name !== "JsonWebTokenError"
-      ) {
-        throw error;
-      }
-    }
-  }
-
-  return res
-    .status(200)
-    .clearCookie("accessToken", clearCookieOptions)
-    .clearCookie("refreshToken", clearCookieOptions)
-    .json(
-      new ApiResponse(
-        200,
-        {
-          authenticated: false,
-          user: null,
-        },
-        "No active session",
-      ),
-    );
-});
-
 export {
   register,
   verifyOtp,
@@ -740,5 +616,4 @@ export {
   resendOtp,
   forgotPassword,
   resetPassword,
-  getSession,
 };
