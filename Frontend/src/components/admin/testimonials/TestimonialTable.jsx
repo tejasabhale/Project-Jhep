@@ -12,15 +12,11 @@ const TestimonialTable = ({ testimonials = [], onEdit, onDelete }) => {
     <div className="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
       {/* Desktop Table */}
       <div className="hidden overflow-x-auto md:block">
-        <table className="w-full min-w-[950px]">
+        <table className="w-full min-w-[850px]">
           <thead>
             <tr className="border-b border-orange-100 bg-orange-50/60">
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
                 Student
-              </th>
-
-              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-                Grade
               </th>
 
               <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
@@ -62,13 +58,6 @@ const TestimonialTable = ({ testimonials = [], onEdit, onDelete }) => {
                       <p className="text-xs text-gray-500">Student</p>
                     </div>
                   </div>
-                </td>
-
-                {/* Grade */}
-                <td className="px-6 py-4">
-                  <span className="rounded-lg bg-orange-50 px-3 py-1.5 text-sm font-medium text-orange-600">
-                    {testimonial.grade}
-                  </span>
                 </td>
 
                 {/* Review */}
@@ -155,8 +144,6 @@ const TestimonialTable = ({ testimonials = [], onEdit, onDelete }) => {
                   <p className="font-semibold text-gray-900">
                     {testimonial.name}
                   </p>
-
-                  <p className="text-sm text-orange-600">{testimonial.grade}</p>
                 </div>
               </div>
 

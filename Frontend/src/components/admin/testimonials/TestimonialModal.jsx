@@ -10,7 +10,6 @@ const TestimonialModal = ({
 }) => {
   const [formData, setFormData] = useState({
     name: "",
-    grade: "",
     review: "",
     rating: 5,
     isActive: true,
@@ -20,7 +19,6 @@ const TestimonialModal = ({
     if (testimonial) {
       setFormData({
         name: testimonial.name || "",
-        grade: testimonial.grade || "",
         review: testimonial.review || "",
         rating: testimonial.rating || 5,
         isActive: testimonial.isActive ?? true,
@@ -28,7 +26,6 @@ const TestimonialModal = ({
     } else {
       setFormData({
         name: "",
-        grade: "",
         review: "",
         rating: 5,
         isActive: true,
@@ -51,16 +48,14 @@ const TestimonialModal = ({
     e.preventDefault();
 
     const name = formData.name.trim();
-    const grade = formData.grade.trim();
     const review = formData.review.trim();
 
-    if (!name || !grade || !review) {
+    if (!name || !review) {
       return;
     }
 
     onSubmit({
       name,
-      grade,
       review,
       rating: Number(formData.rating),
       isActive: formData.isActive,
@@ -114,24 +109,6 @@ const TestimonialModal = ({
               onChange={handleChange}
               placeholder="Enter student name"
               maxLength={100}
-              required
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
-            />
-          </div>
-
-          {/* Grade */}
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
-              Grade
-            </label>
-
-            <input
-              type="text"
-              name="grade"
-              value={formData.grade}
-              onChange={handleChange}
-              placeholder="e.g. Grade 5"
-              maxLength={50}
               required
               className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
             />

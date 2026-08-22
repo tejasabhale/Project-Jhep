@@ -4,15 +4,14 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 const createTestimonial = asyncHandler(async (req, res) => {
-  const { name, grade, review, rating, image, isActive, order } = req.body;
+  const { name, review, rating, image, isActive, order } = req.body;
 
-  if (!name || !grade || !review) {
-    throw new ApiError(400, "Name, grade and review are required");
+  if (!name || !review) {
+    throw new ApiError(400, "Name and review are required");
   }
 
   const testimonial = await Testimonial.create({
     name,
-    grade,
     review,
     rating: rating ?? 5,
     image: image || "",
@@ -90,7 +89,6 @@ const updateTestimonial = asyncHandler(async (req, res) => {
 
   const allowedFields = [
     "name",
-    "grade",
     "review",
     "rating",
     "image",

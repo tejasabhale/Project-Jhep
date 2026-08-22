@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 import useAuth from "../../hooks/useAuth";
 
@@ -40,13 +40,17 @@ const VerifyOtp = () => {
         otp: data.otp,
       });
 
-      toast.success("Account verified successfully.");
-
-      navigate("/", {
-        replace: true,
+      toast.success("Account verified successfully!", {
+        duration: 1500,
       });
+
+      setTimeout(() => {
+        navigate("/", {
+          replace: true,
+        });
+      }, 1500);
     } catch (error) {
-      console.error(error);
+      console.error("OTP verification failed:", error);
 
       toast.error(error.response?.data?.message || "OTP verification failed.");
     } finally {
@@ -55,63 +59,65 @@ const VerifyOtp = () => {
   };
 
   return (
-    <>
-      <Toaster position="top-right" />
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg"
+      >
+        <h1 className="mb-3 text-center text-3xl font-bold text-slate-800">
+          Verify OTP
+        </h1>
 
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg"
+        <p className="mb-6 text-center text-sm text-slate-600">
+          Enter the 6-digit OTP sent to
+          <br />
+          <span className="font-medium text-orange-600">{email}</span>
+        </p>
+
+        <input
+          type="text"
+          inputMode="numeric"
+          autoComplete="one-time-code"
+          maxLength={6}
+          disabled={loading}
+          placeholder="Enter OTP"
+          className={`mb-2 w-full rounded-lg border px-4 py-3 text-center text-xl tracking-[8px] outline-none ${
+            errors.otp
+              ? "border-red-500"
+              : "border-slate-300 focus:border-orange-500"
+          }`}
+          {...register("otp", {
+            required: "OTP is required",
+            pattern: {
+              value: /^[0-9]{6}$/,
+              message: "Enter a valid 6-digit OTP",
+            },
+          })}
+        />
+
+        {errors.otp && (
+          <p className="mb-4 text-sm text-red-500">{errors.otp.message}</p>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-lg bg-orange-500 py-3 font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <h1 className="mb-3 text-center text-3xl font-bold text-slate-800">
-            Verify OTP
-          </h1>
+          {loading ? "Verifying..." : "Verify OTP"}
+        </button>
 
-          <p className="mb-6 text-center text-sm text-slate-600">
-            Enter the 6-digit OTP sent to
-            <br />
-            <span className="font-medium text-orange-600">{email}</span>
-          </p>
-
-          <input
-            type="text"
-            maxLength={6}
-            disabled={loading}
-            placeholder="Enter OTP"
-            className="mb-2 w-full rounded-lg border border-slate-300 px-4 py-3 text-center text-xl tracking-[8px] outline-none focus:border-orange-500"
-            {...register("otp", {
-              required: "OTP is required",
-              pattern: {
-                value: /^[0-9]{6}$/,
-                message: "Enter a valid 6-digit OTP",
-              },
-            })}
-          />
-
-          {errors.otp && (
-            <p className="mb-4 text-sm text-red-500">{errors.otp.message}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-lg bg-orange-500 py-3 font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+        <p className="mt-6 text-center text-sm text-slate-600">
+          Wrong email?{" "}
+          <Link
+            to="/register"
+            className="font-medium text-orange-600 hover:underline"
           >
-            {loading ? "Verifying..." : "Verify OTP"}
-          </button>
-
-          <p className="mt-6 text-center text-sm text-slate-600">
-            Wrong email?{" "}
-            <Link
-              to="/register"
-              className="font-medium text-orange-600 hover:underline"
-            >
-              Register again
-            </Link>
-          </p>
-        </form>
-      </div>
-    </>
+            Register again
+          </Link>
+        </p>
+      </form>
+    </div>
   );
 };
 

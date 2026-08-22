@@ -108,7 +108,7 @@ const AppNavbar = () => {
             <img
               src="/logo.svg"
               alt="Project Jhep Logo"
-              className="h-full w-full object-contain"
+              className="h-9 w-9 object-contain"
             />
           </div>
 

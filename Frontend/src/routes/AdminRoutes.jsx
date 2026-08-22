@@ -8,7 +8,7 @@ const AdminRoutes = () => {
   if (loading) return <Loader />;
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (user.role == "user") {

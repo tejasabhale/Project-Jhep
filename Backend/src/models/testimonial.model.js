@@ -8,12 +8,6 @@ const testimonialSchema = new mongoose.Schema(
       trim: true,
     },
 
-    grade: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
     review: {
       type: String,
       required: true,
