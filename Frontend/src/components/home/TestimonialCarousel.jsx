@@ -122,7 +122,7 @@ export default function StudentTestimonials() {
               color: "#C2410C",
             }}
           >
-            Student Voices
+            Words That Inspire
           </span>
 
           <h2
@@ -132,7 +132,7 @@ export default function StudentTestimonials() {
               fontFamily: "'Fraunces', serif",
             }}
           >
-            What Our{" "}
+            Voices That{" "}
             <span
               style={{
                 background: "linear-gradient(90deg, #FF7A30, #EA580C)",
@@ -141,7 +141,7 @@ export default function StudentTestimonials() {
                 backgroundClip: "text",
               }}
             >
-              Students Say
+              Inspire Change
             </span>
           </h2>
 
