@@ -152,8 +152,8 @@ export default function StudentTestimonials() {
               fontFamily: "'Inter', sans-serif",
             }}
           >
-            Small steps in learning can make a big difference. Here is what
-            students are saying about their learning journey with Project Jhep.
+            Small steps in learning can make a big difference. Here are a few
+            words from people who have been part of the Project Jhep journey.
           </p>
         </div>
 
