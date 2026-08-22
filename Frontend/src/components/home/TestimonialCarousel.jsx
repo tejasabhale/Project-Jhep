@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Quote, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Quote, Star, User } from "lucide-react";
 
 import { getAllTestimonials } from "../../api/testimonial.api";
 
@@ -90,7 +90,7 @@ export default function StudentTestimonials() {
           </div>
 
           <div
-            className="h-72 animate-pulse rounded-[2rem] border"
+            className="h-56 animate-pulse rounded-[2rem] border"
             style={{
               borderColor: "#FBDBBE",
               background: "#FFF4E9",
@@ -160,7 +160,7 @@ export default function StudentTestimonials() {
         {/* Testimonial Card */}
         <div className="relative">
           <div
-            className="relative overflow-hidden rounded-[2rem] border p-7 md:p-10"
+            className="relative overflow-hidden rounded-[2rem] border p-5 md:p-7"
             style={{
               borderColor: "#FBDBBE",
               background: "#FFF7F1",
@@ -169,13 +169,13 @@ export default function StudentTestimonials() {
           >
             {/* Quote Icon */}
             <div
-              className="absolute right-7 top-7 flex h-11 w-11 items-center justify-center rounded-xl md:right-10 md:top-10"
+              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-lg md:right-7 md:top-7"
               style={{
                 background: "#FFEEE0",
               }}
             >
               <Quote
-                size={21}
+                size={17}
                 strokeWidth={2}
                 style={{
                   color: "#EA580C",
@@ -184,11 +184,11 @@ export default function StudentTestimonials() {
             </div>
 
             {/* Rating */}
-            <div className="mb-6 flex gap-1">
+            <div className="mb-4 flex gap-1">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  size={16}
+                  size={14}
                   fill={star <= rating ? "#F97316" : "transparent"}
                   strokeWidth={star <= rating ? 0 : 1.5}
                   style={{
@@ -204,7 +204,7 @@ export default function StudentTestimonials() {
               className="animate-[fadeIn_0.4s_ease-in-out]"
             >
               <blockquote
-                className="max-w-3xl text-xl font-medium leading-relaxed md:text-2xl"
+                className="max-w-3xl text-base font-medium leading-relaxed md:text-lg"
                 style={{
                   color: "#17213B",
                   fontFamily: "'Fraunces', serif",
@@ -214,25 +214,22 @@ export default function StudentTestimonials() {
               </blockquote>
 
               {/* Student Info */}
-              <div className="mt-7 flex items-center gap-3">
-                {testimonial.image ? (
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="h-10 w-10 rounded-full object-cover"
-                  />
-                ) : (
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold"
+              <div className="mt-5 flex items-center gap-3">
+                <div
+                  className="flex h-9 w-9 items-center justify-center rounded-full"
+                  style={{
+                    background: "#FFEEE0",
+                    border: "1px solid #FBDBBE",
+                  }}
+                >
+                  <User
+                    size={16}
+                    strokeWidth={2}
                     style={{
-                      background: "linear-gradient(135deg, #FF7A30, #EA580C)",
-                      color: "#FFFFFF",
-                      fontFamily: "'Inter', sans-serif",
+                      color: "#EA580C",
                     }}
-                  >
-                    {testimonial.name?.charAt(0)?.toUpperCase()}
-                  </div>
-                )}
+                  />
+                </div>
 
                 <div>
                   <h3
@@ -244,22 +241,12 @@ export default function StudentTestimonials() {
                   >
                     {testimonial.name}
                   </h3>
-
-                  <p
-                    className="mt-0.5 text-xs"
-                    style={{
-                      color: "#8A93A3",
-                      fontFamily: "'Inter', sans-serif",
-                    }}
-                  >
-                    {testimonial.grade}
-                  </p>
                 </div>
               </div>
             </div>
 
             {/* Navigation */}
-            <div className="mt-8 flex items-center justify-between">
+            <div className="mt-6 flex items-center justify-between">
               {/* Dots */}
               <div className="flex items-center gap-2">
                 {testimonials.map((item, index) => (
@@ -319,7 +306,7 @@ export default function StudentTestimonials() {
             fontFamily: "'Inter', sans-serif",
           }}
         >
-          Learning English, one conversation at a time.
+          Your success story could be next.
         </p>
       </div>
 
