@@ -13,4 +13,6 @@ export const deleteUser = (userId) => api.delete(`/users/${userId}`);
 export const changePassword = (data) =>
   api.patch("/profile/change-password", data);
 
-export const getCurrentUser = () => api.get("/profile/me");
+export const getCurrentUser = (config = {}) => {
+  return api.get("/profile/me", config);
+};

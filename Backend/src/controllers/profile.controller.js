@@ -2,23 +2,25 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import bcrypt from "bcrypt";
+
+const isProduction = process.env.NODE_ENV === "production";
 
 const clearCookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: "strict",
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
   path: "/",
 };
 
-
 const getCurrentUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id).select(
-    "-password -refreshToken",
+    "-password -refreshToken -passwordResetToken -passwordResetTokenExpiry",
   );
+
   if (!user) {
     throw new ApiError(404, "User not found.");
   }
+
   return res
     .status(200)
     .json(new ApiResponse(200, user, "User fetched successfully."));
@@ -42,7 +44,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   }
 
   if (userName !== undefined) {
-    if (!userName.trim()) {
+    if (typeof userName !== "string" || !userName.trim()) {
       throw new ApiError(400, "Username cannot be empty.");
     }
 
@@ -61,7 +63,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   }
 
   if (fullName !== undefined) {
-    if (!fullName.trim()) {
+    if (typeof fullName !== "string" || !fullName.trim()) {
       throw new ApiError(400, "Full name cannot be empty.");
     }
 
@@ -69,7 +71,7 @@ const updateProfile = asyncHandler(async (req, res) => {
   }
 
   if (mobileNo !== undefined) {
-    const normalizedMobileNo = mobileNo.trim();
+    const normalizedMobileNo = String(mobileNo).trim();
 
     if (!normalizedMobileNo) {
       throw new ApiError(400, "Mobile number cannot be empty.");
@@ -90,12 +92,12 @@ const updateProfile = asyncHandler(async (req, res) => {
   await user.save();
 
   const updatedUser = await User.findById(user._id).select(
-    "-refreshToken -password",
+    "-password -refreshToken -passwordResetToken -passwordResetTokenExpiry",
   );
 
   return res
     .status(200)
-    .json(new ApiResponse(200, updatedUser, "Profile updated successfully"));
+    .json(new ApiResponse(200, updatedUser, "Profile updated successfully."));
 });
 
 const changePassword = asyncHandler(async (req, res) => {
@@ -119,9 +121,16 @@ const changePassword = asyncHandler(async (req, res) => {
     );
   }
 
-  const user = await User.findById(req.user._id).select(
-    "+password",
-  );
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+
+  if (!passwordRegex.test(newPassword)) {
+    throw new ApiError(
+      400,
+      "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.",
+    );
+  }
+
+  const user = await User.findById(req.user._id).select("+password");
 
   if (!user) {
     throw new ApiError(404, "User not found.");
@@ -133,16 +142,8 @@ const changePassword = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Current password is incorrect.");
   }
 
-  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
-
-  if (!passwordRegex.test(newPassword)) {
-    throw new ApiError(
-      400,
-      "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one special character.",
-    );
-  }
-
   user.password = newPassword;
+
   user.refreshToken = undefined;
 
   await user.save();
@@ -154,8 +155,4 @@ const changePassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, null, "Password updated successfully."));
 });
 
-export {
-  getCurrentUser,
-  updateProfile,
-  changePassword,
-};
+export { getCurrentUser, updateProfile, changePassword };

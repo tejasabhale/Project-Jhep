@@ -398,6 +398,145 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Access token refreshed successfully"));
 });
 
+const getSession = asyncHandler(async (req, res) => {
+  const accessToken = req.cookies?.accessToken;
+  const refreshToken = req.cookies?.refreshToken;
+
+  if (!accessToken && !refreshToken) {
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          authenticated: false,
+          user: null,
+        },
+        "No active session.",
+      ),
+    );
+  }
+
+  let user = null;
+
+  if (accessToken) {
+    try {
+      const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+
+      user = await User.findById(decoded._id).select(
+        "-password -refreshToken -passwordResetToken -passwordResetTokenExpiry",
+      );
+    } catch {}
+  }
+
+  if (user) {
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          authenticated: true,
+          user,
+        },
+        "Session is valid.",
+      ),
+    );
+  }
+
+  if (!refreshToken) {
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          authenticated: false,
+          user: null,
+        },
+        "No active session.",
+      ),
+    );
+  }
+
+  let decodedRefreshToken;
+
+  try {
+    decodedRefreshToken = jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET,
+    );
+  } catch {
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          authenticated: false,
+          user: null,
+        },
+        "No active session.",
+      ),
+    );
+  }
+
+  user = await User.findById(decodedRefreshToken._id).select("+refreshToken");
+
+  if (!user) {
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          authenticated: false,
+          user: null,
+        },
+        "No active session.",
+      ),
+    );
+  }
+
+  if (refreshToken !== user.refreshToken) {
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          authenticated: false,
+          user: null,
+        },
+        "No active session.",
+      ),
+    );
+  }
+
+  if (!user.isVerified) {
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          authenticated: false,
+          user: null,
+        },
+        "No active session.",
+      ),
+    );
+  }
+
+  const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+    await generateAccessAndRefreshTokens(user._id);
+
+  const safeUser = await User.findById(user._id).select(
+    "-password -refreshToken -passwordResetToken -passwordResetTokenExpiry",
+  );
+
+  return res
+    .status(200)
+    .cookie("accessToken", newAccessToken, cookieOptions)
+    .cookie("refreshToken", newRefreshToken, cookieOptions)
+    .json(
+      new ApiResponse(
+        200,
+        {
+          authenticated: true,
+          user: safeUser,
+        },
+        "Session restored successfully.",
+      ),
+    );
+});
+
 const resendOtp = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
@@ -613,6 +752,7 @@ export {
   login,
   logout,
   refreshAccessToken,
+  getSession,
   resendOtp,
   forgotPassword,
   resetPassword,

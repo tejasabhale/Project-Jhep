@@ -242,8 +242,7 @@ const TermsAndConditions = () => {
                 fontFamily: "'Fraunces', serif",
               }}
             >
-              Terms &{" "}
-              <span className="text-orange-500">Conditions</span>
+              Terms & <span className="text-orange-500">Conditions</span>
             </h1>
 
             <div
@@ -258,8 +257,8 @@ const TermsAndConditions = () => {
                 fontFamily: "'Inter', sans-serif",
               }}
             >
-              Clear guidelines help us create a safe, respectful, and
-              meaningful learning environment for everyone using Project Jhep.
+              Clear guidelines help us create a safe, respectful, and meaningful
+              learning environment for everyone using Project Jhep.
             </p>
 
             <p
@@ -297,10 +296,10 @@ const TermsAndConditions = () => {
                   </p>
 
                   <p className="text-sm leading-7 text-gray-600 md:text-base">
-                    Project Jhep is an educational platform designed to
-                    provide accessible English learning resources for students.
-                    These Terms & Conditions explain the rules and guidelines
-                    for using our website and services. By accessing or using
+                    Project Jhep is an educational platform designed to provide
+                    accessible English learning resources for students. These
+                    Terms & Conditions explain the rules and guidelines for
+                    using our website and services. By accessing or using
                     Project Jhep, you agree to follow these terms.
                   </p>
                 </div>
@@ -373,25 +372,31 @@ const TermsAndConditions = () => {
 
           {/* CTA */}
           <section
-            className="terms-reveal mt-12"
-            style={{ animationDelay: "850ms" }}
+            className="terms-scale mt-12"
+            style={{ animationDelay: "950ms" }}
           >
-            <div className="relative overflow-hidden rounded-[2rem] border border-orange-200 bg-orange-100 px-7 py-10 text-center shadow-[0_18px_50px_-35px_rgba(249,115,22,0.45)] md:px-10 md:py-12">
-              <div className="terms-glow pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-orange-200/70 blur-2xl" />
+            <div className="terms-shimmer relative overflow-hidden rounded-[2rem] border border-orange-200 bg-orange-50 px-7 py-10 text-center shadow-[0_18px_50px_-35px_rgba(249,115,22,0.5)] md:px-10 md:py-12">
+              {/* Decorative shapes */}
+
+              <div className="terms-float pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-orange-100/80" />
 
               <div
-                className="terms-glow pointer-events-none absolute -bottom-20 -left-16 h-44 w-44 rounded-full bg-white/70 blur-2xl"
-                style={{ animationDelay: "-2s" }}
+                className="terms-float-slow pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-white/80"
+                style={{ animationDelay: "-3s" }}
               />
 
               <div className="relative">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 shadow-lg shadow-orange-500/20">
+                {/* Icon */}
+
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 shadow-[0_10px_25px_-10px_rgba(249,115,22,0.7)]">
                   <Mail size={20} className="text-white" />
                 </div>
 
                 <h2
                   className="mt-5 text-2xl font-bold text-black md:text-3xl"
-                  style={{ fontFamily: "'Fraunces', serif" }}
+                  style={{
+                    fontFamily: "'Fraunces', serif",
+                  }}
                 >
                   Have questions about these terms?
                 </h2>
@@ -403,7 +408,7 @@ const TermsAndConditions = () => {
 
                 <a
                   href="mailto:support@projectjhep.org"
-                  className="terms-contact mt-6 inline-flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2.5 text-sm font-bold text-white"
+                  className="terms-contact mt-6 inline-flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white"
                 >
                   <Mail size={15} />
                   Contact Support

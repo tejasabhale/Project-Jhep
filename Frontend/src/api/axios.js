@@ -1,13 +1,17 @@
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: API_URL,
   withCredentials: true,
+  timeout: 15000,
 });
 
 const refreshApi = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: API_URL,
   withCredentials: true,
+  timeout: 15000,
 });
 
 let isRefreshing = false;
@@ -25,6 +29,16 @@ const processWaitingRequests = (error = null) => {
   waitingRequests = [];
 };
 
+const isAuthEndpoint = (url = "") => {
+  return (
+    url.includes("/auth/login") ||
+    url.includes("/auth/register") ||
+    url.includes("/auth/verify-otp") ||
+    url.includes("/auth/refresh-access-token") ||
+    url.includes("/auth/session")
+  );
+};
+
 api.interceptors.response.use(
   (response) => response,
 
@@ -35,14 +49,17 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (
-      error.response?.status !== 401 ||
-      originalRequest._retry ||
-      originalRequest.url?.includes("/auth/refresh-access-token") ||
-      originalRequest.url?.includes("/auth/login") ||
-      originalRequest.url?.includes("/auth/register") ||
-      originalRequest.url?.includes("/auth/verify-otp")
-    ) {
+    const status = error.response?.status;
+
+    if (status !== 401) {
+      return Promise.reject(error);
+    }
+
+    if (originalRequest._retry) {
+      return Promise.reject(error);
+    }
+
+    if (isAuthEndpoint(originalRequest.url)) {
       return Promise.reject(error);
     }
 
@@ -54,7 +71,9 @@ api.interceptors.response.use(
           resolve,
           reject,
         });
-      }).then(() => api(originalRequest));
+      }).then(() => {
+        return api(originalRequest);
+      });
     }
 
     isRefreshing = true;
@@ -65,10 +84,10 @@ api.interceptors.response.use(
       processWaitingRequests();
 
       return api(originalRequest);
-    } catch (error) {
-      processWaitingRequests(error);
+    } catch (refreshError) {
+      processWaitingRequests(refreshError);
 
-      return Promise.reject(error);
+      return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
     }

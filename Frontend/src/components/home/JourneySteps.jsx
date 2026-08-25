@@ -5,6 +5,7 @@ import {
   Target,
   Trophy,
 } from "lucide-react";
+import { motion } from "framer-motion";
 
 import Reveal from "../../components/ui/Reveal";
 
@@ -41,6 +42,25 @@ const journeySteps = [
     description: "Use English confidently in school and everyday life.",
   },
 ];
+
+const desktopJourneyVariants = {
+  hidden: {
+    opacity: 0,
+    y: 35,
+    scale: 0.94,
+  },
+
+  visible: (index) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.65,
+      delay: index * 0.12,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  }),
+};
 
 export default function StudentJourney() {
   return (
@@ -115,11 +135,90 @@ export default function StudentJourney() {
               const Icon = step.icon;
 
               return (
-                <Reveal key={step.number}>
-                  <div className="group relative flex items-start text-left md:block md:text-center">
-                    {/* ================= Mobile Icon ================= */}
+                <div key={step.number}>
+                  {/* ================= Mobile Animation ================= */}
+                  <div className="md:hidden">
+                    <Reveal>
+                      <div className="group relative flex items-start text-left">
+                        {/* Icon */}
+                        <div
+                          className="relative z-10 flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-2xl border bg-white transition-all duration-300 group-hover:-translate-y-1"
+                          style={{
+                            borderColor: "#FBDBBE",
+                            boxShadow: "0 8px 20px -16px rgba(23, 33, 59, 0.3)",
+                          }}
+                        >
+                          <Icon
+                            size={25}
+                            strokeWidth={1.8}
+                            style={{
+                              color: "#EA580C",
+                            }}
+                          />
+
+                          {/* Step Number */}
+                          <span
+                            className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold"
+                            style={{
+                              background: "#EA580C",
+                              color: "#FFFFFF",
+                            }}
+                          >
+                            {index + 1}
+                          </span>
+                        </div>
+
+                        {/* Content */}
+                        <div className="ml-5 flex-1">
+                          <span
+                            className="text-[9px] font-semibold uppercase tracking-[0.15em] sm:text-[10px]"
+                            style={{
+                              color: "#C2410C",
+                              fontFamily: "'Inter', sans-serif",
+                            }}
+                          >
+                            Step {step.number}
+                          </span>
+
+                          <h3
+                            className="mt-1.5 text-[16px] font-semibold sm:text-base"
+                            style={{
+                              color: "#17213B",
+                              fontFamily: "'Fraunces', serif",
+                            }}
+                          >
+                            {step.title}
+                          </h3>
+
+                          <p
+                            className="mt-1.5 max-w-[280px] text-xs leading-5 sm:text-[13px]"
+                            style={{
+                              color: "#6B7280",
+                              fontFamily: "'Inter', sans-serif",
+                            }}
+                          >
+                            {step.description}
+                          </p>
+                        </div>
+                      </div>
+                    </Reveal>
+                  </div>
+
+                  {/* ================= Desktop Animation ================= */}
+                  <motion.div
+                    className="group relative hidden items-start text-left md:block md:text-center"
+                    variants={desktopJourneyVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{
+                      once: true,
+                      amount: 0.3,
+                    }}
+                    custom={index}
+                  >
+                    {/* Icon */}
                     <div
-                      className="relative z-10 flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-2xl border bg-white transition-all duration-300 group-hover:-translate-y-1 md:mx-auto"
+                      className="relative z-10 mx-auto flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-2xl border bg-white transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-[1.04]"
                       style={{
                         borderColor: "#FBDBBE",
                         boxShadow: "0 8px 20px -16px rgba(23, 33, 59, 0.3)",
@@ -128,6 +227,7 @@ export default function StudentJourney() {
                       <Icon
                         size={25}
                         strokeWidth={1.8}
+                        className="transition-transform duration-300 group-hover:scale-110"
                         style={{
                           color: "#EA580C",
                         }}
@@ -145,10 +245,10 @@ export default function StudentJourney() {
                       </span>
                     </div>
 
-                    {/* ================= Content ================= */}
-                    <div className="ml-5 flex-1 md:ml-0 md:mt-6">
+                    {/* Content */}
+                    <div className="mt-6">
                       <span
-                        className="text-[9px] font-semibold uppercase tracking-[0.15em] sm:text-[10px]"
+                        className="text-[10px] font-semibold uppercase tracking-[0.15em]"
                         style={{
                           color: "#C2410C",
                           fontFamily: "'Inter', sans-serif",
@@ -158,7 +258,7 @@ export default function StudentJourney() {
                       </span>
 
                       <h3
-                        className="mt-1.5 text-[16px] font-semibold sm:text-base md:mt-2 md:text-lg"
+                        className="mt-2 text-lg font-semibold"
                         style={{
                           color: "#17213B",
                           fontFamily: "'Fraunces', serif",
@@ -168,7 +268,7 @@ export default function StudentJourney() {
                       </h3>
 
                       <p
-                        className="mt-1.5 max-w-[280px] text-xs leading-5 sm:text-[13px] md:mx-auto md:mt-2 md:max-w-[190px] md:text-sm"
+                        className="mx-auto mt-2 max-w-[190px] text-sm leading-6"
                         style={{
                           color: "#6B7280",
                           fontFamily: "'Inter', sans-serif",
@@ -177,8 +277,8 @@ export default function StudentJourney() {
                         {step.description}
                       </p>
                     </div>
-                  </div>
-                </Reveal>
+                  </motion.div>
+                </div>
               );
             })}
           </div>
