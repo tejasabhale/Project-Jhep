@@ -1,4 +1,11 @@
-export default function PublishToggle({ checked, onChange }) {
+import React from "react";
+
+export default function PublishToggle({
+  checked,
+  onChange,
+  title = "Publish Status",
+  description = null,
+}) {
   const handleToggle = () => {
     onChange({
       target: {
@@ -12,26 +19,29 @@ export default function PublishToggle({ checked, onChange }) {
   return (
     <div className="flex items-center justify-between gap-4">
       <div>
-        <p className="font-semibold text-slate-800">Publish Topic</p>
-
-        <p className="mt-1 text-xs text-slate-500">
-          {checked
-            ? "This topic is visible to students."
-            : "This topic is hidden from students."}
+        <p className="text-xs font-bold uppercase tracking-wider text-text-primary">
+          {title}
+        </p>
+        <p className="mt-0.5 text-xs text-text-secondary">
+          {description ||
+            (checked
+              ? "This item is published and visible to learners."
+              : "This item is hidden in draft mode.")}
         </p>
       </div>
 
       <button
         type="button"
+        role="switch"
+        aria-checked={checked}
         onClick={handleToggle}
-        aria-pressed={checked}
-        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-orange-100 ${
-          checked ? "bg-orange-500" : "bg-slate-300"
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+          checked ? "bg-primary" : "bg-text-muted/40"
         }`}
       >
         <span
-          className={`absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-            checked ? "translate-x-5" : "translate-x-0"
+          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-xs transition duration-150 ${
+            checked ? "translate-x-5.5" : "translate-x-0.5"
           }`}
         />
       </button>

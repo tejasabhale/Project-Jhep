@@ -1,15 +1,20 @@
-import { useEffect, useState } from "react";
-import { Save, ImagePlus } from "lucide-react";
-
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import ThumbnailUpload from "../common/ThumbnailUpload";
 import PublishToggle from "./PublishToggle";
+import {
+  AdminFormSection,
+  AdminFormField,
+  AdminFormActions,
+} from "../ui/AdminFormSection";
 
 export default function TopicForm({
   initialData,
   onSubmit,
-  loading,
-  title,
-  buttonText,
+  loading = false,
+  title = "Topic Information",
+  buttonText = "Save Topic",
+  onCancel,
 }) {
   const [form, setForm] = useState(initialData);
 
@@ -19,20 +24,17 @@ export default function TopicForm({
         ...initialData,
         title: initialData.title || "",
         description: initialData.description || "",
-        order: initialData.order ?? "",
+        order: initialData.order ?? 1,
         thumbnail: initialData.thumbnail || "",
         isPublished: Boolean(initialData.isPublished),
       });
     }
   }, [initialData]);
 
-  if (!form) {
-    return null;
-  }
+  if (!form) return null;
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
     setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -48,12 +50,11 @@ export default function TopicForm({
 
   const submit = (e) => {
     e.preventDefault();
-
     onSubmit({
       ...form,
       title: form.title.trim(),
       description: form.description.trim(),
-      order: Number(form.order),
+      order: Number(form.order) || 1,
       isPublished: Boolean(form.isPublished),
     });
   };
@@ -61,111 +62,91 @@ export default function TopicForm({
   return (
     <form
       onSubmit={submit}
-      className="overflow-hidden rounded-3xl border border-orange-100 bg-white shadow-lg"
+      className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-xs"
     >
-      {/* Header */}
-      <div className="border-b border-orange-100 px-6 py-6 sm:px-8">
-        <h2 className="text-xl font-bold text-slate-800">{title}</h2>
-
-        <p className="mt-1.5 text-sm text-slate-500">
-          Update the topic details, thumbnail, order, and publication status.
-        </p>
-      </div>
-
-      <div className="grid lg:grid-cols-[0.85fr_1.15fr]">
-        {/* Thumbnail */}
-        <div className="border-b border-orange-100 bg-orange-50/40 p-6 sm:p-8 lg:border-b-0 lg:border-r">
-          <div className="mb-4">
-            <h3 className="flex items-center gap-2 font-semibold text-slate-800">
-              <ImagePlus size={18} className="text-orange-500" />
-              Topic Thumbnail
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Upload an image to represent this topic.
-            </p>
-          </div>
-
-          <ThumbnailUpload image={form.thumbnail} onChange={handleImage} />
-        </div>
-
-        {/* Form */}
-        <div className="space-y-6 p-6 sm:p-8">
-          {/* Title */}
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
-              Topic Title
-            </label>
-
+      {/* Basic Information */}
+      <AdminFormSection
+        title="Basic Information"
+        description="Provide the core details for this learning topic."
+      >
+        <div className="grid gap-5 sm:grid-cols-2">
+          <AdminFormField label="Topic Title" required>
             <input
               required
               maxLength={150}
               name="title"
               value={form.title || ""}
               onChange={handleChange}
-              placeholder="Example: Basic English"
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+              placeholder="e.g. Grammar, Vocabulary, Phonics"
+              className="h-10 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-text-primary placeholder:text-text-muted outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
             />
-          </div>
+          </AdminFormField>
 
-          {/* Description */}
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
-              Description
-            </label>
-
-            <textarea
-              rows={5}
-              maxLength={1000}
-              name="description"
-              value={form.description || ""}
-              onChange={handleChange}
-              placeholder="Describe what students will learn..."
-              className="w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
-            />
-
-            <p className="mt-1 text-right text-xs text-slate-400">
-              {(form.description || "").length}/1000
-            </p>
-          </div>
-
-          {/* Order */}
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-slate-700">
-              Display Order
-            </label>
-
+          <AdminFormField label="Display Order" required hint="Determines the sequence in which topics appear">
             <input
               type="number"
               min={1}
+              required
               name="order"
               value={form.order ?? ""}
               onChange={handleChange}
-              required
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-orange-400 focus:ring-4 focus:ring-orange-100"
+              placeholder="1, 2, 3..."
+              className="h-10 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-text-primary outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
             />
+          </AdminFormField>
+
+          <div className="sm:col-span-2">
+            <AdminFormField
+              label="Description"
+              hint={`${(form.description || "").length}/1000 characters`}
+            >
+              <textarea
+                rows={4}
+                maxLength={1000}
+                name="description"
+                value={form.description || ""}
+                onChange={handleChange}
+                placeholder="Describe what students will learn in this topic module..."
+                className="w-full resize-none rounded-xl border border-border bg-background p-3.5 text-sm text-text-primary placeholder:text-text-muted outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </AdminFormField>
           </div>
-
-          {/* Publish */}
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <PublishToggle
-              checked={Boolean(form.isPublished)}
-              onChange={handleChange}
-            />
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <Save size={18} />
-
-            {loading ? "Updating Topic..." : buttonText}
-          </button>
         </div>
-      </div>
+      </AdminFormSection>
+
+      {/* Media / Thumbnail */}
+      <AdminFormSection
+        title="Topic Thumbnail"
+        description="Visual cover image shown in student cards and curriculum overviews."
+      >
+        <div className="max-w-md">
+          <ThumbnailUpload
+            image={form.thumbnail}
+            onChange={handleImage}
+            label="Upload Topic Thumbnail"
+          />
+        </div>
+      </AdminFormSection>
+
+      {/* Publishing & Visibility */}
+      <AdminFormSection
+        title="Publishing & Visibility"
+        description="Manage whether this topic is immediately accessible to learners."
+      >
+        <div className="rounded-xl border border-border bg-background p-4">
+          <PublishToggle
+            checked={Boolean(form.isPublished)}
+            onChange={handleChange}
+          />
+        </div>
+      </AdminFormSection>
+
+      {/* Actions */}
+      <AdminFormActions
+        onCancel={onCancel}
+        loading={loading}
+        submitLabel={buttonText}
+      />
     </form>
   );
 }

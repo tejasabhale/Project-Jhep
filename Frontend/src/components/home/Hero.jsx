@@ -1,14 +1,9 @@
-import { ArrowUpRight, BookOpen, Sparkles, Star } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const LINE_1_WIDTH = 300;
-const LINE_2_WIDTH = 230;
-const UNDERLINE_WIDTH = 250;
-
 export default function Hero() {
   const [loaded, setLoaded] = useState(false);
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,93 +12,63 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#FFFDFB]">
+    <section className="relative w-full overflow-hidden bg-background lg:min-h-[100svh]">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Caveat:wght@600;700&family=Kalam:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@400;700&display=swap');
 
-        .jhep-display {
-          font-family: 'Fraunces', serif;
-        }
-
-        .jhep-body {
-          font-family: 'Inter', sans-serif;
-        }
-
-        .jhep-kalam {
-          font-family: 'Kalam', cursive;
-        }
-
-        .jhep-chalk {
-          font-family: 'Caveat', cursive;
-        }
-
-        /* ==============================
-           BACKGROUND IMAGE
-        ============================== */
+        .jhep-chalk { font-family: 'Caveat', cursive; }
+        .jhep-kalam { font-family: 'Kalam', cursive; }
 
         @keyframes slowZoom {
-          0%, 100% {
-            transform: scale(1.04);
-          }
-
-          50% {
-            transform: scale(1.08);
-          }
+          0%, 100% { transform: scale(1.04); }
+          50%      { transform: scale(1.08); }
         }
 
         @keyframes pulseGlow {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 0.18;
-          }
+          0%, 100% { transform: scale(1);   opacity: 0.18; }
+          50%      { transform: scale(1.1); opacity: 0.3; }
+        }
 
-          50% {
-            transform: scale(1.1);
-            opacity: 0.3;
-          }
+        @keyframes boardAppear {
+          from { opacity: 0; transform: translateY(14px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @keyframes chalkWrite {
+          from { clip-path: inset(-5px 100% -5px 0); }
+          to   { clip-path: inset(-5px 0 -5px 0); }
         }
 
         @keyframes underlineGrow {
-          from {
-            transform: scaleX(0);
-            opacity: 0;
-          }
-
-          to {
-            transform: scaleX(1);
-            opacity: 1;
-          }
+          from { transform: scaleX(0); opacity: 0; }
+          to   { transform: scaleX(1); opacity: 1; }
         }
 
-        .hero-image {
-          animation: slowZoom 12s ease-in-out infinite;
+        @keyframes markGrow {
+          from { background-size: 0% 100%; }
+          to   { background-size: 100% 100%; }
         }
 
-        .hero-glow {
-          animation: pulseGlow 9s ease-in-out infinite;
+        @media (min-width: 1024px) {
+          .hero-image { animation: slowZoom 12s ease-in-out infinite; }
+          .hero-glow  { animation: pulseGlow 9s ease-in-out infinite; }
         }
 
-        .hero-underline {
-          transform: scaleX(0);
-          transform-origin: left;
-          animation: underlineGrow 0.6s ease-out forwards;
+        .hero-mark {
+          background-image: linear-gradient(
+            transparent 58%,
+            rgb(251 146 60 / 0.4) 58%,
+            rgb(251 146 60 / 0.4) 92%,
+            transparent 92%
+          );
+          background-repeat: no-repeat;
+          background-size: 0% 100%;
+          -webkit-box-decoration-break: clone;
+          box-decoration-break: clone;
+          padding: 0 0.08em;
+          margin: 0 -0.08em;
+          animation: markGrow 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
           animation-delay: 0.9s;
-        }
-
-        /* ==============================
-           DESKTOP BLACKBOARD
-        ============================== */
-
-        @keyframes boardAppear {
-          from {
-            opacity: 0;
-            transform: translateY(10px) scale(0.97);
-          }
-
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
         }
 
         .chalk-board {
@@ -112,399 +77,186 @@ export default function Hero() {
           animation-delay: 0.3s;
         }
 
-        /* ==============================
-           TEXT WRITING ANIMATION
-        ============================== */
-
-        @keyframes chalkWrite {
-          from {
-            clip-path: inset(-5px 100% -5px 0);
-          }
-
-          to {
-            clip-path: inset(-5px 0 -5px 0);
-          }
-        }
-
         .chalk-line-1 {
           clip-path: inset(-5px 100% -5px 0);
-          animation: chalkWrite 1.3s steps(28) forwards;
+          animation: chalkWrite 1.3s steps(22) forwards;
           animation-delay: 0.9s;
         }
 
         .chalk-line-2 {
           clip-path: inset(-5px 100% -5px 0);
-          animation: chalkWrite 1s steps(20) forwards;
+          animation: chalkWrite 1s steps(17) forwards;
           animation-delay: 2.35s;
-        }
-
-        /* ==============================
-           UNDERLINE
-        ============================== */
-
-        @keyframes chalkUnderlineGrow {
-          from {
-            transform: scaleX(0);
-            opacity: 0;
-          }
-
-          to {
-            transform: scaleX(1);
-            opacity: 1;
-          }
         }
 
         .chalk-emphasis {
           transform: scaleX(0);
           transform-origin: left;
-          animation: chalkUnderlineGrow 0.4s ease-out forwards;
-          animation-delay: 2.3s;
+          animation: underlineGrow 0.4s ease-out forwards;
+          animation-delay: 2.2s;
         }
-
-        /* ==============================
-           SUCCESS BADGE
-        ============================== */
-
-        @keyframes badgeAppear {
-          0% {
-            opacity: 0;
-            transform: scale(0.5);
-          }
-
-          70% {
-            transform: scale(1.08);
-          }
-
-          100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        @keyframes badgeGlow {
-          0%, 100% {
-            box-shadow: 0 0 0 0 rgba(234, 88, 12, 0);
-          }
-
-          50% {
-            box-shadow: 0 0 0 9px rgba(234, 88, 12, 0.15);
-          }
-        }
-
-        .chalk-badge-final {
-          opacity: 0;
-          animation-name: badgeAppear, badgeGlow;
-          animation-duration: 0.7s, 3s;
-          animation-timing-function: ease-out, ease-in-out;
-          animation-delay: 3.4s, 3.4s;
-          animation-iteration-count: 1, infinite;
-          animation-fill-mode: forwards, none;
-        }
-
-        /* ==============================
-           REDUCED MOTION
-        ============================== */
 
         @media (prefers-reduced-motion: reduce) {
-          .hero-image,
-          .hero-glow,
-          .hero-underline,
-          .chalk-board,
-          .chalk-line-1,
-          .chalk-line-2,
-          .chalk-emphasis,
-          .chalk-badge-final {
+          .hero-image, .hero-glow, .hero-mark,
+          .chalk-board, .chalk-line-1, .chalk-line-2, .chalk-emphasis {
             animation: none !important;
           }
-
-          .chalk-board {
-            opacity: 1;
-            transform: none;
-          }
-
-          .chalk-line-1,
-          .chalk-line-2 {
-            clip-path: none;
-          }
-
-          .chalk-emphasis {
-            transform: scaleX(1);
-            opacity: 1;
-          }
-
-          .chalk-badge-final {
-            opacity: 1;
-          }
-
-          .hero-underline {
-            transform: scaleX(1);
-            opacity: 1;
-          }
+          .hero-mark { background-size: 100% 100%; }
+          .chalk-board { opacity: 1; transform: none; }
+          .chalk-line-1, .chalk-line-2 { clip-path: none; }
+          .chalk-emphasis { transform: scaleX(1); opacity: 1; }
         }
       `}</style>
 
-      {/* ==============================
-          BACKGROUND GLOW
-      ============================== */}
-
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="hero-glow absolute -right-40 -top-40 h-[420px] w-[420px] rounded-full bg-[#FFD9B3] blur-[120px]" />
-
-        <div className="hero-glow absolute -bottom-48 -left-40 h-[350px] w-[350px] rounded-full bg-[#FFEEE0] blur-[100px]" />
+      {/* Background glow (large screens only) */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 hidden overflow-hidden lg:block"
+      >
+        <div className="hero-glow absolute -right-40 -top-40 h-[420px] w-[420px] rounded-full bg-lesson-peach blur-[120px]" />
+        <div className="hero-glow absolute -bottom-48 -left-40 h-[350px] w-[350px] rounded-full bg-accent-light blur-[100px]" />
       </div>
 
-      {/* ==============================
-          HERO
-      ============================== */}
+      {/* Photo: banner on mobile, full background on desktop */}
+      <div
+        aria-hidden="true"
+        className="relative h-64 overflow-hidden sm:h-80 lg:absolute lg:inset-0 lg:h-auto"
+      >
+        <picture className="block h-full w-full">
+          <source
+            media="(min-width: 1024px)"
+            srcSet="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1600&q=80"
+          />
+          <img
+            src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1000&q=80"
+            alt=""
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            className="hero-image h-full w-full object-cover object-center"
+          />
+        </picture>
 
-      <div className="relative w-full">
-        <div className="relative h-[500px] w-full overflow-hidden bg-[#FFF7F0] sm:h-[540px] lg:h-[570px]">
-          {/* ==============================
-              BACKGROUND IMAGE
-          ============================== */}
+        <div className="absolute inset-0 bg-surface/10" />
 
-          <div className="absolute inset-0 overflow-hidden">
-            {/* DESKTOP BACKGROUND — UNCHANGED */}
+        {/* Mobile: photo fades into the cream page below it */}
+        <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-background via-background/60 to-transparent lg:hidden" />
 
-            <img
-              src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1600&q=80"
-              alt="Students learning together in a classroom"
-              loading="eager"
-              fetchPriority="high"
-              decoding="async"
-              sizes="100vw"
-              className="hero-image hidden h-full w-full object-cover motion-reduce:animate-none lg:block"
-            />
+        {/* Desktop: cream behind the text, then the photo shows through the middle */}
+        <div className="absolute inset-0 hidden bg-gradient-to-r from-background/95 via-background/55 via-50% to-background/10 lg:block" />
+      </div>
 
-            {/* MOBILE / TABLET BACKGROUND */}
+      {/* Content */}
+      <div className="relative z-10 flex flex-col px-5 pb-14 sm:px-10 md:px-14 lg:min-h-[100svh] lg:flex-row lg:items-center lg:px-20 lg:py-28 xl:px-24">
+        {/* Blackboard: overlaps photo on mobile, floats right on desktop */}
+        <div className="order-first -mt-20 mb-8 w-full max-w-md sm:-mt-24 lg:absolute lg:right-[6%] lg:top-1/2 lg:mb-0 lg:mt-0 lg:w-auto lg:max-w-none lg:-translate-y-1/2 xl:right-[8%]">
+          {/* Soft glow behind the board (desktop) */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -inset-10 -z-10 hidden rounded-full bg-lesson-peach/80 blur-3xl lg:block"
+          />
 
-            <img
-              src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1000&q=80"
-              alt="Children learning in a classroom"
-              loading="eager"
-              decoding="async"
-              sizes="100vw"
-              className="hero-image h-full w-full object-cover object-center motion-reduce:animate-none lg:hidden"
-            />
-
-            {/* Base soft overlay */}
-
-            <div className="absolute inset-0 bg-white/10" />
-
-            {/* ==============================
-                MOBILE / TABLET FADE
-            ============================== */}
-
-            <div className="absolute inset-0 bg-gradient-to-r from-[#FFFDFB]/100 via-[#FFFDFB]/90 via-50% to-[#FFF7F0]/35 lg:hidden" />
-
-            {/* Bottom fade for mobile */}
-
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#FFFDFB]/60 to-transparent lg:hidden" />
-
-            {/* ==============================
-                DESKTOP FADE — UNCHANGED
-            ============================== */}
-
-            <div className="absolute inset-0 hidden bg-gradient-to-r from-[#FFFDFB]/95 via-[#FFFDFB]/85 via-55% to-transparent lg:block" />
-          </div>
-
-          {/* ==============================
-              CONTENT
-          ============================== */}
-
-          <div className="relative flex h-full items-center">
-            <div className="w-full px-6 sm:px-10 md:px-14 lg:px-20 xl:px-24">
-              <div className="max-w-xl">
-                {/* ==============================
-                    BADGE
-                ============================== */}
-
-                <div
-                  className={`mb-5 transition-all duration-700 ${
-                    loaded
-                      ? "translate-y-0 opacity-100"
-                      : "translate-y-4 opacity-0"
-                  }`}
-                >
-                  <span className="jhep-body inline-flex items-center gap-2 rounded-full border border-[#F3D5BD] bg-[#FFF7F0]/90 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#C2410C] backdrop-blur-md">
-                    <Sparkles size={11} />
-                    Project Jhep
-                  </span>
-                </div>
-
-                {/* ==============================
-                    HEADING
-                ============================== */}
-
-                <h1
-                  className={`jhep-display text-[2.7rem] font-semibold leading-[1.02] tracking-[-0.035em] text-[#17213B] transition-all duration-1000 sm:text-5xl md:text-[3.7rem] lg:text-[4.1rem] xl:text-[4.4rem] ${
-                    loaded
-                      ? "translate-y-0 opacity-100"
-                      : "translate-y-7 opacity-0"
-                  }`}
-                >
-                  Every child deserves
-                  <br />a{" "}
-                  <span className="relative inline-block text-[#EA580C]">
-                    confident voice.
-                    <span className="hero-underline absolute -bottom-1 left-0 h-[2px] w-full rounded-full bg-[#FF9F66]" />
-                  </span>
-                </h1>
-
-                {/* ==============================
-                    DESCRIPTION
-                ============================== */}
-
-                <p
-                  className={`jhep-body mt-5 max-w-md text-[14px] leading-6 text-[#5B6472] transition-all delay-200 duration-700 sm:text-[15px] sm:leading-7 ${
-                    loaded
-                      ? "translate-y-0 opacity-100"
-                      : "translate-y-5 opacity-0"
-                  }`}
-                >
-                  Simple English learning with Marathi support, designed to
-                  build confidence.
+          <div className="rounded-[1.5rem] border border-border bg-gradient-to-br from-surface/95 via-accent-light/85 to-primary-light/60 p-4 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:p-5 lg:rounded-[2rem] lg:p-7">
+            <div className="lg:w-[340px]">
+              <div className="flex items-baseline justify-between gap-3 lg:block">
+                <p className="font-sans text-[9px] font-semibold uppercase tracking-[0.2em] text-text-muted">
+                  Project Jhep
                 </p>
+                <p className="font-display text-sm font-semibold text-secondary lg:mt-1 lg:text-lg">
+                  Learn • Speak • Grow
+                </p>
+              </div>
 
-                {/* ==============================
-                    CTA
-                ============================== */}
-
+              {/* Blackboard */}
+              <div className="chalk-board relative mt-3 rounded-2xl border-[5px] border-secondary bg-dark-bg p-5 shadow-inner sm:border-[6px] sm:p-6 lg:mt-5">
                 <div
-                  className={`mt-6 transition-all delay-[400ms] duration-700 ${
-                    loaded
-                      ? "translate-y-0 opacity-100"
-                      : "translate-y-5 opacity-0"
-                  }`}
-                >
-                  <button
-                    className="jhep-body group inline-flex items-center gap-3 rounded-full bg-[#EA580C] px-5 py-3 text-[13px] font-semibold text-white shadow-[0_12px_30px_-10px_rgba(234,88,12,0.45)] transition-all duration-300 hover:-translate-y-1 hover:bg-[#C2410C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#EA580C] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFDFB]"
-                    onClick={() => navigate("/login")}
-                  >
-                    Explore Project Jhep
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/15 transition-transform duration-300 group-hover:translate-x-1">
-                      <ArrowUpRight size={13} />
-                    </span>
-                  </button>
-                </div>
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 rounded-[10px] bg-[radial-gradient(circle_at_30%_20%,rgb(255_255_255_/_0.05),transparent_60%)]"
+                />
 
-                {/* ==============================
-                    SUPPORTING DETAIL
-                ============================== */}
-
-                <div
-                  className={`mt-6 flex items-center gap-2 transition-all delay-500 duration-700 ${
-                    loaded
-                      ? "translate-y-0 opacity-100"
-                      : "translate-y-4 opacity-0"
-                  }`}
-                >
-                  <BookOpen size={14} className="text-[#EA580C]" />
-
-                  <span className="jhep-body text-[11px] text-[#6B7280]">
-                    English • Marathi • Grades 1–10
+                {/* English */}
+                <span className="relative inline-block max-w-full">
+                  <span className="chalk-line-1 jhep-chalk block whitespace-nowrap text-[clamp(22px,7vw,26px)] font-semibold leading-[1.2] text-dark-text lg:text-[28px]">
+                    Let&apos;s learn English!
                   </span>
+                  <span
+                    aria-hidden="true"
+                    className="chalk-emphasis absolute -bottom-1 left-0 h-[2px] w-full rounded-full bg-accent"
+                  />
+                </span>
+
+                {/* Marathi */}
+                <span className="relative mt-4 block">
+                  <span
+                    lang="mr"
+                    className="chalk-line-2 jhep-kalam inline-block whitespace-nowrap text-[clamp(16px,5vw,18px)] font-bold leading-[1.45] text-primary-light lg:text-[19px]"
+                  >
+                    चला इंग्रजी शिकूया
+                  </span>
+                </span>
+
+                {/* Chalk ledge */}
+                <div
+                  aria-hidden="true"
+                  className="mt-4 flex gap-1.5 border-t border-white/10 pt-3"
+                >
+                  <span className="h-1.5 w-6 rounded-full bg-dark-text/70" />
+                  <span className="h-1.5 w-4 rounded-full bg-primary-light/70" />
                 </div>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* ==============================
-                DESKTOP BLACKBOARD ONLY
-                Hidden below lg
-            ============================== */}
+        {/* Text */}
+        <div className="max-w-xl lg:max-w-[34rem]">
+          <h1
+            className={`font-display text-[clamp(2.1rem,10vw,3rem)] font-semibold leading-[1.06] tracking-[-0.035em] text-secondary transition-all duration-1000 motion-reduce:transition-none sm:text-5xl md:text-[3.7rem] lg:text-[4.3rem] xl:text-[4.7rem] ${
+              loaded
+                ? "translate-y-0 opacity-100"
+                : "translate-y-7 opacity-0 motion-reduce:translate-y-0"
+            }`}
+          >
+            Every child deserves
+            <br className="hidden sm:block" /> a{" "}
+            <span className="hero-mark whitespace-nowrap text-primary-dark">
+              confident voice.
+            </span>
+          </h1>
 
-            <div className="absolute right-[4%] top-1/2 hidden -translate-y-1/2 lg:block">
-              <div className="rounded-[2rem] border border-white/50 bg-gradient-to-br from-white/80 via-[#FFF9F2]/75 to-[#FFEEDF]/70 p-7 shadow-[0_30px_70px_-25px_rgba(23,33,59,0.22)] backdrop-blur-xl">
-                <div className="w-[320px]">
-                  <p className="jhep-body text-[9px] font-semibold uppercase tracking-[0.2em] text-[#8A8175]">
-                    Project Jhep
-                  </p>
+          <p
+            className={`mt-5 max-w-md font-sans text-[15px] leading-7 text-text-secondary transition-all delay-200 duration-700 motion-reduce:transition-none sm:text-base ${
+              loaded
+                ? "translate-y-0 opacity-100"
+                : "translate-y-5 opacity-0 motion-reduce:translate-y-0"
+            }`}
+          >
+            Simple English learning with Marathi support, designed to build
+            confidence.
+          </p>
 
-                  <p className="jhep-display mt-1 text-lg font-semibold text-[#17213B]">
-                    Learn • Speak • Grow
-                  </p>
+          <div
+            className={`mt-7 transition-all delay-[400ms] duration-700 motion-reduce:transition-none ${
+              loaded
+                ? "translate-y-0 opacity-100"
+                : "translate-y-5 opacity-0 motion-reduce:translate-y-0"
+            }`}
+          >
+            <button
+              type="button"
+              onClick={() => navigate("/login")}
+              className="group inline-flex min-h-12 w-full items-center justify-center gap-3 rounded-full bg-primary-dark px-6 py-3.5 font-sans text-sm font-semibold !text-white shadow-[var(--shadow-md)] transition-all duration-300 hover:-translate-y-1 hover:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:w-auto sm:px-6 sm:py-3 sm:text-[13px]"
+            >
+              <span className="!text-white">Explore Project Jhep</span>
 
-                  {/* ==============================
-                      BLACKBOARD
-                  ============================== */}
-
-                  <div className="chalk-board relative mt-5 rounded-2xl border-[6px] border-[#8B5E3C]/80 bg-[#1C2620] p-6 shadow-inner">
-                    {/* Chalk texture */}
-
-                    <div className="pointer-events-none absolute inset-0 rounded-[10px] bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.05),transparent_60%)]" />
-
-                    {/* ==============================
-                        ENGLISH
-                    ============================== */}
-
-                    <div
-                      className="relative"
-                      style={{
-                        width: LINE_1_WIDTH,
-                        minHeight: "36px",
-                      }}
-                    >
-                      <span className="chalk-line-1 jhep-chalk block whitespace-nowrap text-[26px] font-semibold leading-[1.2] text-[#FDF8ED]">
-                        Let's learn English!
-                      </span>
-
-                      {/* SHORTER LINE BETWEEN ENGLISH AND MARATHI */}
-
-                      <span
-                        className="chalk-emphasis absolute -bottom-1 left-0 h-[2px] rounded-full bg-[#FFB577]/70"
-                        style={{
-                          width: `${UNDERLINE_WIDTH}px`,
-                        }}
-                      />
-                    </div>
-
-                    {/* ==============================
-                        MARATHI
-                    ============================== */}
-
-                    <div
-                      className="relative mt-5"
-                      style={{
-                        width: LINE_2_WIDTH,
-                        minHeight: "34px",
-                      }}
-                    >
-                      <span
-                        className="
-                          chalk-line-2
-                          jhep-kalam
-                          block
-                          whitespace-nowrap
-                          text-[18px]
-                          font-bold
-                          leading-[1.35]
-                          text-[#FFB577]
-                        "
-                      >
-                        चला इंग्रजी शिकूया
-                      </span>
-                    </div>
-
-                    {/* ==============================
-                        CHALK LEDGE
-                    ============================== */}
-
-                    <div className="mt-6 flex gap-1.5 border-t border-white/10 pt-3">
-                      <span className="h-1.5 w-6 rounded-full bg-[#FDF8ED]/70" />
-                      <span className="h-1.5 w-4 rounded-full bg-[#FFB577]/70" />
-                    </div>
-
-                    {/* ==============================
-                        SUCCESS BADGE
-                    ============================== */}
-
-                    <div className="chalk-badge-final absolute -right-4 -top-4 flex h-12 w-12 items-center justify-center rounded-full border-2 border-[#FFF7F0] bg-[#EA580C] text-white shadow-[0_15px_30px_-12px_rgba(234,88,12,0.55)]">
-                      <Star size={18} fill="currentColor" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/15 transition-transform duration-300 group-hover:translate-x-1">
+                <ArrowUpRight
+                  size={13}
+                  aria-hidden="true"
+                  className="text-white"
+                />
+              </span>
+            </button>
           </div>
         </div>
       </div>

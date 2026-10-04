@@ -1,2 +1,234 @@
 @import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap");
 @import "tailwindcss";
+
+/* =========================================================
+   JHEP DESIGN SYSTEM
+   Orange-Dominant Education Theme
+   ========================================================= */
+
+:root {
+  /* =========================
+     BRAND — ORANGE FIRST
+     ========================= */
+
+  --primary: #f97316;
+  --primary-dark: #ea580c;
+  --primary-light: #ffedd5;
+
+  --secondary: #1e3a4c;
+  --secondary-dark: #142b38;
+  --secondary-light: #e8f1f5;
+
+  --accent: #fb923c;
+  --accent-light: #fff7ed;
+
+  /* =========================
+     BACKGROUNDS
+     ========================= */
+
+  --background: #fffaf5;
+  --surface: #ffffff;
+  --surface-muted: #fff3e8;
+
+  /* =========================
+     TEXT
+     ========================= */
+
+  --text-primary: #1f2933;
+  --text-secondary: #667085;
+  --text-muted: #98a2b3;
+
+  --text-on-primary: #ffffff;
+  --text-on-secondary: #ffffff;
+
+  /* =========================
+     BORDERS
+     ========================= */
+
+  --border: #f1dfcf;
+  --border-light: #f7ebe1;
+  --border-focus: #f97316;
+
+  /* =========================
+     STATUS
+     ========================= */
+
+  --success: #4d9f68;
+  --success-light: #eaf6ed;
+
+  --warning: #eab308;
+  --warning-light: #fef3c7;
+
+  --error: #dc5c5c;
+  --error-light: #fceaea;
+
+  --info: #4c9fd1;
+  --info-light: #e7f4fb;
+
+  /* =========================
+     LEARNING UI
+     ========================= */
+
+  --lesson-orange: #fff0df;
+  --lesson-peach: #ffe4d1;
+  --lesson-yellow: #fff4cc;
+  --lesson-blue: #e7f4fb;
+  --lesson-green: #eaf6ed;
+  --lesson-purple: #f1ebff;
+
+  /* =========================
+     DARK SECTIONS
+     ========================= */
+
+  --dark-bg: #142b38;
+  --dark-surface: #1e3a4c;
+  --dark-text: #fffaf5;
+  --dark-muted: #b8c6ce;
+
+  /* =========================
+     ORANGE GRADIENTS
+     ========================= */
+
+  --gradient-primary: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+
+  --gradient-soft: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+
+  /* =========================
+     SHADOWS
+     ========================= */
+
+  --shadow-sm: 0 1px 2px rgb(31 41 51 / 0.05);
+  --shadow-md: 0 8px 24px rgb(31 41 51 / 0.08);
+  --shadow-lg: 0 16px 40px rgb(31 41 51 / 0.1);
+}
+
+/* =========================================================
+   TAILWIND THEME TOKENS
+   ========================================================= */
+
+@theme {
+  --font-display: "Bricolage Grotesque", sans-serif;
+  --font-sans: "Bricolage Grotesque", sans-serif;
+
+  /* Brand */
+  --color-primary: #f97316;
+  --color-primary-dark: #ea580c;
+  --color-primary-light: #ffedd5;
+
+  --color-secondary: #1e3a4c;
+  --color-secondary-dark: #142b38;
+  --color-secondary-light: #e8f1f5;
+
+  --color-accent: #fb923c;
+  --color-accent-light: #fff7ed;
+
+  /* Backgrounds */
+  --color-background: #fffaf5;
+  --color-surface: #ffffff;
+  --color-surface-muted: #fff3e8;
+
+  /* Text */
+  --color-text-primary: #1f2933;
+  --color-text-secondary: #667085;
+  --color-text-muted: #98a2b3;
+
+  /* Borders */
+  --color-border: #f1dfcf;
+  --color-border-light: #f7ebe1;
+
+  /* Status */
+  --color-success: #4d9f68;
+  --color-success-light: #eaf6ed;
+
+  --color-warning: #eab308;
+  --color-warning-light: #fef3c7;
+
+  --color-error: #dc5c5c;
+  --color-error-light: #fceaea;
+
+  --color-info: #4c9fd1;
+  --color-info-light: #e7f4fb;
+
+  /* Learning */
+  --color-lesson-orange: #fff0df;
+  --color-lesson-peach: #ffe4d1;
+  --color-lesson-yellow: #fff4cc;
+  --color-lesson-blue: #e7f4fb;
+  --color-lesson-green: #eaf6ed;
+  --color-lesson-purple: #f1ebff;
+
+  /* Dark */
+  --color-dark-bg: #142b38;
+  --color-dark-surface: #1e3a4c;
+  --color-dark-text: #fffaf5;
+  --color-dark-muted: #b8c6ce;
+}
+
+/* =========================================================
+   BASE
+   ========================================================= */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: "Bricolage Grotesque", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::selection {
+  background: var(--primary-light);
+  color: var(--primary-dark);
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #f3c6a2;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* =========================================================
+   FOCUS
+   ========================================================= */
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}

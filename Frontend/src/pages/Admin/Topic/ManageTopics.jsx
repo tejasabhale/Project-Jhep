@@ -1,282 +1,413 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-
 import {
   BookOpen,
-  Edit,
   Plus,
+  Edit,
   Trash2,
-  Layers,
   ChevronRight,
-  LayoutDashboard,
+  ListPlus,
+  Layers,
+  GraduationCap,
+  ExternalLink,
 } from "lucide-react";
 
-import { getAllTopics, deleteTopic } from "../../../api/topic.api";
+import {
+  fetchAllTopics,
+  removeTopic,
+  fetchAllLessons,
+} from "../../../api/adminServices";
+import AdminPageHeader from "../../../components/admin/ui/AdminPageHeader";
+import AdminToolbar from "../../../components/admin/ui/AdminToolbar";
+import AdminStatusBadge from "../../../components/admin/ui/AdminStatusBadge";
+import AdminConfirmDialog from "../../../components/admin/ui/AdminConfirmDialog";
+import AdminEmptyState from "../../../components/admin/ui/AdminEmptyState";
+import { TableSkeleton } from "../../../components/admin/ui/AdminSkeleton";
+import {
+  AdminTableWrapper,
+  AdminTable,
+  AdminTableHeader,
+  AdminTableBody,
+  AdminTableRow,
+  AdminTableCell,
+} from "../../../components/admin/ui/AdminTable";
 
 export default function ManageTopics() {
   const [topics, setTopics] = useState([]);
+  const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadTopics();
-  }, []);
+  // Filters
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-  const loadTopics = async () => {
+  // Delete modal state
+  const [topicToDelete, setTopicToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const loadData = async () => {
     try {
       setLoading(true);
-
-      const response = await getAllTopics();
-
-      let list = [];
-
-      if (Array.isArray(response.data?.topics)) {
-        list = response.data.topics;
-      } else if (Array.isArray(response.data?.data?.topics)) {
-        list = response.data.data.topics;
-      } else if (Array.isArray(response.data)) {
-        list = response.data;
-      }
-
-      setTopics(list);
+      const [topicsRes, lessonsRes] = await Promise.all([
+        fetchAllTopics(),
+        fetchAllLessons().catch(() => []),
+      ]);
+      setTopics(topicsRes.topics || []);
+      setLessons(lessonsRes || []);
     } catch (error) {
-      console.error(error);
-
+      console.error("Error loading topics:", error);
       toast.error(error.response?.data?.message || "Failed to load topics");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Delete this topic and all associated lessons?",
-    );
+  useEffect(() => {
+    loadData();
+  }, []);
 
-    if (!confirmDelete) return;
+  // Compute lesson count map per topic
+  const lessonCountMap = useMemo(() => {
+    const map = new Map();
+    lessons.forEach((l) => {
+      const tId = l.topic?._id || l.topic;
+      if (tId) {
+        map.set(tId.toString(), (map.get(tId.toString()) || 0) + 1);
+      }
+    });
+    return map;
+  }, [lessons]);
 
+  // Filtering
+  const filteredTopics = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return topics.filter((topic) => {
+      const matchesSearch =
+        !query ||
+        topic.title?.toLowerCase().includes(query) ||
+        topic.description?.toLowerCase().includes(query);
+
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "published" && topic.isPublished) ||
+        (statusFilter === "unpublished" && !topic.isPublished);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [topics, search, statusFilter]);
+
+  const hasFilters = Boolean(search.trim() || statusFilter !== "all");
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+  };
+
+  // Delete execution
+  const confirmDelete = async () => {
+    if (!topicToDelete) return;
     try {
-      await deleteTopic(id);
-
+      setDeleteLoading(true);
+      await removeTopic(topicToDelete._id);
       toast.success("Topic deleted successfully");
-
-      setTopics((prev) => prev.filter((topic) => topic._id !== id));
+      setTopics((prev) => prev.filter((t) => t._id !== topicToDelete._id));
+      setTopicToDelete(null);
     } catch (error) {
-      console.error(error);
-
-      toast.error(error.response?.data?.message || "Delete failed");
+      console.error("Delete error:", error);
+      toast.error(
+        error.response?.data?.message ||
+          "Cannot delete topic. Ensure all lessons under this topic are removed first."
+      );
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-orange-50 px-4 py-10">
-        <div className="mx-auto max-w-6xl">
-          <div className="rounded-3xl bg-white p-12 text-center shadow-sm">
-            <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-orange-100 border-t-orange-500" />
-
-            <p className="font-medium text-slate-600">Loading topics...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-orange-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-8 rounded-3xl bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-orange-100">
-                <BookOpen size={28} className="text-orange-600" />
-              </div>
+    <div className="mx-auto max-w-7xl space-y-6">
+      {/* Page Header */}
+      <AdminPageHeader
+        title="Topics"
+        description="Create, structure, and manage core learning modules and topics."
+        breadcrumbs={[{ label: "Content" }, { label: "Topics" }]}
+        actions={
+          <Link
+            to="/admin/topics/add"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-primary-dark transition"
+          >
+            <Plus size={16} />
+            <span>New Topic</span>
+          </Link>
+        }
+      />
 
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-orange-500">
-                  Course Management
-                </p>
+      {/* Toolbar / Search & Filter */}
+      <AdminToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search topics by title or description..."
+        totalItems={topics.length}
+        showingItems={filteredTopics.length}
+        hasActiveFilters={hasFilters}
+        onClearFilters={handleClearFilters}
+        filters={[
+          {
+            id: "status",
+            label: "Publication Status",
+            value: statusFilter,
+            onChange: setStatusFilter,
+            options: [
+              { label: "All Statuses", value: "all" },
+              { label: "Published Only", value: "published" },
+              { label: "Unpublished Only", value: "unpublished" },
+            ],
+          },
+        ]}
+        extraActions={
+          <Link
+            to="/admin/lessons/add"
+            className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-xs font-semibold text-text-secondary hover:bg-surface-muted hover:text-text-primary transition"
+          >
+            <ListPlus size={14} />
+            <span>Add Lesson</span>
+          </Link>
+        }
+      />
 
-                <h1 className="mt-1 text-2xl font-bold text-slate-800 sm:text-3xl">
-                  Manage Topics
-                </h1>
+      {/* Data Table / Empty / Loading */}
+      {loading ? (
+        <TableSkeleton rows={6} />
+      ) : topics.length === 0 ? (
+        <AdminEmptyState
+          title="No topics created yet"
+          description="Create your first learning topic to start building curriculum modules."
+          icon={Layers}
+          actionLabel="Create Topic"
+          actionLink="/admin/topics/add"
+        />
+      ) : filteredTopics.length === 0 ? (
+        <AdminEmptyState
+          isFiltered={true}
+          onClearFilters={handleClearFilters}
+        />
+      ) : (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block">
+            <AdminTableWrapper>
+              <AdminTable>
+                <AdminTableHeader>
+                  <tr>
+                    <AdminTableCell isHeader className="w-[38%]">
+                      Topic Details
+                    </AdminTableCell>
+                    <AdminTableCell isHeader className="w-[14%]">
+                      Order
+                    </AdminTableCell>
+                    <AdminTableCell isHeader className="w-[16%]">
+                      Lessons
+                    </AdminTableCell>
+                    <AdminTableCell isHeader className="w-[16%]">
+                      Status
+                    </AdminTableCell>
+                    <AdminTableCell isHeader className="w-[16%] text-right">
+                      Actions
+                    </AdminTableCell>
+                  </tr>
+                </AdminTableHeader>
 
-                <p className="mt-1 text-sm text-slate-500">
-                  Create, edit, and manage your learning topics.
-                </p>
-              </div>
-            </div>
+                <AdminTableBody>
+                  {filteredTopics.map((topic) => {
+                    const count = lessonCountMap.get(topic._id) || 0;
 
-            <div className="flex flex-col gap-3 sm:flex-row">
-              {/* Admin Dashboard */}
-              <Link
-                to="/admin"
-                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-800"
-              >
-                <LayoutDashboard size={18} />
-                Admin Dashboard
-              </Link>
+                    return (
+                      <AdminTableRow key={topic._id}>
+                        {/* Topic info */}
+                        <AdminTableCell>
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-border bg-surface-muted flex items-center justify-center">
+                              {topic.thumbnail?.url ? (
+                                <img
+                                  src={topic.thumbnail.url}
+                                  alt=""
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <BookOpen size={18} className="text-primary" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-bold text-text-primary truncate">
+                                {topic.title}
+                              </p>
+                              <p className="mt-0.5 text-xs text-text-secondary line-clamp-1">
+                                {topic.description || "No description provided."}
+                              </p>
+                            </div>
+                          </div>
+                        </AdminTableCell>
 
-              {/* Add Topic */}
-              <Link
-                to="/admin/topics/add"
-                className="flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600"
-              >
-                <Plus size={18} />
-                Add Topic
-              </Link>
+                        {/* Order */}
+                        <AdminTableCell>
+                          <span className="font-mono text-xs font-semibold text-text-secondary">
+                            #{topic.order ?? 0}
+                          </span>
+                        </AdminTableCell>
 
-              {/* Add Lesson */}
-              <Link
-                to="/admin/lessons/add"
-                className="flex items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-5 py-3 text-sm font-semibold text-orange-600 transition hover:bg-orange-100"
-              >
-                <Plus size={18} />
-                Add Lesson
-              </Link>
-            </div>
+                        {/* Lessons */}
+                        <AdminTableCell>
+                          <Link
+                            to={`/admin/lessons/manage?topicId=${topic._id}`}
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-dark transition"
+                            title="View all lessons for this topic"
+                          >
+                            <span>{count} {count === 1 ? "lesson" : "lessons"}</span>
+                            <ChevronRight size={13} />
+                          </Link>
+                        </AdminTableCell>
+
+                        {/* Status */}
+                        <AdminTableCell>
+                          <AdminStatusBadge
+                            status={topic.isPublished ? "published" : "unpublished"}
+                          />
+                        </AdminTableCell>
+
+                        {/* Actions */}
+                        <AdminTableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Link
+                              to={`/admin/lessons/add?topicId=${topic._id}`}
+                              className="rounded-lg border border-border bg-surface p-1.5 text-text-secondary hover:border-primary-light hover:bg-surface-muted hover:text-primary transition"
+                              title="Add lesson to this topic"
+                            >
+                              <Plus size={15} />
+                            </Link>
+
+                            <Link
+                              to={`/admin/topics/edit/${topic._id}`}
+                              className="rounded-lg border border-border bg-surface p-1.5 text-text-secondary hover:bg-surface-muted hover:text-text-primary transition"
+                              title="Edit topic"
+                            >
+                              <Edit size={15} />
+                            </Link>
+
+                            <button
+                              type="button"
+                              onClick={() => setTopicToDelete(topic)}
+                              className="rounded-lg border border-border bg-surface p-1.5 text-text-secondary hover:bg-error-light hover:text-error transition"
+                              title="Delete topic"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </AdminTableCell>
+                      </AdminTableRow>
+                    );
+                  })}
+                </AdminTableBody>
+              </AdminTable>
+            </AdminTableWrapper>
           </div>
-        </div>
 
-        {/* Section Header */}
-        <div className="mb-5 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-slate-800">All Topics</h2>
+          {/* Mobile Stacked Cards */}
+          <div className="space-y-3 lg:hidden">
+            {filteredTopics.map((topic) => {
+              const count = lessonCountMap.get(topic._id) || 0;
 
-            <p className="mt-1 text-sm text-slate-500">
-              {topics.length} {topics.length === 1 ? "topic" : "topics"}{" "}
-              available
-            </p>
-          </div>
-        </div>
-
-        {/* Empty State */}
-        {topics.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-orange-200 bg-white px-6 py-16 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50">
-              <Layers size={26} className="text-orange-500" />
-            </div>
-
-            <h3 className="mt-4 text-lg font-semibold text-slate-800">
-              No topics yet
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Create your first topic to start adding lessons.
-            </p>
-
-            <Link
-              to="/admin/topics/add"
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
-            >
-              <Plus size={18} />
-              Add Topic
-            </Link>
-          </div>
-        ) : (
-          <div className="grid gap-5 md:grid-cols-2">
-            {topics.map((topic) => (
-              <div
-                key={topic._id}
-                className="group overflow-hidden rounded-3xl border border-orange-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-              >
-                {/* Topic Information */}
-                <div className="flex gap-5 p-5">
-                  <div className="shrink-0">
-                    {topic.thumbnail?.url ? (
-                      <img
-                        src={topic.thumbnail.url}
-                        alt={topic.title}
-                        className="h-24 w-24 rounded-2xl object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-orange-100">
-                        <BookOpen size={30} className="text-orange-500" />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="truncate text-lg font-bold text-slate-800">
-                          {topic.title}
-                        </h3>
-
-                        <p className="mt-1 text-sm text-slate-500">
-                          Grade {topic.grade || "N/A"}
-                        </p>
-                      </div>
-
-                      {/* Publish Status */}
-                      <span
-                        className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
-                          topic.isPublished
-                            ? "bg-green-50 text-green-600"
-                            : "bg-slate-100 text-slate-500"
-                        }`}
-                      >
-                        {topic.isPublished ? "Published" : "Unpublished"}
-                      </span>
+              return (
+                <div
+                  key={topic._id}
+                  className="rounded-2xl border border-border bg-surface p-4 shadow-xs space-y-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-border bg-surface-muted flex items-center justify-center">
+                      {topic.thumbnail?.url ? (
+                        <img
+                          src={topic.thumbnail.url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <BookOpen size={20} className="text-primary" />
+                      )}
                     </div>
 
-                    {topic.description && (
-                      <p className="mt-3 line-clamp-2 text-sm leading-5 text-slate-500">
-                        {topic.description}
-                      </p>
-                    )}
-                  </div>
-                </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="font-bold text-text-primary truncate text-sm">
+                          {topic.title}
+                        </h4>
+                        <AdminStatusBadge
+                          status={topic.isPublished ? "published" : "unpublished"}
+                          size="xs"
+                        />
+                      </div>
 
-                {/* Actions */}
-                <div className="border-t border-slate-100 bg-slate-50/70 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    {/* Add Lesson for THIS topic */}
+                      <p className="mt-1 text-xs text-text-secondary line-clamp-2">
+                        {topic.description || "No description provided."}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between border-t border-border pt-3 text-xs text-text-secondary">
+                    <span>
+                      Order: <strong>#{topic.order ?? 0}</strong>
+                    </span>
+
+                    <Link
+                      to={`/admin/lessons/manage?topicId=${topic._id}`}
+                      className="font-semibold text-primary inline-flex items-center gap-1"
+                    >
+                      {count} lessons
+                      <ChevronRight size={13} />
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 border-t border-border pt-2.5">
                     <Link
                       to={`/admin/lessons/add?topicId=${topic._id}`}
-                      className="flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
+                      className="flex items-center justify-center gap-1 rounded-xl bg-primary-light px-2.5 py-2 text-xs font-semibold text-primary-dark"
                     >
-                      <Plus size={17} />
-                      Add Lesson
+                      <Plus size={13} />
+                      Lesson
                     </Link>
 
-                    <div className="flex items-center gap-2">
-                      {/* Edit */}
-                      <Link
-                        to={`/admin/topics/edit/${topic._id}`}
-                        className="flex items-center gap-2 rounded-xl border border-orange-200 bg-white px-4 py-2.5 text-sm font-medium text-orange-600 transition hover:bg-orange-50"
-                      >
-                        <Edit size={17} />
-                        Edit
-                      </Link>
+                    <Link
+                      to={`/admin/topics/edit/${topic._id}`}
+                      className="flex items-center justify-center gap-1 rounded-xl border border-border bg-surface px-2.5 py-2 text-xs font-semibold text-text-secondary"
+                    >
+                      <Edit size={13} />
+                      Edit
+                    </Link>
 
-                      {/* Delete */}
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(topic._id)}
-                        className="flex items-center justify-center rounded-xl bg-red-50 p-2.5 text-red-600 transition hover:bg-red-100"
-                        title="Delete topic"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-
-                      {/* View Lessons */}
-                      <Link
-                        to={`/admin/lessons/manage?topicId=${topic._id}`}
-                        className="flex items-center justify-center rounded-xl border border-slate-200 bg-white p-2.5 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
-                        title="View lessons"
-                      >
-                        <ChevronRight size={18} />
-                      </Link>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setTopicToDelete(topic)}
+                      className="flex items-center justify-center gap-1 rounded-xl border border-error/20 bg-error-light px-2.5 py-2 text-xs font-semibold text-error"
+                    >
+                      <Trash2 size={13} />
+                      Delete
+                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-        )}
-      </div>
+        </>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AdminConfirmDialog
+        isOpen={Boolean(topicToDelete)}
+        onClose={() => setTopicToDelete(null)}
+        onConfirm={confirmDelete}
+        loading={deleteLoading}
+        title={`Delete Topic "${topicToDelete?.title}"?`}
+        description="This topic will be permanently removed. You cannot delete a topic that still contains lessons."
+        confirmLabel="Delete Topic"
+      />
     </div>
   );
 }

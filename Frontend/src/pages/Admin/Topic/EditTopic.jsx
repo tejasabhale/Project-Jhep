@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import { ArrowLeft, BookOpen, Loader2, Pencil } from "lucide-react";
 
 import TopicForm from "../../../components/admin/topic/TopicForm";
-
-import { getTopicById, updateTopic } from "../../../api/topic.api";
+import AdminPageHeader from "../../../components/admin/ui/AdminPageHeader";
+import { FormSkeleton } from "../../../components/admin/ui/AdminSkeleton";
+import { fetchTopicDetails, saveTopic } from "../../../api/adminServices";
 
 export default function EditTopic() {
   const { topicId } = useParams();
@@ -22,10 +22,7 @@ export default function EditTopic() {
   const loadTopic = async () => {
     try {
       setPageLoading(true);
-
-      const response = await getTopicById(topicId);
-
-      const topic = response.data?.topic || response.topic || response.data;
+      const topic = await fetchTopicDetails(topicId);
 
       if (!topic) {
         throw new Error("Topic not found");
@@ -34,16 +31,13 @@ export default function EditTopic() {
       setInitialData({
         title: topic.title || "",
         description: topic.description || "",
-        grade: topic.grade || "",
         order: topic.order ?? 1,
         isPublished: Boolean(topic.isPublished),
         thumbnail: topic.thumbnail?.url || null,
       });
     } catch (error) {
-      console.error(error);
-
+      console.error("Load topic error:", error);
       toast.error(error.response?.data?.message || "Failed to load topic");
-
       navigate("/admin/topics/manage");
     } finally {
       setPageLoading(false);
@@ -55,10 +49,8 @@ export default function EditTopic() {
       setLoading(true);
 
       const data = new FormData();
-
       data.append("title", form.title.trim());
       data.append("description", form.description.trim());
-      data.append("grade", form.grade);
       data.append("order", String(form.order));
       data.append("isPublished", String(Boolean(form.isPublished)));
 
@@ -66,14 +58,11 @@ export default function EditTopic() {
         data.append("thumbnail", form.thumbnail);
       }
 
-      await updateTopic(topicId, data);
-
+      await saveTopic(data, topicId);
       toast.success("Topic updated successfully");
-
       navigate("/admin/topics/manage");
     } catch (error) {
-      console.error(error);
-
+      console.error("Update topic error:", error);
       toast.error(error.response?.data?.message || "Failed to update topic");
     } finally {
       setLoading(false);
@@ -82,77 +71,35 @@ export default function EditTopic() {
 
   if (pageLoading) {
     return (
-      <div className="min-h-screen bg-orange-50 px-4 py-10">
-        <div className="mx-auto flex min-h-[70vh] max-w-5xl items-center justify-center">
-          <div className="rounded-3xl bg-white px-10 py-12 text-center shadow-lg">
-            <Loader2
-              size={42}
-              className="mx-auto mb-4 animate-spin text-orange-500"
-            />
-
-            <h2 className="text-xl font-semibold text-slate-800">
-              Loading Topic
-            </h2>
-
-            <p className="mt-2 text-sm text-slate-500">
-              Please wait while we fetch the topic details.
-            </p>
-          </div>
-        </div>
+      <div className="mx-auto max-w-4xl space-y-6">
+        <FormSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-orange-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-6 rounded-3xl bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100">
-                <BookOpen size={28} className="text-orange-600" />
-              </div>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <AdminPageHeader
+        title={`Edit Topic: ${initialData?.title || ""}`}
+        description="Update topic metadata, order, thumbnail, and publication status."
+        breadcrumbs={[
+          { label: "Content", path: "/admin/topics/manage" },
+          { label: "Topics", path: "/admin/topics/manage" },
+          { label: "Edit" },
+        ]}
+        backLink="/admin/topics/manage"
+      />
 
-              <div>
-                <div className="flex items-center gap-2">
-                  <Pencil size={16} className="text-orange-500" />
-
-                  <span className="text-xs font-semibold uppercase tracking-wider text-orange-500">
-                    Topic Editor
-                  </span>
-                </div>
-
-                <h1 className="mt-1 text-2xl font-bold text-slate-800 sm:text-3xl">
-                  Edit Topic
-                </h1>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  Update topic information and publication settings.
-                </p>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => navigate("/admin/topics/manage")}
-              className="flex items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-5 py-3 text-sm font-semibold text-orange-600 transition hover:bg-orange-100"
-            >
-              <ArrowLeft size={18} />
-              Back to Topics
-            </button>
-          </div>
-        </div>
-
-        {initialData && (
-          <TopicForm
-            title="Topic Information"
-            buttonText="Update Topic"
-            initialData={initialData}
-            loading={loading}
-            onSubmit={handleSubmit}
-          />
-        )}
-      </div>
+      {initialData && (
+        <TopicForm
+          title="Topic Details"
+          buttonText="Save Changes"
+          initialData={initialData}
+          loading={loading}
+          onSubmit={handleSubmit}
+          onCancel={() => navigate("/admin/topics/manage")}
+        />
+      )}
     </div>
   );
 }

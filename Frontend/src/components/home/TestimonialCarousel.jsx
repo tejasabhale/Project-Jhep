@@ -1,19 +1,72 @@
 import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Quote, Star, User } from "lucide-react";
 
 import { getAllTestimonials } from "../../api/testimonial.api";
 
+const EASE = [0.22, 1, 0.36, 1];
+const INTERVAL = 5000;
+
+/* Largest first, so the smaller circles stack on top of the larger ones */
+const ARC_RADII = [170, 130, 90, 50];
+
+/* Solid filled quarter-circles centered on a card corner, in --primary at low opacity */
+function Arcs({ className, cx, cy }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 200 200"
+      className={`pointer-events-none absolute h-44 w-44 md:h-56 md:w-56 ${className}`}
+    >
+      {ARC_RADII.map((r) => (
+        <circle
+          key={r}
+          cx={cx}
+          cy={cy}
+          r={r}
+          className="fill-primary"
+          fillOpacity="0.04"
+        />
+      ))}
+    </svg>
+  );
+}
+
+function SectionHeader() {
+  return (
+    <div className="mx-auto mb-12 max-w-2xl text-center">
+      <span className="inline-block rounded-full border border-border bg-primary-light px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary-dark">
+        Words That Inspire
+      </span>
+
+      <h2 className="mt-5 font-display text-3xl font-bold leading-tight text-secondary sm:text-4xl md:text-5xl">
+        Voices That <span className="text-primary">Inspire Change</span>
+      </h2>
+
+      <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-text-secondary md:text-base md:leading-8">
+        Small steps in learning can make a big difference. Here are a few words
+        from people who have been part of the Project Jhep journey.
+      </p>
+    </div>
+  );
+}
+
 export default function StudentTestimonials() {
+  const reduce = useReducedMotion();
+
   const [testimonials, setTestimonials] = useState([]);
   const [current, setCurrent] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
+    let active = true;
+
     const fetchTestimonials = async () => {
       try {
         const response = await getAllTestimonials();
 
-        if (Array.isArray(response?.data)) {
+        if (active && Array.isArray(response?.data)) {
           // Only show active testimonials on the public website
           const activeTestimonials = response.data.filter(
             (testimonial) => testimonial.isActive === true,
@@ -24,26 +77,28 @@ export default function StudentTestimonials() {
         }
       } catch (error) {
         console.error("Failed to fetch testimonials:", error);
-        setTestimonials([]);
+        if (active) setTestimonials([]);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     fetchTestimonials();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
-    if (testimonials.length <= 1) {
-      return;
-    }
+    if (testimonials.length <= 1 || paused) return;
 
     const interval = setInterval(() => {
       setCurrent((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
+    }, INTERVAL);
 
     return () => clearInterval(interval);
-  }, [testimonials.length]);
+  }, [testimonials.length, paused]);
 
   const previousSlide = () => {
     setCurrent((prev) => (prev === 0 ? testimonials.length - 1 : prev - 1));
@@ -53,48 +108,18 @@ export default function StudentTestimonials() {
     setCurrent((prev) => (prev + 1) % testimonials.length);
   };
 
+  const sectionClass =
+    "relative overflow-hidden bg-surface px-4 py-16 sm:px-6 sm:py-20 md:py-24";
+
   if (loading) {
     return (
-      <section className="bg-white px-6 py-20">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-12 text-center">
-            <span
-              className="inline-block rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em]"
-              style={{
-                background: "#FFEEE0",
-                color: "#C2410C",
-              }}
-            >
-              Student Voices
-            </span>
-
-            <h2
-              className="mt-5 text-2xl font-semibold md:text-[2.25rem]"
-              style={{
-                color: "#17213B",
-                fontFamily: "'Fraunces', serif",
-              }}
-            >
-              What Our{" "}
-              <span
-                style={{
-                  background: "linear-gradient(90deg, #FF7A30, #EA580C)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                Students Say
-              </span>
-            </h2>
-          </div>
-
+      <section className={sectionClass}>
+        <div className="relative mx-auto max-w-5xl">
+          <SectionHeader />
           <div
-            className="h-56 animate-pulse rounded-[2rem] border"
-            style={{
-              borderColor: "#FBDBBE",
-              background: "#FFF4E9",
-            }}
+            role="status"
+            aria-label="Loading testimonials"
+            className="h-56 animate-pulse rounded-[2rem] border border-border bg-surface-muted"
           />
         </div>
       </section>
@@ -107,146 +132,102 @@ export default function StudentTestimonials() {
   }
 
   const testimonial = testimonials[current];
-
   const rating = Math.min(5, Math.max(1, Number(testimonial.rating) || 5));
 
   return (
-    <section className="bg-white px-6 py-20">
-      <div className="mx-auto max-w-5xl">
-        {/* Header */}
-        <div className="mb-12 text-center">
-          <span
-            className="inline-block rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em]"
-            style={{
-              background: "#FFEEE0",
-              color: "#C2410C",
-            }}
-          >
-            Words That Inspire
-          </span>
+    <section className={sectionClass}>
+      <div className="relative mx-auto max-w-5xl">
+        <motion.div
+          initial={{ opacity: 0, y: reduce ? 0 : 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.65, ease: EASE }}
+        >
+          <SectionHeader />
+        </motion.div>
 
-          <h2
-            className="mt-5 text-2xl font-semibold md:text-[2.25rem] md:leading-[1.15]"
-            style={{
-              color: "#17213B",
-              fontFamily: "'Fraunces', serif",
-            }}
-          >
-            Voices That{" "}
+        {/* Testimonial card */}
+        <motion.div
+          initial={{ opacity: 0, y: reduce ? 0 : 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.7, delay: 0.1, ease: EASE }}
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onFocus={() => setPaused(true)}
+          onBlur={() => setPaused(false)}
+        >
+          <div className="relative overflow-hidden rounded-[2rem] border border-border bg-background p-6 shadow-[var(--shadow-md)] md:p-9">
+            {/* Corner arcs, only inside this card */}
+            <Arcs className="left-0 top-0" cx={0} cy={0} />
+            <Arcs className="bottom-0 right-0" cx={200} cy={200} />
+
+            {/* Large faded quote mark */}
+            <Quote
+              aria-hidden="true"
+              size={120}
+              strokeWidth={1.5}
+              className="pointer-events-none absolute -bottom-4 right-6 text-primary/10"
+            />
+
+            {/* Accent bar */}
             <span
-              style={{
-                background: "linear-gradient(90deg, #FF7A30, #EA580C)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              Inspire Change
-            </span>
-          </h2>
+              aria-hidden="true"
+              className="absolute left-0 top-8 h-12 w-1 rounded-r-full bg-primary"
+            />
 
-          <p
-            className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed md:text-base"
-            style={{
-              color: "#5B6472",
-              fontFamily: "'Inter', sans-serif",
-            }}
-          >
-            Small steps in learning can make a big difference. Here are a few
-            words from people who have been part of the Project Jhep journey.
-          </p>
-        </div>
-
-        {/* Testimonial Card */}
-        <div className="relative">
-          <div
-            className="relative overflow-hidden rounded-[2rem] border p-5 md:p-7"
-            style={{
-              borderColor: "#FBDBBE",
-              background: "#FFF7F1",
-              boxShadow: "0 12px 30px -24px rgba(23, 33, 59, 0.22)",
-            }}
-          >
-            {/* Quote Icon */}
-            <div
-              className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-lg md:right-7 md:top-7"
-              style={{
-                background: "#FFEEE0",
-              }}
-            >
-              <Quote
-                size={17}
-                strokeWidth={2}
-                style={{
-                  color: "#EA580C",
-                }}
-              />
+            {/* Quote icon badge */}
+            <div className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light text-primary-dark md:right-8 md:top-8">
+              <Quote size={18} strokeWidth={2} aria-hidden="true" />
             </div>
 
             {/* Rating */}
-            <div className="mb-4 flex gap-1">
+            <div
+              className="relative mb-5 flex gap-1"
+              role="img"
+              aria-label={`Rated ${rating} out of 5`}
+            >
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
-                  size={14}
-                  fill={star <= rating ? "#F97316" : "transparent"}
+                  size={16}
+                  aria-hidden="true"
+                  fill={star <= rating ? "currentColor" : "transparent"}
                   strokeWidth={star <= rating ? 0 : 1.5}
-                  style={{
-                    color: "#F97316",
-                  }}
+                  className="text-primary"
                 />
               ))}
             </div>
 
-            {/* Content */}
-            <div
-              key={testimonial._id}
-              className="animate-[fadeIn_0.4s_ease-in-out]"
-            >
-              <blockquote
-                className="max-w-3xl text-base font-medium leading-relaxed md:text-lg"
-                style={{
-                  color: "#17213B",
-                  fontFamily: "'Fraunces', serif",
-                }}
-              >
-                “{testimonial.review}”
-              </blockquote>
-
-              {/* Student Info */}
-              <div className="mt-5 flex items-center gap-3">
-                <div
-                  className="flex h-9 w-9 items-center justify-center rounded-full"
-                  style={{
-                    background: "#FFEEE0",
-                    border: "1px solid #FBDBBE",
-                  }}
+            {/* Content: fixed min height so the card doesn't jump between slides */}
+            <div className="relative min-h-[11rem] md:min-h-[9rem]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={testimonial._id}
+                  initial={{ opacity: 0, y: reduce ? 0 : 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: reduce ? 0 : -10 }}
+                  transition={{ duration: 0.35, ease: "easeInOut" }}
                 >
-                  <User
-                    size={16}
-                    strokeWidth={2}
-                    style={{
-                      color: "#EA580C",
-                    }}
-                  />
-                </div>
+                  <blockquote className="max-w-3xl font-display text-lg font-semibold leading-relaxed text-secondary md:text-2xl md:leading-relaxed">
+                    “{testimonial.review}”
+                  </blockquote>
 
-                <div>
-                  <h3
-                    className="text-sm font-semibold"
-                    style={{
-                      color: "#17213B",
-                      fontFamily: "'Inter', sans-serif",
-                    }}
-                  >
-                    {testimonial.name}
-                  </h3>
-                </div>
-              </div>
+                  <div className="mt-6 flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-primary-light text-primary-dark">
+                      <User size={17} strokeWidth={2} aria-hidden="true" />
+                    </div>
+
+                    <h3 className="text-sm font-semibold text-secondary md:text-base">
+                      {testimonial.name}
+                    </h3>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
             </div>
 
             {/* Navigation */}
-            <div className="mt-6 flex items-center justify-between">
+            <div className="relative mt-8 flex items-center justify-between border-t border-border-light pt-5">
               {/* Dots */}
               <div className="flex items-center gap-2">
                 {testimonials.map((item, index) => (
@@ -255,11 +236,12 @@ export default function StudentTestimonials() {
                     type="button"
                     onClick={() => setCurrent(index)}
                     aria-label={`Go to testimonial ${index + 1}`}
-                    className="h-1.5 rounded-full transition-all duration-300"
-                    style={{
-                      width: current === index ? "24px" : "7px",
-                      background: current === index ? "#EA580C" : "#FBD0AD",
-                    }}
+                    aria-current={current === index}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      current === index
+                        ? "w-6 bg-primary"
+                        : "w-2 bg-border hover:bg-primary/50"
+                    }`}
                   />
                 ))}
               </div>
@@ -271,64 +253,30 @@ export default function StudentTestimonials() {
                     type="button"
                     onClick={previousSlide}
                     aria-label="Previous testimonial"
-                    className="flex h-9 w-9 items-center justify-center rounded-full border bg-white transition-all duration-200 hover:border-orange-300 hover:bg-orange-50"
-                    style={{
-                      borderColor: "#FBDBBE",
-                      color: "#C2410C",
-                    }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface text-primary-dark transition-colors duration-200 hover:border-primary hover:bg-primary hover:text-white"
                   >
-                    <ChevronLeft size={17} />
+                    <ChevronLeft size={18} aria-hidden="true" />
                   </button>
 
                   <button
                     type="button"
                     onClick={nextSlide}
                     aria-label="Next testimonial"
-                    className="flex h-9 w-9 items-center justify-center rounded-full border bg-white transition-all duration-200 hover:border-orange-300 hover:bg-orange-50"
-                    style={{
-                      borderColor: "#FBDBBE",
-                      color: "#C2410C",
-                    }}
+                    className="flex h-10 w-10 items-center justify-center rounded-full border border-border bg-surface text-primary-dark transition-colors duration-200 hover:border-primary hover:bg-primary hover:text-white"
                   >
-                    <ChevronRight size={17} />
+                    <ChevronRight size={18} aria-hidden="true" />
                   </button>
                 </div>
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Bottom Text */}
-        <p
-          className="mt-5 text-center text-xs"
-          style={{
-            color: "#8A93A3",
-            fontFamily: "'Inter', sans-serif",
-          }}
-        >
+        {/* Bottom text */}
+        <p className="mt-6 text-center text-xs text-text-muted">
           Your success story could be next.
         </p>
       </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(5px);
-          }
-
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .animate-\\[fadeIn_0\\.4s_ease-in-out\\] {
-            animation: none;
-          }
-        }
-      `}</style>
     </section>
   );
 }

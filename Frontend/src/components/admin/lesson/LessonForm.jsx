@@ -1,26 +1,32 @@
-import { FileVideo, Link, Presentation, Save } from "lucide-react";
-
+import React from "react";
+import { Presentation, Video, Link as LinkIcon, FileText } from "lucide-react";
 import TopicSelect from "./TopicSelect";
 import ThumbnailUpload from "../common/ThumbnailUpload";
+import PublishToggle from "../topic/PublishToggle";
+import {
+  AdminFormSection,
+  AdminFormField,
+  AdminFormActions,
+} from "../ui/AdminFormSection";
 
 export default function LessonForm({
   topics = [],
   form,
   setForm,
   onSubmit,
-  loading,
+  loading = false,
   showTopic = true,
+  lockedTopic = false,
+  onCancel,
+  submitLabel = "Save Lesson",
 }) {
-  if (!form) {
-    return null;
-  }
+  if (!form) return null;
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-
+    const { name, value, type, checked } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -31,231 +37,230 @@ export default function LessonForm({
     }));
   };
 
+  const handleFileType = (type) => {
+    setForm((prev) => ({
+      ...prev,
+      fileType: type,
+      fileDuration: type === "pptx" ? "" : prev.fileDuration,
+    }));
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSubmit(form);
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      {showTopic && (
-        <TopicSelect
-          topics={topics}
-          value={form.topic}
-          onChange={handleChange}
-        />
-      )}
-
-      {/* Lesson Title */}
-      <div>
-        <label className="mb-2 block font-medium text-slate-700">
-          Lesson Title
-          <span className="ml-1 text-red-500">*</span>
-        </label>
-
-        <input
-          type="text"
-          name="title"
-          value={form.title || ""}
-          onChange={handleChange}
-          required
-          maxLength={150}
-          placeholder="Example: Introduction to English"
-          className="w-full rounded-xl border border-orange-200 px-4 py-3 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-        />
-      </div>
-
-      {/* Description */}
-      <div>
-        <label className="mb-2 block font-medium text-slate-700">
-          Description
-        </label>
-
-        <textarea
-          name="description"
-          value={form.description || ""}
-          onChange={handleChange}
-          rows={4}
-          maxLength={1000}
-          placeholder="Enter lesson description..."
-          className="w-full resize-none rounded-xl border border-orange-200 px-4 py-3 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-        />
-
-        <p className="mt-1 text-right text-xs text-slate-400">
-          {(form.description || "").length}/1000
-        </p>
-      </div>
-
-      {/* Lesson Order */}
-      <div>
-        <label className="mb-2 block font-medium text-slate-700">
-          Lesson Order
-          <span className="ml-1 text-red-500">*</span>
-        </label>
-
-        <input
-          type="number"
-          min={1}
-          name="order"
-          value={form.order ?? ""}
-          onChange={handleChange}
-          required
-          className="w-full rounded-xl border border-orange-200 px-4 py-3 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-        />
-      </div>
-
-      {/* Lesson File */}
-      <div className="rounded-2xl border border-orange-100 bg-orange-50/40 p-5">
-        <div className="mb-5">
-          <h3 className="text-lg font-semibold text-slate-800">Lesson File</h3>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Add or update the presentation or video associated with this lesson.
-          </p>
-        </div>
-
-        {/* File Type */}
-        <div className="mb-5 grid gap-3 sm:grid-cols-2">
-          {/* PPTX */}
-          <button
-            type="button"
-            onClick={() =>
-              setForm((prev) => ({
-                ...prev,
-                fileType: "pptx",
-                fileDuration: "",
-              }))
-            }
-            className={`flex items-center gap-3 rounded-xl border p-4 text-left transition ${
-              form.fileType === "pptx"
-                ? "border-orange-500 bg-white ring-2 ring-orange-100"
-                : "border-orange-200 bg-white hover:border-orange-300"
-            }`}
-          >
-            <div
-              className={`rounded-xl p-3 ${
-                form.fileType === "pptx"
-                  ? "bg-orange-100 text-orange-600"
-                  : "bg-slate-100 text-slate-500"
-              }`}
-            >
-              <Presentation size={20} />
-            </div>
-
-            <div>
-              <p className="font-semibold text-slate-800">PowerPoint</p>
-
-              <p className="text-xs text-slate-500">PPTX presentation</p>
-            </div>
-          </button>
-
-          {/* Video */}
-          <button
-            type="button"
-            onClick={() =>
-              setForm((prev) => ({
-                ...prev,
-                fileType: "video",
-              }))
-            }
-            className={`flex items-center gap-3 rounded-xl border p-4 text-left transition ${
-              form.fileType === "video"
-                ? "border-orange-500 bg-white ring-2 ring-orange-100"
-                : "border-orange-200 bg-white hover:border-orange-300"
-            }`}
-          >
-            <div
-              className={`rounded-xl p-3 ${
-                form.fileType === "video"
-                  ? "bg-orange-100 text-orange-600"
-                  : "bg-slate-100 text-slate-500"
-              }`}
-            >
-              <FileVideo size={20} />
-            </div>
-
-            <div>
-              <p className="font-semibold text-slate-800">Video</p>
-
-              <p className="text-xs text-slate-500">Video content</p>
-            </div>
-          </button>
-        </div>
-
-        <div className="space-y-5">
-          {/* File Name */}
-          <div>
-            <label className="mb-2 block font-medium text-slate-700">
-              File Name
-              <span className="ml-1 text-red-500">*</span>
-            </label>
-
-            <input
-              type="text"
-              name="fileName"
-              value={form.fileName || ""}
-              onChange={handleChange}
-              required
-              placeholder={
-                form.fileType === "pptx" ? "lesson.pptx" : "lesson.mp4"
-              }
-              className="w-full rounded-xl border border-orange-200 bg-white px-4 py-3 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-            />
-          </div>
-
-          {/* File URL */}
-          <div>
-            <label className="mb-2 flex items-center gap-2 font-medium text-slate-700">
-              <Link size={16} />
-              File URL
-              <span className="text-red-500">*</span>
-            </label>
-
-            <input
-              type="url"
-              name="fileUrl"
-              value={form.fileUrl || ""}
-              onChange={handleChange}
-              required
-              placeholder="https://..."
-              className="w-full rounded-xl border border-orange-200 bg-white px-4 py-3 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-            />
-
-            <p className="mt-2 text-xs text-slate-500">
-              Enter the publicly accessible URL of the PPTX or video.
-            </p>
-          </div>
-
-          {/* Video Duration */}
-          {form.fileType === "video" && (
-            <div>
-              <label className="mb-2 block font-medium text-slate-700">
-                Video Duration
-              </label>
-
-              <input
-                type="text"
-                name="fileDuration"
-                value={form.fileDuration || ""}
-                onChange={handleChange}
-                placeholder="Example: 12:35"
-                className="w-full rounded-xl border border-orange-200 bg-white px-4 py-3 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-              />
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Basic Lesson Information */}
+      <AdminFormSection
+        title="Lesson Information"
+        description="Core identity and topic classification for this lesson."
+      >
+        <div className="grid gap-5 sm:grid-cols-2">
+          {showTopic && (
+            <div className="sm:col-span-2">
+              <AdminFormField label="Topic Module" required>
+                <TopicSelect
+                  topics={topics}
+                  value={form.topic}
+                  onChange={handleChange}
+                  disabled={lockedTopic}
+                />
+              </AdminFormField>
             </div>
           )}
+
+          <div className="sm:col-span-2">
+            <AdminFormField label="Lesson Title" required>
+              <input
+                type="text"
+                name="title"
+                value={form.title || ""}
+                onChange={handleChange}
+                required
+                maxLength={150}
+                placeholder="e.g. Chapter 1: Introduction to English Verbs"
+                className="h-10 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-text-primary placeholder:text-text-muted outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </AdminFormField>
+          </div>
+
+          <AdminFormField
+            label="Lesson Order"
+            required
+            hint="Sequence number within the chosen topic"
+          >
+            <input
+              type="number"
+              min={1}
+              required
+              name="order"
+              value={form.order ?? ""}
+              onChange={handleChange}
+              placeholder="1, 2, 3..."
+              className="h-10 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-text-primary outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
+            />
+          </AdminFormField>
+
+          <div className="sm:col-span-2">
+            <AdminFormField
+              label="Description"
+              hint={`${(form.description || "").length}/1000 characters`}
+            >
+              <textarea
+                name="description"
+                value={form.description || ""}
+                onChange={handleChange}
+                rows={3}
+                maxLength={1000}
+                placeholder="Outline what skills or concepts this lesson covers..."
+                className="w-full resize-none rounded-xl border border-border bg-background p-3.5 text-sm text-text-primary placeholder:text-text-muted outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </AdminFormField>
+          </div>
         </div>
-      </div>
+      </AdminFormSection>
+
+      {/* Lesson Material & File */}
+      <AdminFormSection
+        title="Learning Material & File"
+        description="Attach the lesson slides or video file to be viewed by learners."
+      >
+        <div className="space-y-4">
+          <AdminFormField label="Content Format" required>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => handleFileType("pptx")}
+                className={`flex items-center gap-3 rounded-xl border p-3.5 text-left transition ${
+                  form.fileType === "pptx"
+                    ? "border-primary bg-primary-light/40 text-primary-dark ring-1 ring-primary"
+                    : "border-border bg-surface hover:bg-surface-muted text-text-secondary"
+                }`}
+              >
+                <div
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                    form.fileType === "pptx"
+                      ? "bg-primary text-white"
+                      : "bg-surface-muted text-text-muted"
+                  }`}
+                >
+                  <Presentation size={18} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-text-primary">
+                    PowerPoint Presentation
+                  </p>
+                  <p className="text-[11px] text-text-muted">
+                    .pptx slide deck or viewer link
+                  </p>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleFileType("video")}
+                className={`flex items-center gap-3 rounded-xl border p-3.5 text-left transition ${
+                  form.fileType === "video"
+                    ? "border-primary bg-primary-light/40 text-primary-dark ring-1 ring-primary"
+                    : "border-border bg-surface hover:bg-surface-muted text-text-secondary"
+                }`}
+              >
+                <div
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                    form.fileType === "video"
+                      ? "bg-primary text-white"
+                      : "bg-surface-muted text-text-muted"
+                  }`}
+                >
+                  <Video size={18} />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-text-primary">
+                    Video Lesson
+                  </p>
+                  <p className="text-[11px] text-text-muted">
+                    MP4 video or streaming URL
+                  </p>
+                </div>
+              </button>
+            </div>
+          </AdminFormField>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <AdminFormField label="File / Material Name" required>
+              <input
+                type="text"
+                name="fileName"
+                value={form.fileName || ""}
+                onChange={handleChange}
+                required
+                placeholder={
+                  form.fileType === "pptx" ? "intro-verbs.pptx" : "verbs-lecture.mp4"
+                }
+                className="h-10 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-text-primary placeholder:text-text-muted outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </AdminFormField>
+
+            <AdminFormField label="File Public URL" required>
+              <div className="relative">
+                <LinkIcon
+                  size={15}
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+                />
+                <input
+                  type="url"
+                  name="fileUrl"
+                  value={form.fileUrl || ""}
+                  onChange={handleChange}
+                  required
+                  placeholder="https://..."
+                  className="h-10 w-full rounded-xl border border-border bg-background pl-9 pr-3.5 text-sm text-text-primary placeholder:text-text-muted outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              </div>
+            </AdminFormField>
+
+            {form.fileType === "video" && (
+              <AdminFormField
+                label="Video Duration"
+                hint="Format e.g. 10:45 or 15 mins"
+              >
+                <input
+                  type="text"
+                  name="fileDuration"
+                  value={form.fileDuration || ""}
+                  onChange={handleChange}
+                  placeholder="e.g. 12:30"
+                  className="h-10 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-text-primary placeholder:text-text-muted outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              </AdminFormField>
+            )}
+          </div>
+        </div>
+      </AdminFormSection>
 
       {/* Thumbnail */}
-      <div>
-        <ThumbnailUpload image={form.thumbnail} onChange={handleThumbnail} />
-      </div>
+      <AdminFormSection
+        title="Lesson Thumbnail"
+        description="Preview card image for students exploring this lesson."
+      >
+        <div className="max-w-md">
+          <ThumbnailUpload
+            image={form.thumbnail}
+            onChange={handleThumbnail}
+            label="Upload Lesson Thumbnail"
+          />
+        </div>
+      </AdminFormSection>
 
-      {/* Publish */}
-      <div className="rounded-xl border border-orange-100 bg-orange-50 p-4">
-        <label className="flex cursor-pointer items-center gap-3">
-          <input
-            type="checkbox"
+      {/* Publishing Toggle */}
+      <AdminFormSection
+        title="Visibility"
+        description="Control whether students can currently view this lesson."
+      >
+        <div className="rounded-xl border border-border bg-background p-4">
+          <PublishToggle
             checked={Boolean(form.isPublished)}
             onChange={(e) =>
               setForm((prev) => ({
@@ -263,29 +268,22 @@ export default function LessonForm({
                 isPublished: e.target.checked,
               }))
             }
-            className="h-4 w-4 rounded border-orange-300 text-orange-500 focus:ring-orange-500"
+            title="Publish Lesson"
+            description={
+              form.isPublished
+                ? "This lesson is published and accessible to students."
+                : "This lesson is unpublished and saved as draft."
+            }
           />
+        </div>
+      </AdminFormSection>
 
-          <div>
-            <p className="font-medium text-slate-800">Publish Lesson</p>
-
-            <p className="text-sm text-slate-500">
-              Published lessons are visible to students.
-            </p>
-          </div>
-        </label>
-      </div>
-
-      {/* Submit */}
-      <button
-        type="submit"
-        disabled={loading}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-500 py-3 font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        <Save size={18} />
-
-        {loading ? "Saving..." : "Save Lesson"}
-      </button>
+      {/* Form Action Buttons */}
+      <AdminFormActions
+        onCancel={onCancel}
+        loading={loading}
+        submitLabel={submitLabel}
+      />
     </form>
   );
 }

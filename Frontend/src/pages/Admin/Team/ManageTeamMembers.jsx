@@ -1,459 +1,443 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
-  Pencil,
-  Trash2,
   Plus,
   Users,
-  ArrowUpDown,
-  UserRound,
   Eye,
   EyeOff,
+  Pencil,
+  Trash2,
+  UserRound,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-import { getAllTeamMembers, deleteTeamMember } from "../../../api/team.api";
+import AdminPageHeader from "../../../components/admin/ui/AdminPageHeader";
+import AdminToolbar from "../../../components/admin/ui/AdminToolbar";
+import AdminStatusBadge from "../../../components/admin/ui/AdminStatusBadge";
+import AdminConfirmDialog from "../../../components/admin/ui/AdminConfirmDialog";
+import AdminEmptyState from "../../../components/admin/ui/AdminEmptyState";
+import AdminErrorState from "../../../components/admin/ui/AdminErrorState";
+import { TableSkeleton } from "../../../components/admin/ui/AdminSkeleton";
+import {
+  AdminTableWrapper,
+  AdminTable,
+  AdminTableHeader,
+  AdminTableHead,
+  AdminTableBody,
+  AdminTableRow,
+  AdminTableCell,
+} from "../../../components/admin/ui/AdminTable";
+
+import {
+  fetchAllTeamMembers,
+  removeTeamMember,
+  toggleTeamMemberStatus,
+} from "../../../api/adminServices";
 
 export default function ManageTeamMembers() {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const fetchMembers = async () => {
+  // Filters
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  // Deletion modal state
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Status toggle state
+  const [togglingId, setTogglingId] = useState(null);
+
+  const loadMembers = useCallback(async () => {
     try {
-      const res = await getAllTeamMembers();
-      setMembers(res.data);
-    } catch (error) {
-      console.error(error);
-      toast.error("Unable to fetch team members.");
+      setLoading(true);
+      setError(null);
+      const data = await fetchAllTeamMembers();
+      setMembers(data);
+    } catch (err) {
+      console.error("Failed to load team members:", err);
+      setError(err?.response?.data?.message || "Failed to load team members.");
+      toast.error("Unable to load team members.");
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchMembers();
   }, []);
 
-  const handleDelete = async (teamId) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this member?",
-    );
+  useEffect(() => {
+    loadMembers();
+  }, [loadMembers]);
 
-    if (!confirmDelete) return;
+  // Filtered members list
+  const filteredMembers = useMemo(() => {
+    return members.filter((member) => {
+      const q = search.trim().toLowerCase();
+      const matchesSearch =
+        !q ||
+        (member.name && member.name.toLowerCase().includes(q)) ||
+        (member.role && member.role.toLowerCase().includes(q)) ||
+        (member.email && member.email.toLowerCase().includes(q));
 
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "active" && member.isActive) ||
+        (statusFilter === "inactive" && !member.isActive);
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [members, search, statusFilter]);
+
+  // Stats calculation
+  const totalCount = members.length;
+  const activeCount = members.filter((m) => m.isActive).length;
+  const inactiveCount = totalCount - activeCount;
+
+  // Toggle active status
+  const handleToggleStatus = async (member) => {
     try {
-      await deleteTeamMember(teamId);
-
-      toast.success("Team member deleted successfully.");
-      fetchMembers();
-    } catch (error) {
-      console.error(error);
-
-      toast.error(error.response?.data?.message || "Unable to delete member.");
+      setTogglingId(member._id);
+      const nextActiveState = !member.isActive;
+      await toggleTeamMemberStatus(member._id, nextActiveState);
+      setMembers((prev) =>
+        prev.map((m) =>
+          m._id === member._id ? { ...m, isActive: nextActiveState } : m
+        )
+      );
+      toast.success(
+        `Member marked as ${nextActiveState ? "active" : "inactive"}.`
+      );
+    } catch (err) {
+      console.error("Failed to toggle status:", err);
+      toast.error("Could not update member status.");
+    } finally {
+      setTogglingId(null);
     }
   };
 
-  const activeMembers = members.filter((member) => member.isActive).length;
-  const inactiveMembers = members.length - activeMembers;
+  // Confirm delete
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      setIsDeleting(true);
+      await removeTeamMember(deleteTarget._id);
+      setMembers((prev) => prev.filter((m) => m._id !== deleteTarget._id));
+      toast.success(`"${deleteTarget.name}" was removed.`);
+      setDeleteTarget(null);
+    } catch (err) {
+      console.error("Failed to delete member:", err);
+      toast.error(err?.response?.data?.message || "Failed to delete member.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="animate-pulse space-y-6">
-            <div className="h-10 w-64 rounded-xl bg-gray-100" />
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="h-24 rounded-2xl bg-gray-100" />
-              <div className="h-24 rounded-2xl bg-gray-100" />
-              <div className="h-24 rounded-2xl bg-gray-100" />
-            </div>
-
-            <div className="h-96 rounded-2xl bg-gray-100" />
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleResetFilters = () => {
+    setSearch("");
+    setStatusFilter("all");
+  };
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-500">
-                <Users size={20} />
-              </div>
-
-              <h1
-                className="text-2xl font-semibold text-gray-900 sm:text-3xl"
-                style={{
-                  fontFamily: "'Fraunces', serif",
-                }}
-              >
-                Manage Team
-              </h1>
-            </div>
-
-            <p className="mt-2 text-sm text-gray-500">
-              Manage your team members and their visibility on the website.
-            </p>
-          </div>
-
+    <div className="space-y-6">
+      {/* Header */}
+      <AdminPageHeader
+        title="Team Members"
+        subtitle="Manage leadership, educators, and staff profiles displayed on the public site."
+        badge={`${totalCount} ${totalCount === 1 ? "member" : "members"}`}
+        breadcrumbs={[
+          { label: "Dashboard", href: "/admin" },
+          { label: "Team Members" },
+        ]}
+        actions={
           <Link
             to="/admin/team/add"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600 hover:shadow-md"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary/20 active:opacity-90"
           >
-            <Plus size={18} />
+            <Plus size={15} />
             Add Member
           </Link>
+        }
+      />
+
+      {/* Stats Summary Cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-border bg-surface p-4 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+              Total Members
+            </span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary-light text-secondary">
+              <Users size={16} />
+            </div>
+          </div>
+          <div className="mt-2 text-2xl font-bold text-text-primary">
+            {totalCount}
+          </div>
+          <p className="mt-1 text-xs text-text-muted">All registered team profiles</p>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          {/* Total */}
-          <div className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Total Members
-                </p>
-
-                <h3
-                  className="mt-2 text-2xl font-semibold text-gray-900"
-                  style={{
-                    fontFamily: "'Fraunces', serif",
-                  }}
-                >
-                  {members.length}
-                </h3>
-
-                <p className="mt-1 text-xs text-gray-400">All team members</p>
-              </div>
-
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-500">
-                <Users size={21} />
-              </div>
+        <div className="rounded-xl border border-success/20 bg-success/5 p-4 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-success">
+              Active / Visible
+            </span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-success/15 text-success">
+              <Eye size={16} />
             </div>
           </div>
-
-          {/* Active */}
-          <div className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Active Members
-                </p>
-
-                <h3
-                  className="mt-2 text-2xl font-semibold text-gray-900"
-                  style={{
-                    fontFamily: "'Fraunces', serif",
-                  }}
-                >
-                  {activeMembers}
-                </h3>
-
-                <p className="mt-1 text-xs text-gray-400">Visible on website</p>
-              </div>
-
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-50 text-green-600">
-                <Eye size={21} />
-              </div>
-            </div>
+          <div className="mt-2 text-2xl font-bold text-success">
+            {activeCount}
           </div>
-
-          {/* Inactive */}
-          <div className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Inactive Members
-                </p>
-
-                <h3
-                  className="mt-2 text-2xl font-semibold text-gray-900"
-                  style={{
-                    fontFamily: "'Fraunces', serif",
-                  }}
-                >
-                  {inactiveMembers}
-                </h3>
-
-                <p className="mt-1 text-xs text-gray-400">
-                  Hidden from website
-                </p>
-              </div>
-
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-500">
-                <EyeOff size={21} />
-              </div>
-            </div>
-          </div>
+          <p className="mt-1 text-xs text-text-muted">Live on public About/Team page</p>
         </div>
 
-        {/* Members Table */}
-        <div className="overflow-hidden rounded-2xl border border-orange-100 bg-white shadow-sm">
-          {/* Table Header */}
-          <div className="flex items-center justify-between border-b border-orange-100 px-5 py-4 sm:px-6">
-            <div>
-              <h2 className="font-semibold text-gray-900">Team Members</h2>
-
-              <p className="mt-0.5 text-xs text-gray-500">
-                {members.length} {members.length === 1 ? "member" : "members"}{" "}
-                found
-              </p>
+        <div className="rounded-xl border border-border bg-surface p-4 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-text-muted">
+              Inactive / Hidden
+            </span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary-light text-text-muted">
+              <EyeOff size={16} />
             </div>
           </div>
+          <div className="mt-2 text-2xl font-bold text-text-primary">
+            {inactiveCount}
+          </div>
+          <p className="mt-1 text-xs text-text-muted">Draft or disabled profiles</p>
+        </div>
+      </div>
 
-          {/* Desktop Table */}
-          <div className="hidden overflow-x-auto md:block">
-            <table className="w-full table-fixed">
-              <thead>
-                <tr className="border-b border-orange-100 bg-orange-50/60">
-                  <th className="w-[34%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-                    Member
-                  </th>
+      {/* Toolbar */}
+      <AdminToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by name, role, or email..."
+        totalCount={totalCount}
+        filteredCount={filteredMembers.length}
+        onReset={handleResetFilters}
+        filters={[
+          {
+            key: "status",
+            value: statusFilter,
+            onChange: setStatusFilter,
+            options: [
+              { label: "All Statuses", value: "all" },
+              { label: "Active Only", value: "active" },
+              { label: "Inactive Only", value: "inactive" },
+            ],
+          },
+        ]}
+      />
 
-                  <th className="w-[24%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-                    Role
-                  </th>
+      {/* Content State */}
+      {loading ? (
+        <TableSkeleton rows={5} columns={5} />
+      ) : error ? (
+        <AdminErrorState
+          title="Failed to Load Team"
+          message={error}
+          onRetry={loadMembers}
+        />
+      ) : members.length === 0 ? (
+        <AdminEmptyState
+          title="No team members yet"
+          description="Get started by adding leadership, teachers, or administrators to your organization."
+          actionLabel="Add Member"
+          actionTo="/admin/team/add"
+        />
+      ) : filteredMembers.length === 0 ? (
+        <AdminEmptyState
+          isFiltered
+          title="No matching members"
+          description="No members match your search keywords or active filters."
+          onResetFilters={handleResetFilters}
+        />
+      ) : (
+        <>
+          {/* Desktop SaaS Data Table */}
+          <div className="hidden md:block">
+            <AdminTableWrapper>
+              <AdminTable>
+                <AdminTableHeader>
+                  <AdminTableRow>
+                    <AdminTableHead className="w-[32%]">Member</AdminTableHead>
+                    <AdminTableHead className="w-[24%]">Role / Designation</AdminTableHead>
+                    <AdminTableHead className="w-[12%]">Order</AdminTableHead>
+                    <AdminTableHead className="w-[16%]">Status</AdminTableHead>
+                    <AdminTableHead className="w-[16%] text-right">Actions</AdminTableHead>
+                  </AdminTableRow>
+                </AdminTableHeader>
 
-                  <th className="w-[14%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-                    <div className="flex items-center gap-1.5">
-                      Order
-                      <ArrowUpDown size={13} />
-                    </div>
-                  </th>
-
-                  <th className="w-[14%] px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-gray-600">
-                    Status
-                  </th>
-
-                  <th className="w-[14%] px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-600">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody className="divide-y divide-gray-100">
-                {members.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-16 text-center">
-                      <div className="mx-auto flex max-w-sm flex-col items-center">
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-orange-500">
-                          <Users size={25} />
-                        </div>
-
-                        <h3 className="mt-4 font-semibold text-gray-900">
-                          No team members yet
-                        </h3>
-
-                        <p className="mt-1 text-sm text-gray-500">
-                          Add your first team member to get started.
-                        </p>
-
-                        <Link
-                          to="/admin/team/add"
-                          className="mt-5 inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-600"
-                        >
-                          <Plus size={17} />
-                          Add Member
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  members.map((member) => (
-                    <tr
-                      key={member._id}
-                      className="transition hover:bg-orange-50/30"
-                    >
-                      {/* Member */}
-                      <td className="px-6 py-4 align-middle">
-                        <div className="flex min-w-0 items-center gap-3">
+                <AdminTableBody>
+                  {filteredMembers.map((member) => (
+                    <AdminTableRow key={member._id}>
+                      {/* Member Info */}
+                      <AdminTableCell>
+                        <div className="flex items-center gap-3">
                           {member.photo?.url ? (
                             <img
                               src={member.photo.url}
                               alt={member.name}
-                              className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-orange-50"
+                              className="h-10 w-10 shrink-0 rounded-full object-cover border border-border"
                             />
                           ) : (
-                            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-600">
-                              <UserRound size={19} />
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary-light text-primary font-semibold text-sm border border-primary/20">
+                              {member.name ? member.name.charAt(0).toUpperCase() : <UserRound size={16} />}
                             </div>
                           )}
 
                           <div className="min-w-0">
-                            <p className="truncate font-semibold text-gray-900">
+                            <div className="font-semibold text-text-primary truncate">
                               {member.name}
-                            </p>
-
-                            <p className="text-xs text-gray-500">Team Member</p>
+                            </div>
+                            {member.email && (
+                              <div className="text-xs text-text-secondary truncate mt-0.5">
+                                {member.email}
+                              </div>
+                            )}
                           </div>
                         </div>
-                      </td>
+                      </AdminTableCell>
 
                       {/* Role */}
-                      <td className="px-6 py-4 align-middle">
-                        <p className="truncate text-sm font-medium text-gray-700">
-                          {member.role}
-                        </p>
-                      </td>
+                      <AdminTableCell>
+                        <span className="text-sm font-medium text-text-primary">
+                          {member.role || "—"}
+                        </span>
+                      </AdminTableCell>
 
                       {/* Order */}
-                      <td className="px-6 py-4 align-middle">
-                        <span className="text-sm font-medium text-gray-600">
-                          #{member.order}
+                      <AdminTableCell>
+                        <span className="inline-flex items-center font-mono text-xs font-semibold px-2 py-0.5 rounded bg-background border border-border text-text-primary">
+                          #{member.order ?? 0}
                         </span>
-                      </td>
+                      </AdminTableCell>
 
                       {/* Status */}
-                      <td className="px-6 py-4 align-middle">
-                        {member.isActive ? (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-600">
-                            <Eye size={14} />
-                            Active
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-500">
-                            <EyeOff size={14} />
-                            Inactive
-                          </span>
-                        )}
-                      </td>
+                      <AdminTableCell>
+                        <div className="flex items-center gap-2">
+                          <AdminStatusBadge
+                            status={member.isActive ? "active" : "inactive"}
+                          />
+                          <button
+                            type="button"
+                            disabled={togglingId === member._id}
+                            onClick={() => handleToggleStatus(member)}
+                            className="rounded px-2 py-0.5 text-[11px] font-medium text-text-secondary hover:bg-background hover:text-text-primary border border-transparent hover:border-border transition disabled:opacity-50"
+                            title={member.isActive ? "Deactivate member" : "Activate member"}
+                          >
+                            {member.isActive ? "Hide" : "Show"}
+                          </button>
+                        </div>
+                      </AdminTableCell>
 
                       {/* Actions */}
-                      <td className="px-6 py-4 align-middle">
-                        <div className="flex items-center justify-end gap-2">
+                      <AdminTableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
                           <Link
                             to={`/admin/team/edit/${member._id}`}
-                            className="rounded-lg p-2 text-gray-500 transition hover:bg-orange-50 hover:text-orange-600"
+                            className="rounded-md p-1.5 text-text-secondary transition hover:bg-primary-light hover:text-primary"
                             title="Edit member"
                           >
-                            <Pencil size={17} />
+                            <Pencil size={15} />
                           </Link>
 
                           <button
                             type="button"
-                            onClick={() => handleDelete(member._id)}
-                            className="rounded-lg p-2 text-gray-500 transition hover:bg-red-50 hover:text-red-600"
+                            onClick={() => setDeleteTarget(member)}
+                            className="rounded-md p-1.5 text-text-secondary transition hover:bg-red-50 hover:text-red-600"
                             title="Delete member"
                           >
-                            <Trash2 size={17} />
+                            <Trash2 size={15} />
                           </button>
                         </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                      </AdminTableCell>
+                    </AdminTableRow>
+                  ))}
+                </AdminTableBody>
+              </AdminTable>
+            </AdminTableWrapper>
           </div>
 
-          {/* Mobile Cards */}
-          <div className="divide-y divide-gray-100 md:hidden">
-            {members.length === 0 ? (
-              <div className="px-5 py-14 text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50 text-orange-500">
-                  <Users size={25} />
-                </div>
-
-                <h3 className="mt-4 font-semibold text-gray-900">
-                  No team members yet
-                </h3>
-
-                <p className="mt-1 text-sm text-gray-500">
-                  Add your first team member to get started.
-                </p>
-
-                <Link
-                  to="/admin/team/add"
-                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white"
-                >
-                  <Plus size={17} />
-                  Add Member
-                </Link>
-              </div>
-            ) : (
-              members.map((member) => (
-                <div
-                  key={member._id}
-                  className="p-4 transition hover:bg-orange-50/30"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-3">
-                      {member.photo?.url ? (
-                        <img
-                          src={member.photo.url}
-                          alt={member.name}
-                          className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-orange-50"
-                        />
-                      ) : (
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-600">
-                          <UserRound size={20} />
-                        </div>
-                      )}
-
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold text-gray-900">
-                          {member.name}
-                        </p>
-
-                        <p className="mt-0.5 truncate text-sm text-orange-600">
-                          {member.role}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex shrink-0 gap-1">
-                      <Link
-                        to={`/admin/team/edit/${member._id}`}
-                        className="rounded-lg p-2 text-gray-500 transition hover:bg-orange-50 hover:text-orange-600"
-                        title="Edit member"
-                      >
-                        <Pencil size={16} />
-                      </Link>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(member._id)}
-                        className="rounded-lg p-2 text-gray-500 transition hover:bg-red-50 hover:text-red-600"
-                        title="Delete member"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-                    <div className="text-sm text-gray-500">
-                      Display Order:{" "}
-                      <span className="font-semibold text-gray-700">
-                        #{member.order}
-                      </span>
-                    </div>
-
-                    {member.isActive ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-xs font-semibold text-green-600">
-                        <Eye size={13} />
-                        Active
-                      </span>
+          {/* Mobile Stacked Cards */}
+          <div className="space-y-3 md:hidden">
+            {filteredMembers.map((member) => (
+              <div
+                key={member._id}
+                className="rounded-xl border border-border bg-surface p-4 shadow-xs"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    {member.photo?.url ? (
+                      <img
+                        src={member.photo.url}
+                        alt={member.name}
+                        className="h-11 w-11 shrink-0 rounded-full object-cover border border-border"
+                      />
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">
-                        <EyeOff size={13} />
-                        Inactive
-                      </span>
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-light text-primary font-bold border border-primary/20">
+                        {member.name ? member.name.charAt(0).toUpperCase() : <UserRound size={18} />}
+                      </div>
                     )}
+                    <div className="min-w-0">
+                      <p className="font-semibold text-text-primary truncate">
+                        {member.name}
+                      </p>
+                      <p className="text-xs text-primary font-medium truncate mt-0.5">
+                        {member.role}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Link
+                      to={`/admin/team/edit/${member._id}`}
+                      className="rounded-lg p-2 text-text-secondary hover:bg-background"
+                    >
+                      <Pencil size={16} />
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => setDeleteTarget(member)}
+                      className="rounded-lg p-2 text-text-secondary hover:bg-red-50 hover:text-red-600"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
                 </div>
-              ))
-            )}
+
+                <div className="mt-3 flex items-center justify-between border-t border-border/60 pt-3 text-xs text-text-secondary">
+                  <span className="font-mono bg-background border border-border px-2 py-0.5 rounded text-text-primary">
+                    Order: #{member.order ?? 0}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => handleToggleStatus(member)}
+                    className="flex items-center gap-1.5"
+                  >
+                    <AdminStatusBadge
+                      status={member.isActive ? "active" : "inactive"}
+                    />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
+        </>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AdminConfirmDialog
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete Team Member"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete Member"
+        variant="danger"
+        loading={isDeleting}
+      />
     </div>
   );
 }

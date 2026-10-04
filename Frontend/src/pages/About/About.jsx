@@ -1,301 +1,409 @@
-import { BookOpen, Languages, Sparkles, Clock3 } from "lucide-react";
-import Reveal from "../../components/ui/Reveal";
+import { useEffect, useRef } from "react";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-const benefits = [
-  {
-    icon: BookOpen,
-    title: "Easy English Learning",
-    description:
-      "Learn English through simple lessons, examples, and everyday conversations.",
-  },
-  {
-    icon: Languages,
-    title: "Marathi Support",
-    description:
-      "Understand English better with helpful Marathi translations and explanations.",
-  },
-  {
-    icon: Sparkles,
-    title: "Interactive Lessons",
-    description:
-      "Learn through engaging activities, conversations, quizzes, and visual content.",
-  },
-  {
-    icon: Clock3,
-    title: "Learn at Your Own Pace",
-    description:
-      "Learn whenever you want and revisit lessons whenever you need them.",
-  },
-];
+import FaqItem from "../../components/about/FaqItem";
+import PhraseCycler from "../../components/about/PhraseCycler";
+import BenefitsSection from "../../components/about/BenefitsSection";
+import LessonStepsSection from "../../components/about/LessonStepsSection";
+import SentenceMarquee from "../../components/about/SentenceMarquee";
+import AudienceSection from "../../components/about/AudienceSection";
+import ValuesSection from "../../components/about/ValuesSection";
+import ClosingCTA from "../../components/about/ClosingCTA";
 
-const PHRASE_PAIRS = [
-  { en: "Good Morning", mr: "सुप्रभात" },
-  { en: "Thank You", mr: "धन्यवाद" },
-  { en: "How are you?", mr: "तू कसा आहेस?" },
-];
+import {
+  BENEFITS,
+  PHRASE_PAIRS,
+  STEPS,
+  AUDIENCES,
+  SENTENCES,
+  VALUES,
+  FAQS,
+  INTRO,
+} from "../../components/about/AboutData";
+
+gsap.registerPlugin(ScrollTrigger);
+
+const BLEED = "-mx-6 md:-mx-12 lg:-mx-20";
+const PAD = "px-6 md:px-12 lg:px-20";
 
 export default function About() {
+  const root = useRef(null);
+  const introRef = useRef(null);
+  const gridRef = useRef(null);
+  const mockRef = useRef(null);
+  const stepsRef = useRef(null);
+  const marqueeRef = useRef(null);
+
+  const reduce = useReducedMotion();
+
+  const { scrollY } = useScroll();
+
+  const letterA = useTransform(scrollY, [0, 1500], reduce ? [0, 0] : [0, -260]);
+
+  const letterB = useTransform(scrollY, [0, 1500], reduce ? [0, 0] : [0, 160]);
+
+  const { scrollYProgress } = useScroll({
+    target: mockRef,
+    offset: ["start end", "end start"],
+  });
+
+  const smooth = useSpring(scrollYProgress, {
+    stiffness: 90,
+    damping: 24,
+  });
+
+  const cardY = useTransform(smooth, [0, 1], reduce ? [0, 0] : [70, -70]);
+
+  const cardRotate = useTransform(
+    smooth,
+    [0, 1],
+    reduce ? [0, 0] : [-2.5, 2.5],
+  );
+
+  const blobA = useTransform(smooth, [0, 1], reduce ? [0, 0] : [-40, 60]);
+
+  const blobB = useTransform(smooth, [0, 1], reduce ? [0, 0] : [50, -50]);
+
+  useEffect(() => {
+    if (reduce) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        ".about-word",
+        {
+          color: "var(--border)",
+        },
+        {
+          color: "var(--text-primary)",
+          ease: "none",
+          stagger: 0.1,
+          scrollTrigger: {
+            trigger: introRef.current,
+            start: "top 80%",
+            end: "bottom 40%",
+            scrub: true,
+          },
+        },
+      );
+
+      gsap.from(".about-head", {
+        y: 40,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        stagger: 0.12,
+        scrollTrigger: {
+          trigger: root.current,
+          start: "top 75%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      gsap.from(".about-card", {
+        y: 60,
+        opacity: 0,
+        scale: 0.96,
+        duration: 0.8,
+        ease: "power3.out",
+        stagger: 0.12,
+        scrollTrigger: {
+          trigger: gridRef.current,
+          start: "top 85%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      ScrollTrigger.create({
+        trigger: gridRef.current,
+        start: "top bottom",
+        end: "bottom top",
+        onUpdate: (self) => {
+          gsap.to(".about-card", {
+            yPercent: self.direction === 1 ? -2 : 2,
+            duration: 0.6,
+            ease: "power2.out",
+            overwrite: "auto",
+          });
+        },
+        onLeave: () => {
+          gsap.to(".about-card", {
+            yPercent: 0,
+            duration: 0.6,
+          });
+        },
+        onLeaveBack: () => {
+          gsap.to(".about-card", {
+            yPercent: 0,
+            duration: 0.6,
+          });
+        },
+      });
+
+      gsap.fromTo(
+        ".steps-line",
+        {
+          scaleY: 0,
+        },
+        {
+          scaleY: 1,
+          ease: "none",
+          transformOrigin: "top",
+          scrollTrigger: {
+            trigger: stepsRef.current,
+            start: "top 65%",
+            end: "bottom 65%",
+            scrub: true,
+          },
+        },
+      );
+
+      gsap.utils.toArray(".step-item").forEach((element) => {
+        gsap.from(element, {
+          opacity: 0.25,
+          x: -30,
+          duration: 0.6,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: element,
+            start: "top 70%",
+            toggleActions: "play none none reverse",
+          },
+        });
+      });
+
+      gsap.utils.toArray(".marquee-row").forEach((row, index) => {
+        gsap.fromTo(
+          row,
+          {
+            xPercent: index % 2 === 0 ? 8 : -20,
+          },
+          {
+            xPercent: index % 2 === 0 ? -20 : 8,
+            ease: "none",
+            scrollTrigger: {
+              trigger: marqueeRef.current,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 1,
+            },
+          },
+        );
+      });
+
+      gsap.from(".rise-card", {
+        y: 50,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        stagger: 0.12,
+        scrollTrigger: {
+          trigger: ".rise-wrap",
+          start: "top 80%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      ScrollTrigger.refresh();
+    }, root);
+
+    return () => {
+      ctx.revert();
+    };
+  }, [reduce]);
+
   return (
-    <section className="px-6 py-24">
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+    <section
+      ref={root}
+      className="about-root relative w-full overflow-hidden bg-background px-6 py-28 md:px-12 lg:px-20"
+    >
+      <div className="w-full">
+        {/* Header */}
+        <div className="relative flex min-h-[75vh] flex-col justify-center">
+          <motion.span
+            aria-hidden
+            style={{ y: letterA }}
+            className="pointer-events-none absolute -right-4 -top-10 select-none font-display text-[16rem] font-extrabold leading-none text-lesson-peach md:text-[28rem]"
+          >
+            अ
+          </motion.span>
 
-        .jhep-display {
-          font-family: 'Fraunces', serif;
-        }
+          <motion.span
+            aria-hidden
+            style={{ y: letterB }}
+            className="pointer-events-none absolute bottom-0 right-[22%] select-none font-display text-[10rem] font-extrabold leading-none text-lesson-yellow md:text-[18rem]"
+          >
+            A
+          </motion.span>
 
-        .jhep-body {
-          font-family: 'Inter', sans-serif;
-        }
+          <span className="about-head relative inline-block self-start rounded-full border border-border bg-primary-light px-4 py-1.5 text-sm font-semibold text-primary-dark">
+            About Project Jhep
+          </span>
 
-        /* ---- phrase cycler: smoother easing + slight scale for a softer feel ---- */
-        @keyframes jhep-fade-cycle {
-          0% {
-            opacity: 0;
-            transform: translateY(10px) scale(0.98);
-          }
-          8% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-          28% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-          36% {
-            opacity: 0;
-            transform: translateY(-10px) scale(0.98);
-          }
-          100% {
-            opacity: 0;
-            transform: translateY(-10px) scale(0.98);
-          }
-        }
+          <h2 className="about-head relative mt-6 max-w-5xl font-display text-5xl font-extrabold leading-[1.02] text-secondary md:text-7xl lg:text-8xl">
+            English that feels like home.
+          </h2>
 
-        .jhep-phrase {
-          animation: jhep-fade-cycle 7.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
-          opacity: 0;
-        }
-
-        /* ---- gentle ambient float for the mockup card's background blobs ---- */
-        @keyframes jhep-float {
-          0%, 100% { transform: translateY(0) scale(1); }
-          50% { transform: translateY(-6px) scale(1.04); }
-        }
-
-        .jhep-blob {
-          animation: jhep-float 6s ease-in-out infinite;
-        }
-
-        /* ---- card + icon transitions, centralized so timing stays consistent ---- */
-        .jhep-card {
-          transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-            box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-            border-color 0.35s ease;
-        }
-
-        .jhep-card:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 20px 40px -24px rgba(23, 33, 59, 0.22);
-        }
-
-        .jhep-icon {
-          transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-            background-color 0.35s ease, color 0.35s ease;
-        }
-
-        .jhep-card:hover .jhep-icon {
-          transform: scale(1.08) rotate(-4deg);
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .jhep-phrase {
-            animation: none;
-            opacity: 1;
-          }
-
-          .jhep-phrase:not(:first-child) {
-            display: none;
-          }
-
-          .jhep-blob {
-            animation: none;
-          }
-
-          .jhep-card,
-          .jhep-icon {
-            transition: none;
-          }
-        }
-      `}</style>
-
-      <div className="mx-auto max-w-6xl">
-        <Reveal>
-          <div className="mb-16 text-center">
-            <span
-              className="jhep-body inline-block rounded-full px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em]"
-              style={{ color: "#C2410C", background: "#FFF1E4" }}
-            >
-              About Project Jhep
-            </span>
-
-            <h2
-              className="jhep-display mt-5 text-3xl font-semibold md:text-[2.75rem] md:leading-[1.15]"
-              style={{ color: "#17213B" }}
-            >
-              What is{" "}
+          <p
+            ref={introRef}
+            className="relative mt-10 max-w-5xl text-2xl font-medium leading-snug md:text-4xl"
+          >
+            {INTRO.split(" ").map((word, index) => (
               <span
-                style={{
-                  background: "linear-gradient(90deg, #FF7A30, #EA580C)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
+                key={`${word}-${index}`}
+                className="about-word inline-block pr-[0.28em]"
               >
-                Project Jhep?
+                {word}
               </span>
-            </h2>
+            ))}
+          </p>
+        </div>
 
-            <p
-              className="jhep-body mx-auto mt-4 max-w-2xl text-base leading-relaxed"
-              style={{ color: "#5B6472" }}
-            >
-              Project Jhep is an educational initiative that helps students
-              improve their English communication skills through simple,
-              engaging, and accessible learning resources.
-            </p>
-          </div>
-        </Reveal>
+        {/* Mockup + Description */}
+        <div className="mt-24 grid items-center gap-16 lg:grid-cols-2">
+          <div ref={mockRef} className="relative">
+            <motion.div
+              style={{ y: blobA }}
+              className="absolute -right-6 -top-8 h-24 w-24 rounded-full bg-lesson-peach"
+            />
 
-        {/* ---- symmetric two-column row: mockup + description, equal visual weight ---- */}
-        <div className="grid items-stretch gap-14 lg:grid-cols-2">
-          <Reveal>
-            <div
-              className="relative flex h-full w-full flex-col justify-center rounded-[2rem] p-8"
+            <motion.div
+              style={{ y: blobB }}
+              className="absolute -bottom-8 -left-6 h-28 w-28 rounded-full bg-lesson-yellow"
+            />
+
+            <motion.div
               style={{
-                background:
-                  "radial-gradient(120% 120% at 15% 10%, #FFF1E4 0%, #FFFFFF 60%)",
-                border: "1px solid #FBDBBE",
+                y: cardY,
+                rotate: cardRotate,
               }}
+              className="relative rounded-[2rem] border border-border bg-gradient-to-br from-accent-light to-surface p-8 shadow-[var(--shadow-lg)]"
             >
-              <div
-                className="relative flex aspect-[4/3] flex-col items-center justify-center overflow-hidden rounded-[1.5rem] bg-white px-6"
-                style={{ boxShadow: "0 24px 48px -28px rgba(23,33,59,0.35)" }}
-              >
-                <span
-                  className="jhep-body absolute left-6 top-6 rounded-full px-3 py-1 text-[11px] font-semibold"
-                  style={{ background: "#FFEEE0", color: "#C2410C" }}
-                >
+              <div className="relative flex aspect-[4/3] flex-col items-center justify-center overflow-hidden rounded-3xl bg-surface px-6 shadow-[var(--shadow-md)]">
+                <span className="absolute left-5 top-5 rounded-full bg-lesson-orange px-3 py-1 text-xs font-semibold text-primary-dark">
                   Spoken English
                 </span>
 
-                <span
-                  className="jhep-body absolute right-6 top-6 rounded-full px-3 py-1 text-[11px] font-semibold"
-                  style={{ background: "#EEF2FF", color: "#4338CA" }}
-                >
-                  Marathi Support
+                <span className="absolute right-5 top-5 rounded-full bg-secondary-light px-3 py-1 text-xs font-semibold text-secondary">
+                  Marathi support
                 </span>
 
-                <div className="relative h-28 w-full text-center">
-                  {PHRASE_PAIRS.map((pair, i) => (
-                    <div
-                      key={pair.en}
-                      className="jhep-phrase absolute inset-0 flex flex-col items-center justify-center"
-                      style={{ animationDelay: `${i * 2.5}s` }}
-                    >
-                      <span
-                        className="jhep-display text-3xl font-semibold"
-                        style={{ color: "#17213B" }}
-                      >
-                        {pair.en}
-                      </span>
+                <PhraseCycler phrases={PHRASE_PAIRS} />
 
-                      <span
-                        className="jhep-body mt-2 text-lg"
-                        style={{ color: "#EA580C" }}
-                      >
-                        {pair.mr}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                <p
-                  className="jhep-body mt-4 text-sm"
-                  style={{ color: "#8A93A3" }}
-                >
+                <p className="mt-4 text-sm font-medium text-text-muted">
                   Learn. Practice. Grow.
                 </p>
               </div>
+            </motion.div>
+          </div>
 
-              <div
-                className="jhep-blob absolute -right-4 -top-4 h-16 w-16 rounded-full"
-                style={{ background: "#FFD9B3", opacity: 0.7 }}
-              />
+          <motion.div
+            initial={{
+              opacity: 0,
+              x: 40,
+            }}
+            whileInView={{
+              opacity: 1,
+              x: 0,
+            }}
+            viewport={{
+              once: false,
+              amount: 0.4,
+            }}
+            transition={{
+              duration: 0.7,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+          >
+            <h3 className="font-display text-3xl font-bold leading-tight text-secondary md:text-4xl">
+              Making English learning simple and accessible.
+            </h3>
 
-              <div
-                className="jhep-blob absolute -bottom-5 -left-5 h-20 w-20 rounded-full"
-                style={{ background: "#FFEEE0", animationDelay: "1.5s" }}
-              />
-            </div>
-          </Reveal>
-
-          <Reveal>
-            <div className="flex h-full flex-col justify-center">
-              <h3
-                className="jhep-display text-2xl font-semibold md:text-3xl"
-                style={{ color: "#17213B" }}
-              >
-                Making English learning{" "}
-                <span style={{ color: "#EA580C" }}>simple and accessible.</span>
-              </h3>
-
-              <p
-                className="jhep-body mt-5 leading-7"
-                style={{ color: "#5B6472" }}
-              >
-                Project Jhep is designed especially to support students who want
-                to build confidence in English. The platform combines simple
-                English content with Marathi support so that students can learn
-                comfortably and understand concepts clearly.
-              </p>
-            </div>
-          </Reveal>
+            <p className="mt-5 max-w-lg text-lg leading-8 text-text-secondary">
+              Project Jhep is designed especially to support students who want
+              to build confidence in English. The platform combines simple
+              English content with Marathi support so that students can learn
+              comfortably and understand concepts clearly.
+            </p>
+          </motion.div>
         </div>
 
-        {/* ---- benefits grid moved out to its own full-width, evenly-balanced row ---- */}
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {benefits.map((benefit, i) => {
-            const Icon = benefit.icon;
-
-            return (
-              <Reveal key={benefit.title} delay={i * 0.08}>
-                <article
-                  className="jhep-card jhep-body group flex h-full flex-col items-center rounded-2xl border bg-white p-6 text-center"
-                  style={{ borderColor: "#F1E5DC" }}
-                >
-                  <div className="jhep-icon flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
-                    <Icon size={20} strokeWidth={2} />
-                  </div>
-
-                  <h4
-                    className="jhep-display mt-4 text-[17px] font-semibold leading-snug"
-                    style={{ color: "#17213B" }}
-                  >
-                    {benefit.title}
-                  </h4>
-
-                  <p
-                    className="mt-2 text-[13px] leading-6"
-                    style={{ color: "#6B7280" }}
-                  >
-                    {benefit.description}
-                  </p>
-                </article>
-              </Reveal>
-            );
-          })}
+        {/* Manifesto */}
+        <div className="mt-32 overflow-hidden">
+          {["Learn.", "Practice.", "Grow."].map((word, index) => (
+            <motion.p
+              key={word}
+              initial={{
+                opacity: 0,
+                x: index % 2 === 0 ? -120 : 120,
+              }}
+              whileInView={{
+                opacity: 1,
+                x: 0,
+              }}
+              viewport={{
+                once: false,
+                amount: 0.6,
+              }}
+              transition={{
+                duration: 0.8,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className={`font-display text-[18vw] font-extrabold leading-[0.9] md:text-[12vw] ${
+                index === 1 ? "text-right text-primary" : "text-secondary"
+              }`}
+            >
+              {word}
+            </motion.p>
+          ))}
         </div>
+
+        {/* Benefits */}
+        <BenefitsSection benefits={BENEFITS} gridRef={gridRef} />
+
+        {/* Lesson Steps */}
+        <LessonStepsSection
+          steps={STEPS}
+          stepsRef={stepsRef}
+          bleed={BLEED}
+          pad={PAD}
+        />
+
+        {/* Sentence Marquee */}
+        <SentenceMarquee
+          sentences={SENTENCES}
+          marqueeRef={marqueeRef}
+          bleed={BLEED}
+        />
+
+        {/* Audience */}
+        <AudienceSection audiences={AUDIENCES} />
+
+        {/* Values */}
+        <ValuesSection values={VALUES} bleed={BLEED} pad={PAD} />
+
+        {/* FAQ */}
+        <div className="mx-auto mt-32 max-w-3xl">
+          <h3 className="text-center font-display text-3xl font-bold text-secondary md:text-4xl">
+            Common questions
+          </h3>
+
+          <div className="mt-10 space-y-3">
+            {FAQS.map((faq) => (
+              <FaqItem key={faq.q} {...faq} />
+            ))}
+          </div>
+        </div>
+
+        {/* CTA */}
+        <ClosingCTA bleed={BLEED} pad={PAD} />
       </div>
     </section>
   );

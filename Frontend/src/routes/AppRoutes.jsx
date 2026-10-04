@@ -37,6 +37,10 @@ import AddLesson from "../pages/Admin/Lesson/AddLesson";
 import ManageLessons from "../pages/Admin/Lesson/ManageLessons";
 import EditLesson from "../pages/Admin/Lesson/EditLesson";
 
+import ManageQuizzes from "../pages/Admin/Quiz/ManageQuizzes";
+import AddQuiz from "../pages/Admin/Quiz/AddQuiz";
+import EditQuiz from "../pages/Admin/Quiz/EditQuiz";
+
 import ManageSchools from "../pages/Admin/School/ManageSchools";
 
 import About from "../pages/About/About";
@@ -52,6 +56,9 @@ import Users from "../pages/Admin/Users/Users";
 import Content from "../pages/Content/Content";
 import GuestLayout from "../layouts/GuestLayout";
 import ManageTestimonials from "../pages/Admin/Testimonial/ManageTestimonials";
+import Quiz from "../pages/Quiz/Quiz";
+import AuthLayout from "../layouts/AuthLayout";
+import Lesson from "../pages/Content/Lesson";
 
 const AppRoutes = () => {
   const { loading } = useAuth();
@@ -76,7 +83,7 @@ const AppRoutes = () => {
       {/* Guest Routes */}
 
       <Route element={<GuestRoute />}>
-        <Route element={<GuestLayout />}>
+        <Route element={<AuthLayout />}>
           <Route path="/login" element={<Login />} />
 
           {/* <Route path="/register" element={<Register />} /> */}
@@ -95,7 +102,11 @@ const AppRoutes = () => {
         <Route element={<PrivateLayout />}>
           <Route path="/content" element={<Content />} />
 
+          <Route path="/quiz/:quizId" element={<Quiz />} />
+
           <Route path="/topics/:topicId/lessons" element={<TopicLessons />} />
+
+          <Route path="/lesson/:topicId/:lessonId" element={<Lesson />} />
 
           <Route path="/profile" element={<Profile />} />
         </Route>
@@ -127,6 +138,14 @@ const AppRoutes = () => {
             element={<EditLesson />}
           />
 
+          {/* Quiz Management */}
+
+          <Route path="/admin/quizzes/manage" element={<ManageQuizzes />} />
+
+          <Route path="/admin/quizzes/add" element={<AddQuiz />} />
+
+          <Route path="/admin/quizzes/edit/:quizId" element={<EditQuiz />} />
+
           {/* User Activity  */}
 
           <Route path="/admin/activity" element={<Activity />} />
@@ -141,7 +160,9 @@ const AppRoutes = () => {
 
           {/* User Management  */}
 
-          <Route path="admin/users/add" element={<Users />} />
+          <Route path="/admin/users" element={<Users />} />
+          <Route path="/admin/users/manage" element={<Users />} />
+          <Route path="/admin/users/add" element={<Users />} />
 
           {/* Schools Management */}
 

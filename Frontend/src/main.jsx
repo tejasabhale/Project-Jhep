@@ -7,11 +7,13 @@ import "./index.css";
 import AuthProvider from "./context/AuthProvider";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/common/ScrollToTop";
+import SmoothScroll from "./components/common/SmoothScroll";
 
 createRoot(document.getElementById("root")).render(
   <AuthProvider>
     <BrowserRouter>
       <ScrollToTop />
+
       <Toaster
         position="top-right"
         toastOptions={{
@@ -19,7 +21,10 @@ createRoot(document.getElementById("root")).render(
         }}
         reverseOrder={false}
       />
-      <App />
+
+      <SmoothScroll>
+        <App />
+      </SmoothScroll>
     </BrowserRouter>
   </AuthProvider>,
 );

@@ -1,7 +1,12 @@
-import { UploadCloud, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { UploadCloud, X, Image as ImageIcon } from "lucide-react";
 
-export default function ThumbnailUpload({ image, onChange }) {
+export default function ThumbnailUpload({
+  image,
+  onChange,
+  label = "Upload Image",
+  aspect = "h-48 sm:h-56",
+}) {
   const [preview, setPreview] = useState("");
 
   useEffect(() => {
@@ -12,9 +17,7 @@ export default function ThumbnailUpload({ image, onChange }) {
 
     if (image instanceof File) {
       const objectUrl = URL.createObjectURL(image);
-
       setPreview(objectUrl);
-
       return () => {
         URL.revokeObjectURL(objectUrl);
       };
@@ -27,55 +30,57 @@ export default function ThumbnailUpload({ image, onChange }) {
 
   const handleImage = (e) => {
     const file = e.target.files?.[0];
-
     if (!file) return;
-
     onChange(file);
   };
 
   const handleRemove = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
     onChange(null);
     setPreview("");
   };
 
   return (
-    <div className="bg-orange-50 p-6 sm:p-8">
-      <label className="relative flex h-72 cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-orange-300 bg-white transition hover:border-orange-500 sm:h-80">
+    <div className="w-full">
+      <label
+        className={`relative flex ${aspect} cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-border bg-background transition-colors hover:border-primary/60`}
+      >
         {preview ? (
           <>
             <img
               src={preview}
               alt="Thumbnail preview"
-              className="h-full w-full rounded-2xl object-cover"
+              className="h-full w-full object-cover"
             />
-
+            <div className="absolute inset-0 bg-black/20 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+              <span className="rounded-lg bg-surface/90 px-3 py-1.5 text-xs font-semibold text-text-primary shadow-xs">
+                Change Image
+              </span>
+            </div>
             <button
               type="button"
               onClick={handleRemove}
-              className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white transition hover:bg-black/80"
-              aria-label="Remove thumbnail"
+              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-xl bg-black/70 text-white hover:bg-black/90 transition shadow-sm"
+              aria-label="Remove image"
             >
-              <X size={18} />
+              <X size={16} />
             </button>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center text-center">
-            <div className="rounded-2xl bg-orange-100 p-5">
-              <UploadCloud size={48} className="text-orange-500" />
+          <div className="flex flex-col items-center justify-center p-4 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-muted text-primary">
+              <UploadCloud size={24} strokeWidth={1.8} />
             </div>
-
-            <p className="mt-5 font-medium text-slate-700">Upload Thumbnail</p>
-
-            <p className="mt-1 text-sm text-slate-400">
-              PNG, JPG, JPEG, or WEBP
+            <p className="mt-3 text-xs font-bold uppercase tracking-wider text-text-primary">
+              {label}
             </p>
-
-            <p className="mt-1 text-xs text-slate-400">
-              Click to choose an image
+            <p className="mt-1 text-xs text-text-secondary">
+              PNG, JPG, or WEBP up to 5MB
             </p>
+            <span className="mt-3 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-text-secondary shadow-2xs hover:bg-surface-muted transition">
+              Browse Files
+            </span>
           </div>
         )}
 

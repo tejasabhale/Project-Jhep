@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react";
+import AdminModal from "../ui/AdminModal";
+import { AdminFormField } from "../ui/AdminFormSection";
+import { User, Mail, Phone, Lock, AtSign, Shield } from "lucide-react";
 
 const initialState = {
   fullName: "",
@@ -9,8 +12,15 @@ const initialState = {
   role: "user",
 };
 
-export default function UserModal({ isOpen, onClose, onSubmit, user }) {
+export default function UserModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  user = null,
+  currentUser = null,
+}) {
   const [formData, setFormData] = useState(initialState);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -28,155 +38,172 @@ export default function UserModal({ isOpen, onClose, onSubmit, user }) {
   }, [user, isOpen]);
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    onSubmit(formData);
+    try {
+      setSubmitting(true);
+      await onSubmit(formData);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  if (!isOpen) return null;
+  const isOwner = currentUser?.role === "owner";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl">
-        <div className="border-b border-orange-100 bg-orange-50 px-8 py-6">
-          <h2 className="text-2xl font-bold text-slate-800">
-            {user ? "Edit User" : "Add New User"}
-          </h2>
-
-          <p className="mt-1 text-sm text-slate-500">
-            {user
-              ? "Update the user's information."
-              : "Fill in the details to create a new user account."}
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6 p-8">
-          <div className="grid gap-6 md:grid-cols-2">
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Full Name
-              </label>
-
+    <AdminModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={user ? "Edit User Account" : "Create New User"}
+      description={
+        user
+          ? "Update account details and role permissions."
+          : "Register a new user account with designated access role."
+      }
+      size="md"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {/* Full Name */}
+          <AdminFormField label="Full Name" required htmlFor="fullName">
+            <div className="relative">
+              <User size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
               <input
+                id="fullName"
                 type="text"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
                 required
-                placeholder="Enter full name"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 transition focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100"
+                placeholder="Jane Doe"
+                className="h-10 w-full rounded-xl border border-border bg-background py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
+          </AdminFormField>
 
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Username
-              </label>
-
+          {/* Username */}
+          <AdminFormField label="Username" required htmlFor="userName">
+            <div className="relative">
+              <AtSign size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
               <input
+                id="userName"
                 type="text"
                 name="userName"
                 value={formData.userName}
                 onChange={handleChange}
                 required
-                placeholder="Enter username"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 transition focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100"
+                placeholder="janedoe"
+                className="h-10 w-full rounded-xl border border-border bg-background py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
+          </AdminFormField>
+        </div>
 
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Email Address
-              </label>
-
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {/* Email */}
+          <AdminFormField label="Email Address" required htmlFor="email">
+            <div className="relative">
+              <Mail size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
               <input
+                id="email"
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                placeholder="Enter email"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 transition focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100"
+                placeholder="jane@example.com"
+                className="h-10 w-full rounded-xl border border-border bg-background py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
+          </AdminFormField>
 
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Password
-              </label>
-
+          {/* Mobile No */}
+          <AdminFormField label="Mobile Number" htmlFor="mobileNo" required={!user}>
+            <div className="relative">
+              <Phone size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
               <input
+                id="mobileNo"
+                type="text"
+                name="mobileNo"
+                value={formData.mobileNo}
+                onChange={handleChange}
+                required={!user}
+                placeholder="9876543210 (10 digits)"
+                maxLength={10}
+                className="h-10 w-full rounded-xl border border-border bg-background py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+          </AdminFormField>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {/* Password */}
+          <AdminFormField
+            label={user ? "New Password" : "Password"}
+            required={!user}
+            htmlFor="password"
+            hint={user ? "Leave blank to preserve existing password" : "Minimum 8 characters"}
+          >
+            <div className="relative">
+              <Lock size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+              <input
+                id="password"
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
                 required={!user}
-                placeholder={
-                  user
-                    ? "Leave blank to keep current password"
-                    : "Enter password"
-                }
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 transition focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100"
+                placeholder={user ? "••••••••" : "Min. 8 characters"}
+                className="h-10 w-full rounded-xl border border-border bg-background py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-muted transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
+          </AdminFormField>
 
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Mobile Number
-              </label>
-
-              <input
-                type="text"
-                name="mobileNo"
-                value={formData.mobileNo}
-                onChange={handleChange}
-                placeholder="Enter mobile number"
-                className="w-full rounded-xl border border-slate-200 px-4 py-3 transition focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-semibold text-slate-700">
-                Role
-              </label>
-
+          {/* Role */}
+          <AdminFormField label="Account Role" required htmlFor="role">
+            <div className="relative">
+              <Shield size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
               <select
+                id="role"
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 transition focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-100"
+                className="h-10 w-full rounded-xl border border-border bg-background py-2 pl-9 pr-8 text-sm text-text-primary transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
+                <option value="user">User (Standard Access)</option>
+                {isOwner && (
+                  <option value="admin">Administrator</option>
+                )}
               </select>
             </div>
-          </div>
+          </AdminFormField>
+        </div>
 
-          <div className="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-xl cursor-pointer border border-slate-200 px-6 py-3 font-medium text-slate-600 transition hover:bg-slate-100"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              className="rounded-xl cursor-pointer bg-orange-500 px-6 py-3 font-medium text-white transition hover:bg-orange-600"
-            >
-              {user ? "Update User" : "Create User"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        {/* Modal Actions */}
+        <div className="mt-6 flex items-center justify-end gap-3 border-t border-border pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-border bg-surface px-4 py-2 text-sm font-semibold text-text-secondary hover:bg-surface-muted hover:text-text-primary transition"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white shadow-xs hover:bg-primary-dark active:bg-primary-dark transition disabled:opacity-50"
+          >
+            {submitting ? "Saving..." : user ? "Update Account" : "Create Account"}
+          </button>
+        </div>
+      </form>
+    </AdminModal>
   );
 }

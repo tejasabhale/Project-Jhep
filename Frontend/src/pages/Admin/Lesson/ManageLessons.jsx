@@ -1,378 +1,594 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
-
 import {
+  FileText,
+  Plus,
   Edit,
   Trash2,
-  Plus,
-  BookOpen,
-  ArrowLeft,
+  Star,
   Presentation,
   Video,
-  Star,
+  HelpCircle,
+  Layers,
+  ChevronRight,
+  ExternalLink,
+  BookOpen,
 } from "lucide-react";
 
 import {
-  getLessons,
-  deleteLesson,
-  toggleFeaturedLesson,
-} from "../../../api/lesson.api";
+  fetchAllLessons,
+  removeLesson,
+  toggleLessonFeaturedStatus,
+  fetchAllTopics,
+} from "../../../api/adminServices";
+import AdminPageHeader from "../../../components/admin/ui/AdminPageHeader";
+import AdminToolbar from "../../../components/admin/ui/AdminToolbar";
+import AdminStatusBadge from "../../../components/admin/ui/AdminStatusBadge";
+import AdminConfirmDialog from "../../../components/admin/ui/AdminConfirmDialog";
+import AdminEmptyState from "../../../components/admin/ui/AdminEmptyState";
+import { TableSkeleton } from "../../../components/admin/ui/AdminSkeleton";
+import {
+  AdminTableWrapper,
+  AdminTable,
+  AdminTableHeader,
+  AdminTableBody,
+  AdminTableRow,
+  AdminTableCell,
+} from "../../../components/admin/ui/AdminTable";
 
 export default function ManageLessons() {
-  const [lessons, setLessons] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [featuredLoading, setFeaturedLoading] = useState(null);
-
   const [searchParams] = useSearchParams();
+  const urlTopicId = searchParams.get("topicId") || "";
 
-  const topicId = searchParams.get("topicId");
+  const [lessons, setLessons] = useState([]);
+  const [topics, setTopics] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadLessons();
-  }, []);
+  // Filters
+  const [search, setSearch] = useState("");
+  const [topicFilter, setTopicFilter] = useState(urlTopicId);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [featuredFilter, setFeaturedFilter] = useState("all");
 
-  const loadLessons = async () => {
+  // Actions state
+  const [featuredLoading, setFeaturedLoading] = useState(null);
+  const [lessonToDelete, setLessonToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  const loadData = async () => {
     try {
       setLoading(true);
+      const [lessonsData, topicsData] = await Promise.all([
+        fetchAllLessons(),
+        fetchAllTopics(),
+      ]);
 
-      const response = await getLessons();
-
-      let list = [];
-
-      if (Array.isArray(response.data?.lessons)) {
-        list = response.data.lessons;
-      } else if (Array.isArray(response.data?.data?.lessons)) {
-        list = response.data.data.lessons;
-      } else if (Array.isArray(response.data)) {
-        list = response.data;
-      } else if (Array.isArray(response.data?.data)) {
-        list = response.data.data;
-      }
-
-      if (topicId) {
-        list = list.filter(
-          (lesson) => lesson.topic?._id === topicId || lesson.topic === topicId,
-        );
-      }
-
-      setLessons(list);
+      setLessons(lessonsData || []);
+      setTopics(topicsData.topics || []);
     } catch (error) {
-      console.error(error);
-
+      console.error("Error loading lessons:", error);
       toast.error(error.response?.data?.message || "Failed to load lessons");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm("Delete this lesson?");
+  useEffect(() => {
+    loadData();
+  }, []);
 
-    if (!confirmDelete) return;
-
-    try {
-      await deleteLesson(id);
-
-      toast.success("Lesson deleted");
-
-      setLessons((prev) => prev.filter((lesson) => lesson._id !== id));
-    } catch (error) {
-      console.error(error);
-
-      toast.error(error.response?.data?.message || "Delete failed");
+  useEffect(() => {
+    if (urlTopicId) {
+      setTopicFilter(urlTopicId);
     }
-  };
+  }, [urlTopicId]);
 
+  // Featured toggle
   const handleToggleFeatured = async (lesson) => {
+    if (!lesson.isPublished) {
+      toast.error("Only published lessons can be marked as featured.");
+      return;
+    }
+
     try {
       setFeaturedLoading(lesson._id);
-
-      const response = await toggleFeaturedLesson(lesson._id);
-
-      const updatedLesson =
-        response?.data?.data || response?.data || response?.lesson;
-
-      if (!updatedLesson) {
-        throw new Error("Updated lesson data not received");
-      }
+      const updated = await toggleLessonFeaturedStatus(lesson._id);
 
       setLessons((prev) =>
         prev.map((item) =>
           item._id === lesson._id
-            ? {
-                ...item,
-                isFeatured: updatedLesson.isFeatured,
-              }
-            : item,
-        ),
+            ? { ...item, isFeatured: updated?.isFeatured ?? !item.isFeatured }
+            : item
+        )
       );
 
       toast.success(
-        updatedLesson.isFeatured
-          ? "Lesson added to featured"
-          : "Lesson removed from featured",
+        lesson.isFeatured
+          ? "Lesson removed from featured"
+          : "Lesson marked as featured"
       );
     } catch (error) {
-      console.error(error);
-
+      console.error("Featured toggle error:", error);
       toast.error(
-        error.response?.data?.message ||
-          error.message ||
-          "Failed to update featured status",
+        error.response?.data?.message || "Failed to update featured status"
       );
     } finally {
       setFeaturedLoading(null);
     }
   };
 
-  const getLessonIcon = (lesson) => {
-    const type = (lesson.file?.type || lesson.type || "").toLowerCase();
+  // Delete execution
+  const confirmDelete = async () => {
+    if (!lessonToDelete) return;
 
-    const name = (
-      lesson.file?.name ||
-      lesson.name ||
-      lesson.title ||
-      ""
-    ).toLowerCase();
-
-    if (
-      type === "video" ||
-      type === "mp4" ||
-      type === "video/mp4" ||
-      name.endsWith(".mp4") ||
-      name.endsWith(".webm") ||
-      name.endsWith(".mov")
-    ) {
-      return <Video size={20} className="text-orange-600" />;
+    try {
+      setDeleteLoading(true);
+      await removeLesson(lessonToDelete._id);
+      toast.success("Lesson deleted successfully");
+      setLessons((prev) => prev.filter((l) => l._id !== lessonToDelete._id));
+      setLessonToDelete(null);
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error(error.response?.data?.message || "Failed to delete lesson");
+    } finally {
+      setDeleteLoading(false);
     }
-
-    if (
-      type === "pptx" ||
-      type === "ppt" ||
-      type === "powerpoint" ||
-      name.endsWith(".pptx") ||
-      name.endsWith(".ppt")
-    ) {
-      return <Presentation size={20} className="text-orange-600" />;
-    }
-
-    return <BookOpen size={20} className="text-orange-600" />;
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-orange-50 px-4 py-10">
-        <div className="mx-auto max-w-6xl">
-          <div className="rounded-3xl bg-white p-12 text-center shadow-sm">
-            <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-orange-100 border-t-orange-500" />
+  // Filtering
+  const filteredLessons = useMemo(() => {
+    const query = search.trim().toLowerCase();
 
-            <p className="font-medium text-slate-600">Loading lessons...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    return lessons.filter((lesson) => {
+      const lessonTopicId = lesson.topic?._id || lesson.topic;
+      const topicTitle = lesson.topic?.title || "";
+
+      const matchesSearch =
+        !query ||
+        lesson.title?.toLowerCase().includes(query) ||
+        topicTitle.toLowerCase().includes(query) ||
+        lesson.file?.name?.toLowerCase().includes(query);
+
+      const matchesTopic =
+        !topicFilter ||
+        lessonTopicId?.toString() === topicFilter.toString();
+
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "published" && lesson.isPublished) ||
+        (statusFilter === "unpublished" && !lesson.isPublished);
+
+      const matchesFeatured =
+        featuredFilter === "all" ||
+        (featuredFilter === "featured" && lesson.isFeatured) ||
+        (featuredFilter === "standard" && !lesson.isFeatured);
+
+      return (
+        matchesSearch && matchesTopic && matchesStatus && matchesFeatured
+      );
+    });
+  }, [lessons, search, topicFilter, statusFilter, featuredFilter]);
+
+  const hasFilters = Boolean(
+    search.trim() ||
+      topicFilter ||
+      statusFilter !== "all" ||
+      featuredFilter !== "all"
+  );
+
+  const handleClearFilters = () => {
+    setSearch("");
+    setTopicFilter("");
+    setStatusFilter("all");
+    setFeaturedFilter("all");
+  };
+
+  const selectedTopic = topics.find((t) => t._id === topicFilter);
 
   return (
-    <div className="min-h-screen bg-orange-50 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        {/* Header */}
-        <div className="mb-8 rounded-3xl bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-100">
-                <BookOpen size={28} className="text-orange-600" />
-              </div>
-
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-orange-500">
-                  Course Management
-                </p>
-
-                <h1 className="mt-1 text-2xl font-bold text-slate-800 sm:text-3xl">
-                  Manage Lessons
-                </h1>
-
-                <p className="mt-1 text-sm text-slate-500">
-                  {topicId
-                    ? "Lessons belonging to the selected topic."
-                    : "Manage all lessons across your topics."}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Link
-                to="/admin/topics/manage"
-                className="flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-semibold text-orange-600 transition hover:bg-orange-100"
-              >
-                <ArrowLeft size={17} />
-                Topics
-              </Link>
-
-              <Link
-                to={
-                  topicId
-                    ? `/admin/lessons/add?topicId=${topicId}`
-                    : "/admin/lessons/add"
-                }
-                className="flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-600"
-              >
-                <Plus size={18} />
-                Add Lesson
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Lesson Count */}
-        <div className="mb-5">
-          <h2 className="text-lg font-semibold text-slate-800">
-            {topicId ? "Topic Lessons" : "All Lessons"}
-          </h2>
-
-          <p className="mt-1 text-sm text-slate-500">
-            {lessons.length} {lessons.length === 1 ? "lesson" : "lessons"}
-          </p>
-        </div>
-
-        {/* Empty State */}
-        {lessons.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-orange-200 bg-white px-6 py-16 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-orange-50">
-              <BookOpen size={26} className="text-orange-500" />
-            </div>
-
-            <h3 className="mt-4 text-lg font-semibold text-slate-800">
-              No lessons yet
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              {topicId
-                ? "This topic does not have any lessons yet."
-                : "Create your first lesson to get started."}
-            </p>
+    <div className="mx-auto max-w-7xl space-y-6">
+      {/* Page Header */}
+      <AdminPageHeader
+        title="Lessons"
+        description={
+          selectedTopic
+            ? `Viewing lessons under topic: "${selectedTopic.title}"`
+            : "Manage learning lessons, materials, quiz coverage, and featured content."
+        }
+        breadcrumbs={[
+          { label: "Content" },
+          { label: "Lessons" },
+        ]}
+        actions={
+          <div className="flex items-center gap-2">
+            <Link
+              to="/admin/topics/manage"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3.5 py-2 text-xs font-semibold text-text-secondary hover:bg-surface-muted hover:text-text-primary transition"
+            >
+              <BookOpen size={14} />
+              <span>All Topics</span>
+            </Link>
 
             <Link
               to={
-                topicId
-                  ? `/admin/lessons/add?topicId=${topicId}`
+                topicFilter
+                  ? `/admin/lessons/add?topicId=${topicFilter}`
                   : "/admin/lessons/add"
               }
-              className="mt-5 inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600"
+              className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-primary-dark transition"
             >
-              <Plus size={18} />
-              Add Lesson
+              <Plus size={16} />
+              <span>Add Lesson</span>
             </Link>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {lessons.map((lesson) => (
-              <div
-                key={lesson._id}
-                className="flex flex-col gap-5 rounded-2xl border border-orange-100 bg-white p-5 shadow-sm transition hover:shadow-md sm:flex-row sm:items-center sm:justify-between"
-              >
-                {/* Lesson Information */}
-                <div className="min-w-0">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-100">
-                      {getLessonIcon(lesson)}
+        }
+      />
+
+      {/* Toolbar / Search & Filter */}
+      <AdminToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search lessons by title, topic, or file..."
+        totalItems={lessons.length}
+        showingItems={filteredLessons.length}
+        hasActiveFilters={hasFilters}
+        onClearFilters={handleClearFilters}
+        filters={[
+          {
+            id: "topic",
+            label: "Topic Filter",
+            value: topicFilter,
+            onChange: setTopicFilter,
+            options: [
+              { label: "All Topics", value: "" },
+              ...topics.map((t) => ({ label: t.title, value: t._id })),
+            ],
+          },
+          {
+            id: "status",
+            label: "Status Filter",
+            value: statusFilter,
+            onChange: setStatusFilter,
+            options: [
+              { label: "All Statuses", value: "all" },
+              { label: "Published Only", value: "published" },
+              { label: "Unpublished Only", value: "unpublished" },
+            ],
+          },
+          {
+            id: "featured",
+            label: "Featured Filter",
+            value: featuredFilter,
+            onChange: setFeaturedFilter,
+            options: [
+              { label: "All Lessons", value: "all" },
+              { label: "Featured (Max 6)", value: "featured" },
+              { label: "Standard", value: "standard" },
+            ],
+          },
+        ]}
+      />
+
+      {/* Main Content Area */}
+      {loading ? (
+        <TableSkeleton rows={6} />
+      ) : lessons.length === 0 ? (
+        <AdminEmptyState
+          title="No lessons created yet"
+          description="Add your first lesson to start building modular educational course content."
+          icon={FileText}
+          actionLabel="Add Lesson"
+          actionLink="/admin/lessons/add"
+        />
+      ) : filteredLessons.length === 0 ? (
+        <AdminEmptyState
+          isFiltered={true}
+          onClearFilters={handleClearFilters}
+        />
+      ) : (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block">
+            <AdminTableWrapper>
+              <AdminTable>
+                <AdminTableHeader>
+                  <tr>
+                    <AdminTableCell isHeader className="w-[30%]">
+                      Lesson Title & Material
+                    </AdminTableCell>
+                    <AdminTableCell isHeader className="w-[18%]">
+                      Topic
+                    </AdminTableCell>
+                    <AdminTableCell isHeader className="w-[8%]">
+                      Order
+                    </AdminTableCell>
+                    <AdminTableCell isHeader className="w-[12%]">
+                      Type
+                    </AdminTableCell>
+                    <AdminTableCell isHeader className="w-[12%]">
+                      Quiz Status
+                    </AdminTableCell>
+                    <AdminTableCell isHeader className="w-[10%]">
+                      Visibility
+                    </AdminTableCell>
+                    <AdminTableCell isHeader className="w-[10%] text-right">
+                      Actions
+                    </AdminTableCell>
+                  </tr>
+                </AdminTableHeader>
+
+                <AdminTableBody>
+                  {filteredLessons.map((lesson) => {
+                    const isVideo =
+                      lesson.file?.type === "video" ||
+                      lesson.file?.name?.endsWith(".mp4");
+
+                    return (
+                      <AdminTableRow key={lesson._id}>
+                        {/* Title & Material */}
+                        <AdminTableCell>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div
+                              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
+                                isVideo
+                                  ? "border-sky-200 bg-sky-50 text-sky-600"
+                                  : "border-orange-200 bg-orange-50 text-orange-600"
+                              }`}
+                            >
+                              {isVideo ? (
+                                <Video size={17} />
+                              ) : (
+                                <Presentation size={17} />
+                              )}
+                            </div>
+
+                            <div className="min-w-0">
+                              <p className="font-bold text-text-primary truncate">
+                                {lesson.title}
+                              </p>
+                              <p className="mt-0.5 text-xs text-text-muted truncate">
+                                {lesson.file?.name || "No file attached"}
+                              </p>
+                            </div>
+                          </div>
+                        </AdminTableCell>
+
+                        {/* Topic */}
+                        <AdminTableCell>
+                          <span className="font-medium text-text-secondary truncate block">
+                            {lesson.topic?.title || "Unassigned"}
+                          </span>
+                        </AdminTableCell>
+
+                        {/* Order */}
+                        <AdminTableCell>
+                          <span className="font-mono text-xs font-semibold text-text-muted">
+                            #{lesson.order ?? 1}
+                          </span>
+                        </AdminTableCell>
+
+                        {/* Content Type */}
+                        <AdminTableCell>
+                          <AdminStatusBadge
+                            status={isVideo ? "video" : "pptx"}
+                            size="xs"
+                          />
+                        </AdminTableCell>
+
+                        {/* Quiz */}
+                        <AdminTableCell>
+                          {lesson.hasQuiz ? (
+                            <Link
+                              to={`/admin/quizzes/manage?lessonId=${lesson._id}`}
+                              className="inline-flex items-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2.5 py-0.5 text-[11px] font-bold text-purple-700 hover:bg-purple-100 transition"
+                              title="Quiz attached - click to manage"
+                            >
+                              <HelpCircle size={12} />
+                              <span>
+                                {lesson.quiz?.questionCount ?? 0} Qs
+                              </span>
+                            </Link>
+                          ) : (
+                            <Link
+                              to={`/admin/quizzes/add?lessonId=${lesson._id}`}
+                              className="inline-flex items-center gap-1 text-[11px] font-semibold text-text-muted hover:text-primary transition"
+                              title="Add quiz to this lesson"
+                            >
+                              <Plus size={12} />
+                              <span>Add Quiz</span>
+                            </Link>
+                          )}
+                        </AdminTableCell>
+
+                        {/* Status / Visibility */}
+                        <AdminTableCell>
+                          <AdminStatusBadge
+                            status={lesson.isPublished ? "published" : "unpublished"}
+                            size="xs"
+                          />
+                        </AdminTableCell>
+
+                        {/* Actions */}
+                        <AdminTableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* Featured Star toggle */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleFeatured(lesson)}
+                              disabled={
+                                featuredLoading === lesson._id ||
+                                !lesson.isPublished
+                              }
+                              className={`rounded-lg border p-1.5 transition ${
+                                lesson.isFeatured
+                                  ? "border-amber-300 bg-amber-50 text-amber-600"
+                                  : "border-border bg-surface text-text-muted hover:border-amber-300 hover:text-amber-600"
+                              } ${
+                                !lesson.isPublished
+                                  ? "cursor-not-allowed opacity-40"
+                                  : ""
+                              }`}
+                              title={
+                                !lesson.isPublished
+                                  ? "Publish lesson first to enable featured status"
+                                  : lesson.isFeatured
+                                  ? "Remove from featured"
+                                  : "Mark as featured"
+                              }
+                            >
+                              <Star
+                                size={14}
+                                fill={lesson.isFeatured ? "currentColor" : "none"}
+                                className={
+                                  featuredLoading === lesson._id
+                                    ? "animate-pulse"
+                                    : ""
+                                }
+                              />
+                            </button>
+
+                            <Link
+                              to={`/admin/lessons/edit/${lesson._id}`}
+                              className="rounded-lg border border-border bg-surface p-1.5 text-text-secondary hover:bg-surface-muted hover:text-text-primary transition"
+                              title="Edit lesson"
+                            >
+                              <Edit size={14} />
+                            </Link>
+
+                            <button
+                              type="button"
+                              onClick={() => setLessonToDelete(lesson)}
+                              className="rounded-lg border border-border bg-surface p-1.5 text-text-secondary hover:bg-error-light hover:text-error transition"
+                              title="Delete lesson"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </AdminTableCell>
+                      </AdminTableRow>
+                    );
+                  })}
+                </AdminTableBody>
+              </AdminTable>
+            </AdminTableWrapper>
+          </div>
+
+          {/* Mobile Stacked Cards */}
+          <div className="space-y-3 lg:hidden">
+            {filteredLessons.map((lesson) => {
+              const isVideo =
+                lesson.file?.type === "video" ||
+                lesson.file?.name?.endsWith(".mp4");
+
+              return (
+                <div
+                  key={lesson._id}
+                  className="rounded-2xl border border-border bg-surface p-4 shadow-xs space-y-3"
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${
+                        isVideo
+                          ? "border-sky-200 bg-sky-50 text-sky-600"
+                          : "border-orange-200 bg-orange-50 text-orange-600"
+                      }`}
+                    >
+                      {isVideo ? (
+                        <Video size={18} />
+                      ) : (
+                        <Presentation size={18} />
+                      )}
                     </div>
 
-                    <div className="min-w-0">
-                      <h3 className="truncate font-semibold text-slate-800">
-                        {lesson.title}
-                      </h3>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="font-bold text-text-primary truncate text-sm">
+                          {lesson.title}
+                        </h4>
+                        <AdminStatusBadge
+                          status={lesson.isPublished ? "published" : "unpublished"}
+                          size="xs"
+                        />
+                      </div>
 
-                      <p className="mt-1 text-sm text-slate-500">
-                        Topic: {lesson.topic?.title || "N/A"}
+                      <p className="mt-1 text-xs text-text-muted truncate">
+                        Topic:{" "}
+                        <span className="font-medium text-text-secondary">
+                          {lesson.topic?.title || "N/A"}
+                        </span>
                       </p>
                     </div>
                   </div>
 
-                  {/* Status Badges */}
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-orange-50 px-3 py-1 text-xs font-medium text-orange-600">
-                      Order: {lesson.order}
+                  <div className="flex items-center justify-between border-t border-border pt-3 text-xs text-text-secondary">
+                    <span>
+                      Order: <strong>#{lesson.order ?? 1}</strong>
                     </span>
 
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-medium ${
-                        lesson.isPublished
-                          ? "bg-green-50 text-green-600"
-                          : "bg-slate-100 text-slate-500"
-                      }`}
-                    >
-                      {lesson.isPublished ? "Published" : "Unpublished"}
-                    </span>
-
-                    {lesson.isFeatured && (
-                      <span className="flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-600">
-                        <Star size={12} fill="currentColor" />
-                        Featured
+                    {lesson.hasQuiz ? (
+                      <span className="font-semibold text-purple-700">
+                        {lesson.quiz?.questionCount ?? 0} Questions
                       </span>
+                    ) : (
+                      <span className="text-text-muted">No quiz</span>
                     )}
                   </div>
-                </div>
 
-                {/* Actions */}
-                <div className="flex shrink-0 gap-2">
-                  {/* Featured */}
-                  <button
-                    type="button"
-                    onClick={() => handleToggleFeatured(lesson)}
-                    disabled={
-                      featuredLoading === lesson._id || !lesson.isPublished
-                    }
-                    className={`flex items-center justify-center rounded-xl p-3 transition ${
-                      lesson.isFeatured
-                        ? "bg-amber-100 text-amber-600 hover:bg-amber-200"
-                        : "border border-orange-200 bg-white text-orange-500 hover:bg-orange-50"
-                    } ${
-                      !lesson.isPublished ? "cursor-not-allowed opacity-40" : ""
-                    }`}
-                    title={
-                      !lesson.isPublished
-                        ? "Publish lesson first"
-                        : lesson.isFeatured
-                          ? "Remove from Featured"
-                          : "Add to Featured"
-                    }
-                  >
-                    <Star
-                      size={18}
-                      fill={lesson.isFeatured ? "currentColor" : "none"}
-                      className={
-                        featuredLoading === lesson._id ? "animate-pulse" : ""
+                  <div className="grid grid-cols-3 gap-2 border-t border-border pt-2.5">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleFeatured(lesson)}
+                      disabled={
+                        featuredLoading === lesson._id || !lesson.isPublished
                       }
-                    />
-                  </button>
+                      className={`flex items-center justify-center gap-1 rounded-xl border p-2 text-xs font-semibold ${
+                        lesson.isFeatured
+                          ? "border-amber-300 bg-amber-50 text-amber-700"
+                          : "border-border bg-surface text-text-secondary"
+                      } ${!lesson.isPublished ? "opacity-40" : ""}`}
+                    >
+                      <Star
+                        size={13}
+                        fill={lesson.isFeatured ? "currentColor" : "none"}
+                      />
+                      <span>Featured</span>
+                    </button>
 
-                  {/* Edit */}
-                  <Link
-                    to={`/admin/lessons/edit/${lesson._id}`}
-                    className="flex items-center justify-center rounded-xl border border-orange-200 bg-white p-3 text-orange-600 transition hover:bg-orange-50"
-                    title="Edit Lesson"
-                  >
-                    <Edit size={18} />
-                  </Link>
+                    <Link
+                      to={`/admin/lessons/edit/${lesson._id}`}
+                      className="flex items-center justify-center gap-1 rounded-xl border border-border bg-surface px-2.5 py-2 text-xs font-semibold text-text-secondary"
+                    >
+                      <Edit size={13} />
+                      Edit
+                    </Link>
 
-                  {/* Delete */}
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(lesson._id)}
-                    className="flex items-center justify-center rounded-xl bg-red-50 p-3 text-red-600 transition hover:bg-red-100"
-                    title="Delete Lesson"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => setLessonToDelete(lesson)}
+                      className="flex items-center justify-center gap-1 rounded-xl border border-error/20 bg-error-light px-2.5 py-2 text-xs font-semibold text-error"
+                    >
+                      <Trash2 size={13} />
+                      Delete
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-        )}
-      </div>
+        </>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AdminConfirmDialog
+        isOpen={Boolean(lessonToDelete)}
+        onClose={() => setLessonToDelete(null)}
+        onConfirm={confirmDelete}
+        loading={deleteLoading}
+        title={`Delete Lesson "${lessonToDelete?.title}"?`}
+        description="This lesson and its associated presentation or video content will be permanently deleted."
+        confirmLabel="Delete Lesson"
+      />
     </div>
   );
 }

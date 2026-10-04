@@ -1,67 +1,69 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { FileText, FileVideo, Play, Presentation } from "lucide-react";
 
-import { Play, FileText, FileVideo } from "lucide-react";
+import { getLessonFile } from "../../lib/lesson";
 
-import { fileConfig } from "../../data/topicsData";
+const base =
+  "group relative block h-20 w-28 shrink-0 overflow-hidden rounded-xl border border-border-light bg-lesson-orange sm:h-24 sm:w-36";
 
-export function ModuleThumb({ lesson, onOpen }) {
-  const fileType = lesson.file?.type;
+export function ModuleThumb({ lesson, to }) {
+  const { type } = getLessonFile(lesson);
+  const TypeIcon =
+    type === "video" ? FileVideo : type === "pptx" ? Presentation : FileText;
 
-  const cfg = fileConfig[fileType] ?? fileConfig.pptx;
-
-  return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="group relative h-28 w-44 shrink-0 cursor-pointer overflow-hidden rounded-2xl bg-slate-100 shadow-sm transition-all hover:brightness-105 active:scale-[0.98]"
-      aria-label={`Open ${lesson.file?.name}`}
-    >
+  const content = (
+    <>
       {lesson.thumbnail?.url ? (
         <img
           src={lesson.thumbnail.url}
-          alt={lesson.title}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
         />
       ) : (
-        <div
-          className={`h-full w-full bg-gradient-to-br ${cfg.thumbGradient}`}
-        />
+        <span className="flex h-full w-full items-center justify-center">
+          <TypeIcon
+            className="h-8 w-8 text-primary/30"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+        </span>
       )}
 
-      <div className="absolute inset-0 bg-black/10 transition-colors group-hover:bg-black/20" />
-
-      <div
-        className={`absolute left-3.5 top-3.5 flex h-8 w-8 items-center justify-center rounded-lg shadow-sm ring-1 backdrop-blur-sm ${cfg.classes}`}
-      >
-        {fileType === "video" ? (
-          <FileVideo className="h-4 w-4 text-orange-600" />
-        ) : (
-          <FileText className="h-4 w-4" />
-        )}
-      </div>
-
-      {fileType === "video" && (
-        <span className="absolute inset-0 flex items-center justify-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/95 shadow-md">
+      {to && (
+        <span className="absolute inset-0 flex items-center justify-center bg-secondary-dark/0 transition-colors duration-200 group-hover:bg-secondary-dark/20">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-primary-dark shadow-[var(--shadow-sm)] transition-transform duration-200 group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100">
             <Play
-              className="ml-0.5 h-6 w-6 text-orange-500"
+              className="ml-0.5 h-4 w-4"
               fill="currentColor"
+              aria-hidden="true"
             />
           </span>
         </span>
       )}
+    </>
+  );
 
-      {fileType === "pptx" && (
-        <span className="absolute bottom-2 right-2.5 rounded-md bg-white/90 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-orange-700 shadow-sm">
-          PPT
-        </span>
-      )}
+  // "Start Learning" is the accessible control; the thumbnail is a
+  // mouse-only shortcut, so it stays out of the tab order.
+  if (!to) {
+    return (
+      <span aria-hidden="true" className={`${base} opacity-70`}>
+        {content}
+      </span>
+    );
+  }
 
-      {lesson.file?.duration && (
-        <span className="absolute bottom-2 left-2.5 rounded-md bg-black/50 px-1.5 py-0.5 text-[10px] font-medium text-white">
-          {lesson.file.duration}
-        </span>
-      )}
-    </button>
+  return (
+    <Link
+      to={to}
+      tabIndex={-1}
+      aria-hidden="true"
+      className={`${base} transition-colors duration-200 hover:border-primary/40`}
+    >
+      {content}
+    </Link>
   );
 }

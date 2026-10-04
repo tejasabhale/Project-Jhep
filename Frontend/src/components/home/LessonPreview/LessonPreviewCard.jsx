@@ -1,105 +1,86 @@
 import { ArrowRight, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+const FALLBACK_THUMBNAIL =
+  "https://placehold.co/600x400/FFF1E4/EA580C?text=Lesson";
+
 export default function LessonPreviewCard({
   lessonId,
   title = "Introducing Yourself",
-  grade = "Grade 1-5",
   description = "Learn common English conversations for introducing yourself.",
-  thumbnail = "https://placehold.co/600x400/FFF1E4/EA580C?text=Lesson",
+  thumbnail = FALLBACK_THUMBNAIL,
 }) {
   const navigate = useNavigate();
 
   const handleStartLesson = () => {
-    navigate(`/login`);
+    navigate("/login");
   };
 
   return (
-    <div
-      className="group overflow-hidden rounded-2xl border bg-white"
-      style={{
-        borderColor: "#FBDBBE",
-      }}
-    >
-      <div className="relative h-52 overflow-hidden bg-[#FFF1E4]">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-dark-surface shadow-[var(--shadow-md)] transition-colors duration-300 hover:border-primary/40">
+      {/* Top accent bar */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 z-10 h-1 origin-left scale-x-0 bg-primary transition-transform duration-500 ease-out group-hover:scale-x-100"
+      />
+
+      {/* Thumbnail */}
+      <div className="relative h-52 shrink-0 overflow-hidden bg-secondary">
         <img
-          src={
-            thumbnail ||
-            "https://placehold.co/600x400/FFF1E4/EA580C?text=Lesson"
-          }
+          src={thumbnail || FALLBACK_THUMBNAIL}
           alt={title}
+          loading="lazy"
+          decoding="async"
           className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
 
+        {/* Soft bottom fade */}
         <div
-          className="absolute left-4 top-4 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.12em]"
-          style={{
-            background: "#FFFFFF",
-            color: "#C2410C",
-          }}
-        >
-          {grade}
-        </div>
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-dark-bg/40 to-transparent"
+        />
       </div>
 
-      <div className="p-5 md:p-6">
+      {/* Body */}
+      <div className="flex flex-1 flex-col p-5 md:p-6">
         <div className="flex items-center gap-1.5">
           <BookOpen
             size={14}
             strokeWidth={1.8}
-            style={{
-              color: "#EA580C",
-            }}
+            aria-hidden="true"
+            className="text-primary"
           />
 
-          <span
-            className="text-[10px] font-semibold uppercase tracking-[0.14em]"
-            style={{
-              color: "#C2410C",
-              fontFamily: "'Inter', sans-serif",
-            }}
-          >
+          <span className="font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-primary-light">
             English Lesson
           </span>
         </div>
 
-        <h3
-          className="mt-3 text-xl font-semibold"
-          style={{
-            color: "#17213B",
-            fontFamily: "'Fraunces', serif",
-          }}
-        >
+        <h3 className="mt-3 font-display text-xl font-bold leading-snug text-dark-text transition-colors duration-300 group-hover:text-primary">
           {title}
         </h3>
 
-        <p
-          className="mt-2 min-h-[48px] text-sm leading-6"
-          style={{
-            color: "#6B7280",
-            fontFamily: "'Inter', sans-serif",
-          }}
-        >
+        <p className="mt-2 flex-1 font-sans text-sm leading-6 text-dark-muted">
           {description}
         </p>
 
+        {/* CTA */}
         <button
           type="button"
           onClick={handleStartLesson}
           disabled={!lessonId}
-          className="group/btn mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#FFEEE0] px-5 py-3 text-sm font-semibold text-[#C2410C] transition-all duration-300 hover:bg-[#FFD8B8] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-          style={{
-            fontFamily: "'Inter', sans-serif",
-          }}
+          className="group/btn mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-3 font-sans text-sm font-semibold text-white transition-all duration-300 hover:bg-primary-dark active:scale-[0.98] focus-visible:outline-offset-4 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-primary"
         >
-          Start Lesson
+          <span className="text-white">Start Lesson</span>
+
           <ArrowRight
             size={17}
             strokeWidth={2}
-            className="transition-transform duration-300 group-hover/btn:translate-x-1"
+            aria-hidden="true"
+            className="text-white transition-transform duration-300 group-hover/btn:translate-x-1"
           />
         </button>
       </div>
-    </div>
+    </article>
   );
 }

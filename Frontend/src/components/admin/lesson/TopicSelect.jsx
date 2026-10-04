@@ -1,32 +1,26 @@
-export default function TopicSelect({ topics = [], value, onChange }) {
+import React from "react";
+
+export default function TopicSelect({
+  topics = [],
+  value,
+  onChange,
+  disabled = false,
+  required = true,
+}) {
   return (
     <div>
-      <label className="block font-medium mb-2">Select Topic</label>
-
       <select
         name="topic"
-        value={value}
-        onChange={(e) => {
-          console.log("Selected Topic ID:", e.target.value);
-          onChange(e);
-        }}
-        required
-        className="
-          w-full
-          border
-          rounded-xl
-          px-4
-          py-3
-          outline-none
-          focus:ring-2
-          focus:ring-orange-400
-        "
+        value={value || ""}
+        onChange={onChange}
+        required={required}
+        disabled={disabled}
+        className="h-10 w-full rounded-xl border border-border bg-background px-3.5 text-sm text-text-primary outline-none transition focus:border-primary focus:ring-1 focus:ring-primary disabled:opacity-60"
       >
-        <option value="">Choose topic</option>
-
-        {topics.map((topic) => (
-          <option key={topic._id} value={topic._id}>
-            {topic.title}
+        <option value="">Select a topic module...</option>
+        {topics.map((t) => (
+          <option key={t._id} value={t._id}>
+            {t.title}
           </option>
         ))}
       </select>

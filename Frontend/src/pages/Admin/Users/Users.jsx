@@ -1,72 +1,117 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Plus, Users as UsersIcon } from "lucide-react";
 import { toast } from "react-hot-toast";
 
-import Loader from "../../../components/common/Loader";
+import AdminPageHeader from "../../../components/admin/ui/AdminPageHeader";
+import AdminToolbar from "../../../components/admin/ui/AdminToolbar";
+import AdminConfirmDialog from "../../../components/admin/ui/AdminConfirmDialog";
+import AdminEmptyState from "../../../components/admin/ui/AdminEmptyState";
+import AdminErrorState from "../../../components/admin/ui/AdminErrorState";
+import { TableSkeleton } from "../../../components/admin/ui/AdminSkeleton";
 
 import UserStats from "../../../components/admin/users/UserStats";
-import UserFilters from "../../../components/admin/users/UserFilters";
 import UserTable from "../../../components/admin/users/UserTable";
 import UserModal from "../../../components/admin/users/UserModal";
-import DeleteUserModal from "../../../components/admin/users/DeleteUserModal";
 
 import useAuth from "../../../hooks/useAuth";
-
 import {
-  getAllUsers,
-  createUser,
-  updateUser,
-  deleteUser,
-} from "../../../api/user.api";
+  fetchAllUsers,
+  saveUser,
+  removeUser,
+  fetchUserActivities,
+} from "../../../api/adminServices";
 
 export default function Users() {
   const { user: currentUser } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [users, setUsers] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  const fetchUsers = useCallback(async () => {
+  // If navigated to /admin/users/add, automatically open user creation modal
+  useEffect(() => {
+    if (location.pathname === "/admin/users/add") {
+      setIsModalOpen(true);
+    }
+  }, [location.pathname]);
+
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
-
-      const response = await getAllUsers();
-
-      setUsers(response.data.data);
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to fetch users");
+      setError(null);
+      const [usersData, actsData] = await Promise.all([
+        fetchAllUsers(),
+        fetchUserActivities().catch(() => []),
+      ]);
+      setUsers(usersData || []);
+      setActivities(actsData || []);
+    } catch (err) {
+      console.error("Failed to fetch users:", err);
+      setError(err?.response?.data?.message || "Failed to fetch users.");
+      toast.error("Unable to load user accounts.");
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    loadData();
+  }, [loadData]);
+
+  // Map each user ID to their latest activity record
+  const activityMap = useMemo(() => {
+    const map = new Map();
+    // activities are sorted by createdAt: -1 in backend
+    activities.forEach((act) => {
+      const uId = act.user?._id || act.user;
+      if (uId && !map.has(uId.toString())) {
+        map.set(uId.toString(), act);
+      }
+    });
+    return map;
+  }, [activities]);
+
+  const activeSessionsCount = useMemo(() => {
+    return activities.filter((a) => a.status === "active").length;
+  }, [activities]);
 
   const filteredUsers = useMemo(() => {
-    const searchTerm = search.toLowerCase();
+    const q = search.trim().toLowerCase();
 
-    return users.filter((user) => {
+    return users.filter((u) => {
       const matchesSearch =
-        (user.fullName ?? "").toLowerCase().includes(searchTerm) ||
-        (user.email ?? "").toLowerCase().includes(searchTerm);
+        !q ||
+        (u.fullName ?? "").toLowerCase().includes(q) ||
+        (u.email ?? "").toLowerCase().includes(q) ||
+        (u.userName ?? "").toLowerCase().includes(q) ||
+        (u.mobileNo ?? "").toLowerCase().includes(q);
 
-      const matchesRole = roleFilter === "all" || user.role === roleFilter;
+      const matchesRole = roleFilter === "all" || u.role === roleFilter;
 
-      return matchesSearch && matchesRole;
+      const act = activityMap.get(u._id?.toString());
+      const isActiveSession = act?.status === "active";
+      const matchesStatus =
+        statusFilter === "all" ||
+        (statusFilter === "active" && isActiveSession) ||
+        (statusFilter === "offline" && !isActiveSession);
+
+      return matchesSearch && matchesRole && matchesStatus;
     });
-  }, [users, search, roleFilter]);
+  }, [users, search, roleFilter, statusFilter, activityMap]);
 
   const handleAddUser = () => {
     setSelectedUser(null);
@@ -80,7 +125,6 @@ export default function Users() {
 
   const handleDeleteUser = (user) => {
     setUserToDelete(user);
-    setDeleteModalOpen(true);
   };
 
   const confirmDeleteUser = async () => {
@@ -88,19 +132,15 @@ export default function Users() {
 
     try {
       setDeleteLoading(true);
-
-      await deleteUser(userToDelete._id);
-
-      toast.success("User deleted successfully");
-
-      await fetchUsers();
-
-      setDeleteModalOpen(false);
+      await removeUser(userToDelete._id);
+      toast.success(
+        `User "${userToDelete.fullName || userToDelete.userName}" deleted successfully.`
+      );
       setUserToDelete(null);
-    } catch (error) {
-      console.error(error);
-
-      toast.error(error?.response?.data?.message || "Failed to delete user");
+      await loadData();
+    } catch (err) {
+      console.error("Delete user error:", err);
+      toast.error(err?.response?.data?.message || "Failed to delete user.");
     } finally {
       setDeleteLoading(false);
     }
@@ -109,118 +149,159 @@ export default function Users() {
   const handleSubmit = async (formData) => {
     try {
       if (selectedUser) {
-        await updateUser(selectedUser._id, formData);
-        toast.success("User updated successfully");
+        await saveUser(formData, selectedUser._id);
+        toast.success("User account updated successfully.");
       } else {
-        await createUser(formData);
-        toast.success("User created successfully");
+        await saveUser(formData);
+        toast.success("User account created successfully.");
       }
 
-      await fetchUsers();
-
+      await loadData();
       setIsModalOpen(false);
       setSelectedUser(null);
-    } catch (error) {
-      console.error(error);
-
-      toast.error(error?.response?.data?.message || "Something went wrong");
+      if (location.pathname === "/admin/users/add") {
+        navigate("/admin/users/manage", { replace: true });
+      }
+    } catch (err) {
+      console.error("User save error:", err);
+      toast.error(err?.response?.data?.message || "Failed to save user account.");
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
+  const handleResetFilters = () => {
+    setSearch("");
+    setRoleFilter("all");
+    setStatusFilter("all");
+  };
+
+  const totalCount = users.length;
+  const hasActiveFilters = Boolean(
+    search.trim() || roleFilter !== "all" || statusFilter !== "all"
+  );
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
-      {/* Page header */}
-      <div className="flex flex-col gap-4 border-b border-gray-200 pb-6 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-start gap-3">
-          <div className="hidden h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-500 sm:flex">
-            <UsersIcon size={22} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-              Manage Users
-            </h1>
-            <p className="mt-1 text-sm text-gray-500">
-              {currentUser?.role === "owner"
-                ? "Manage administrator and user accounts."
-                : "Manage users created by you."}
-            </p>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <AdminPageHeader
+        title="Manage Users"
+        subtitle={
+          currentUser?.role === "owner"
+            ? "Manage administrators, staff, and learner accounts across Project Jhep."
+            : "Manage platform user accounts created under your administration."
+        }
+        badge={`${totalCount} ${totalCount === 1 ? "account" : "accounts"}`}
+        breadcrumbs={[
+          { label: "Dashboard", path: "/admin" },
+          { label: "Users" },
+        ]}
+        actions={
+          <button
+            type="button"
+            onClick={handleAddUser}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-primary-dark transition"
+          >
+            <Plus size={16} />
+            <span>Add User</span>
+          </button>
+        }
+      />
 
-        <button
-          onClick={handleAddUser}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 active:bg-orange-700"
-        >
-          <Plus size={18} />
-          Add User
-        </button>
-      </div>
+      {/* Stats Summary */}
+      <UserStats users={users} activeCount={activeSessionsCount} />
 
-      {/* Stats */}
-      <UserStats users={users} />
+      {/* Toolbar */}
+      <AdminToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by name, username, email, or mobile..."
+        totalItems={totalCount}
+        showingItems={filteredUsers.length}
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={handleResetFilters}
+        filters={[
+          {
+            id: "role",
+            label: "Role Filter",
+            value: roleFilter,
+            onChange: setRoleFilter,
+            options: [
+              { label: "All Roles", value: "all" },
+              { label: "Owners", value: "owner" },
+              { label: "Administrators", value: "admin" },
+              { label: "Learners / Users", value: "user" },
+            ],
+          },
+          {
+            id: "status",
+            label: "Session Status",
+            value: statusFilter,
+            onChange: setStatusFilter,
+            options: [
+              { label: "All Statuses", value: "all" },
+              { label: "Active Now (Online)", value: "active" },
+              { label: "Standard / Offline", value: "offline" },
+            ],
+          },
+        ]}
+      />
 
-      {/* Filters + Table grouped in one card for a cohesive, professional block */}
-      <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-100 p-4 sm:p-5">
-          <UserFilters
-            search={search}
-            setSearch={setSearch}
-            roleFilter={roleFilter}
-            setRoleFilter={setRoleFilter}
-            currentUser={currentUser}
-          />
-        </div>
+      {/* Table / Error / Loading Content */}
+      {loading ? (
+        <TableSkeleton rows={6} />
+      ) : error ? (
+        <AdminErrorState
+          title="Failed to Load Users"
+          message={error}
+          onRetry={loadData}
+        />
+      ) : users.length === 0 ? (
+        <AdminEmptyState
+          title="No users created yet"
+          description="Create your first user account to start onboarding administrators and learners."
+          actionLabel="Add User"
+          onAction={handleAddUser}
+        />
+      ) : filteredUsers.length === 0 ? (
+        <AdminEmptyState
+          isFiltered
+          title="No matching users found"
+          description="No users matched your search keywords or filter criteria."
+          onClearFilters={handleResetFilters}
+        />
+      ) : (
+        <UserTable
+          users={filteredUsers}
+          activityMap={activityMap}
+          currentUser={currentUser}
+          onEdit={handleEditUser}
+          onDelete={handleDeleteUser}
+        />
+      )}
 
-        {filteredUsers.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400">
-              <UsersIcon size={22} />
-            </div>
-            <p className="text-sm font-medium text-gray-900">No users found</p>
-            <p className="max-w-sm text-sm text-gray-500">
-              {search || roleFilter !== "all"
-                ? "Try adjusting your search or filter to find who you're looking for."
-                : "Get started by adding your first user."}
-            </p>
-          </div>
-        ) : (
-          <UserTable
-            users={filteredUsers}
-            currentUser={currentUser}
-            onEdit={handleEditUser}
-            onDelete={handleDeleteUser}
-          />
-        )}
-      </div>
-
+      {/* Add / Edit User Modal */}
       <UserModal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
           setSelectedUser(null);
+          if (location.pathname === "/admin/users/add") {
+            navigate("/admin/users/manage", { replace: true });
+          }
         }}
         currentUser={currentUser}
         user={selectedUser}
         onSubmit={handleSubmit}
       />
 
-      <DeleteUserModal
-        isOpen={deleteModalOpen}
-        user={userToDelete}
-        loading={deleteLoading}
-        onClose={() => {
-          setDeleteModalOpen(false);
-          setUserToDelete(null);
-        }}
+      {/* Delete User Confirmation */}
+      <AdminConfirmDialog
+        isOpen={Boolean(userToDelete)}
+        onClose={() => setUserToDelete(null)}
         onConfirm={confirmDeleteUser}
+        title="Delete User Account"
+        description={`Are you sure you want to permanently delete "${userToDelete?.fullName || userToDelete?.userName}" (${userToDelete?.email})? This action cannot be undone.`}
+        confirmLabel="Delete User"
+        loading={deleteLoading}
       />
     </div>
   );

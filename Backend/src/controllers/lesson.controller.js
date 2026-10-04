@@ -1,9 +1,12 @@
 import Topic from "../models/topic.model.js";
 import Lesson from "../models/lesson.model.js";
+import Quiz from "../models/quiz.model.js";
+
 import {
   uploadOnCloudinary,
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";
+
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -141,15 +144,47 @@ const getLessonsByTopic = asyncHandler(async (req, res) => {
     .sort({
       order: 1,
     })
-    .select("title description thumbnail file order isPublished isFeatured")
+    .select("title description thumbnail file order isPublished")
     .lean();
+
+  const lessonIds = lessons.map((lesson) => lesson._id);
+
+  const quizzes = await Quiz.find({
+    lesson: {
+      $in: lessonIds,
+    },
+    isPublished: true,
+  })
+    .select("_id lesson title questions")
+    .lean();
+
+  const quizMap = new Map(
+    quizzes.map((quiz) => [quiz.lesson.toString(), quiz]),
+  );
+
+  const lessonsWithQuiz = lessons.map((lesson) => {
+    const quiz = quizMap.get(lesson._id.toString());
+
+    return {
+      ...lesson,
+      hasQuiz: Boolean(quiz),
+      quizId: quiz?._id || null,
+      quiz: quiz
+        ? {
+            _id: quiz._id,
+            title: quiz.title,
+            questionCount: quiz.questions?.length || 0,
+          }
+        : null,
+    };
+  });
 
   return res.status(200).json(
     new ApiResponse(
       200,
       {
         topic,
-        lessons,
+        lessons: lessonsWithQuiz,
       },
       "Lessons fetched successfully.",
     ),
@@ -309,8 +344,11 @@ const updateLesson = asyncHandler(async (req, res) => {
     fileDuration !== undefined
   ) {
     const updatedFileType = fileType ?? lesson.file?.type;
+
     const updatedFileName = fileName?.trim() || lesson.file?.name;
+
     const updatedFileUrl = fileUrl?.trim() || lesson.file?.url;
+
     const updatedFileDuration =
       fileDuration?.trim() ?? lesson.file?.duration ?? "";
 
@@ -418,7 +456,9 @@ const getFeaturedLessons = asyncHandler(async (req, res) => {
     isFeatured: true,
   })
     .populate("topic", "title grade")
-    .sort({ createdAt: -1 })
+    .sort({
+      createdAt: -1,
+    })
     .limit(6)
     .lean();
 

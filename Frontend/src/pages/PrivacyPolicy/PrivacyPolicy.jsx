@@ -56,12 +56,8 @@ const PrivacyPolicy = () => {
   ];
 
   return (
-    <div className="privacy-page min-h-screen overflow-hidden bg-[#FFFCF9] text-black">
+    <div className="privacy-page min-h-screen overflow-hidden bg-background font-sans text-text-primary">
       <style>{`
-        /* ================================================================
-           FULL PAGE ANIMATIONS
-        ================================================================ */
-
         @keyframes privacyPageReveal {
           from {
             opacity: 0;
@@ -205,10 +201,6 @@ const PrivacyPolicy = () => {
             cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
-        /* ================================================================
-           CARDS
-        ================================================================ */
-
         .privacy-card {
           position: relative;
 
@@ -220,10 +212,10 @@ const PrivacyPolicy = () => {
 
         .privacy-card:hover {
           transform: translateY(-7px);
-          border-color: #fdba74;
+          border-color: var(--border-focus);
 
           box-shadow:
-            0 24px 55px -32px rgba(249, 115, 22, 0.4);
+            0 24px 55px -32px rgb(249 115 22 / 0.4);
         }
 
         .privacy-icon {
@@ -235,14 +227,14 @@ const PrivacyPolicy = () => {
 
         .privacy-card:hover .privacy-icon {
           transform: scale(1.08) rotate(-4deg);
-          background-color: #f97316 !important;
+          background-color: var(--primary) !important;
 
           box-shadow:
-            0 12px 24px -12px rgba(249, 115, 22, 0.6);
+            0 12px 24px -12px rgb(249 115 22 / 0.6);
         }
 
         .privacy-card:hover .privacy-icon svg {
-          color: white !important;
+          color: var(--text-on-primary) !important;
         }
 
         .privacy-number {
@@ -252,7 +244,7 @@ const PrivacyPolicy = () => {
         }
 
         .privacy-card:hover .privacy-number {
-          color: #ffedd5 !important;
+          color: var(--primary-light) !important;
           transform: translateY(-2px);
         }
 
@@ -270,11 +262,9 @@ const PrivacyPolicy = () => {
           transform: translateX(0);
         }
 
-        /* ================================================================
-           CTA
-        ================================================================ */
-
         .privacy-contact {
+          color: #ffffff !important;
+
           transition:
             transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
             box-shadow 0.35s ease,
@@ -283,15 +273,15 @@ const PrivacyPolicy = () => {
 
         .privacy-contact:hover {
           transform: translateY(-3px);
-          background-color: #ff9514;
+          background-color: var(--primary-dark);
 
           box-shadow:
-            0 16px 30px -15px rgba(249, 115, 22, 0.45);
+            0 16px 30px -15px rgb(249 115 22 / 0.45);
         }
 
-        /* ================================================================
-           SHIMMER
-        ================================================================ */
+        .privacy-contact svg {
+          color: #ffffff !important;
+        }
 
         .privacy-shimmer {
           position: relative;
@@ -307,7 +297,7 @@ const PrivacyPolicy = () => {
           background: linear-gradient(
             90deg,
             transparent,
-            rgba(255, 255, 255, 0.5),
+            rgb(255 255 255 / 0.5),
             transparent
           );
 
@@ -316,10 +306,6 @@ const PrivacyPolicy = () => {
 
           pointer-events: none;
         }
-
-        /* ================================================================
-           REDUCED MOTION
-        ================================================================ */
 
         @media (prefers-reduced-motion: reduce) {
           .privacy-page,
@@ -348,57 +334,41 @@ const PrivacyPolicy = () => {
         }
       `}</style>
 
-      {/* ================================================================
-          HERO
-      ================================================================ */}
-
-      <section className="relative overflow-hidden border-b border-orange-100 bg-white">
-        {/* Decorative orange atmosphere */}
-
-        <div className="privacy-float pointer-events-none absolute -left-32 -top-32 h-80 w-80 rounded-full bg-orange-100/60 blur-3xl" />
+      {/* HERO */}
+      <section className="relative overflow-hidden border-b border-border-light bg-surface">
+        <div className="privacy-float pointer-events-none absolute -left-32 -top-32 h-80 w-80 rounded-full bg-primary-light/60 blur-3xl" />
 
         <div
-          className="privacy-float-slow pointer-events-none absolute -right-32 top-16 h-80 w-80 rounded-full bg-orange-50 blur-3xl"
+          className="privacy-float-slow pointer-events-none absolute -right-32 top-16 h-80 w-80 rounded-full bg-accent-light blur-3xl"
           style={{ animationDelay: "-2s" }}
         />
 
-        <div className="privacy-pulse pointer-events-none absolute left-1/2 top-10 h-24 w-24 -translate-x-1/2 rounded-full bg-orange-100/30 blur-2xl" />
+        <div className="privacy-pulse pointer-events-none absolute left-1/2 top-10 h-24 w-24 -translate-x-1/2 rounded-full bg-primary-light/30 blur-2xl" />
 
         <div className="relative mx-auto max-w-5xl px-6 pb-16 pt-16 md:pb-20 md:pt-24">
           <div className="mx-auto max-w-3xl text-center">
-            {/* Eyebrow */}
-
             <div
-              className="privacy-down inline-flex items-center gap-2 rounded-full border border-orange-100 bg-orange-50 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-orange-600"
+              className="privacy-down inline-flex items-center gap-2 rounded-full border border-border bg-accent-light px-4 py-2 font-sans text-xs font-semibold uppercase tracking-[0.16em] text-primary-dark"
               style={{ animationDelay: "100ms" }}
             >
               <ShieldCheck size={14} />
               Your Privacy Matters
             </div>
 
-            {/* Heading */}
-
             <h1
-              className="privacy-fade mt-6 text-4xl font-bold leading-tight tracking-tight text-black md:text-5xl lg:text-[3.5rem]"
-              style={{
-                fontFamily: "'Fraunces', serif",
-                animationDelay: "220ms",
-              }}
+              className="privacy-fade mt-6 font-display text-4xl font-bold leading-tight tracking-tight text-secondary md:text-5xl lg:text-[3.5rem]"
+              style={{ animationDelay: "220ms" }}
             >
-              Privacy <span className="text-orange-500">Policy</span>
+              Privacy <span className="text-primary">Policy</span>
             </h1>
 
-            {/* Accent */}
-
             <div
-              className="privacy-line mx-auto mt-5 h-[3px] w-20 rounded-full bg-orange-500"
+              className="privacy-line mx-auto mt-5 h-[3px] w-20 rounded-full bg-primary"
               style={{ animationDelay: "350ms" }}
             />
 
-            {/* Description */}
-
             <p
-              className="privacy-fade mx-auto mt-6 max-w-2xl text-sm leading-7 text-gray-600 md:text-base"
+              className="privacy-fade mx-auto mt-6 max-w-2xl font-sans text-sm leading-7 text-text-secondary md:text-base"
               style={{
                 animationDelay: "430ms",
               }}
@@ -408,10 +378,8 @@ const PrivacyPolicy = () => {
               entrusted to us.
             </p>
 
-            {/* Date */}
-
             <p
-              className="privacy-fade mt-5 text-xs font-semibold uppercase tracking-[0.12em] text-orange-500"
+              className="privacy-fade mt-5 font-sans text-xs font-semibold uppercase tracking-[0.12em] text-primary"
               style={{ animationDelay: "520ms" }}
             >
               Last updated · August 2026
@@ -420,34 +388,28 @@ const PrivacyPolicy = () => {
         </div>
       </section>
 
-      {/* ================================================================
-          CONTENT
-      ================================================================ */}
-
+      {/* CONTENT */}
       <main className="px-5 py-12 md:px-6 md:py-20">
         <div className="mx-auto max-w-5xl">
           {/* INTRODUCTION */}
-
           <section
             className="privacy-scale mb-12"
             style={{ animationDelay: "150ms" }}
           >
-            <div className="relative overflow-hidden rounded-[2rem] border border-orange-100 bg-white p-7 shadow-[0_12px_40px_-30px_rgba(249,115,22,0.4)] md:p-10">
-              {/* Accent */}
-
-              <div className="absolute left-0 top-0 h-full w-1 bg-orange-500" />
+            <div className="relative overflow-hidden rounded-[2rem] border border-border bg-surface p-7 shadow-[var(--shadow-md)] md:p-10">
+              <div className="absolute left-0 top-0 h-full w-1 bg-primary" />
 
               <div className="flex gap-5">
-                <div className="privacy-float hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-50 sm:flex">
-                  <Sparkles size={20} className="text-orange-500" />
+                <div className="privacy-float hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent-light sm:flex">
+                  <Sparkles size={20} className="text-primary" />
                 </div>
 
                 <div>
-                  <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-orange-500">
+                  <p className="mb-3 font-sans text-xs font-bold uppercase tracking-[0.16em] text-primary">
                     Our Commitment
                   </p>
 
-                  <p className="text-sm leading-7 text-gray-600 md:text-base">
+                  <p className="font-sans text-sm leading-7 text-text-secondary md:text-base">
                     Project Jhep is committed to protecting the privacy of
                     students, teachers, volunteers, and everyone who accesses
                     our educational platform. This Privacy Policy explains what
@@ -460,27 +422,20 @@ const PrivacyPolicy = () => {
           </section>
 
           {/* SECTION HEADING */}
-
           <div
             className="privacy-fade mb-7"
             style={{ animationDelay: "250ms" }}
           >
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-orange-500">
+            <p className="font-sans text-xs font-bold uppercase tracking-[0.16em] text-primary">
               Understanding Your Data
             </p>
 
-            <h2
-              className="mt-2 text-2xl font-bold text-black md:text-3xl"
-              style={{
-                fontFamily: "'Fraunces', serif",
-              }}
-            >
+            <h2 className="mt-2 font-display text-2xl font-bold text-secondary md:text-3xl">
               How we handle your information
             </h2>
           </div>
 
           {/* POLICY CARDS */}
-
           <div className="grid gap-5 md:grid-cols-2">
             {sections.map((section, index) => {
               const Icon = section.icon;
@@ -488,48 +443,30 @@ const PrivacyPolicy = () => {
               return (
                 <article
                   key={section.number}
-                  className="privacy-card privacy-fade group overflow-hidden rounded-[1.5rem] border border-orange-100 bg-white p-6 md:p-7"
+                  className="privacy-card privacy-fade group overflow-hidden rounded-[1.5rem] border border-border bg-surface p-6 md:p-7"
                   style={{
                     animationDelay: `${300 + index * 100}ms`,
                   }}
                 >
-                  {/* Number */}
-
-                  <span
-                    className="privacy-number pointer-events-none absolute right-5 top-4 select-none text-5xl font-bold leading-none text-orange-50"
-                    style={{
-                      fontFamily: "'Fraunces', serif",
-                    }}
-                  >
+                  <span className="privacy-number pointer-events-none absolute right-5 top-4 select-none font-display text-5xl font-bold leading-none text-primary-light">
                     {section.number}
                   </span>
 
-                  {/* Icon */}
-
-                  <div className="privacy-icon relative flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50">
-                    <Icon size={19} className="text-orange-500" />
+                  <div className="privacy-icon relative flex h-11 w-11 items-center justify-center rounded-xl bg-accent-light">
+                    <Icon size={19} className="text-primary" />
                   </div>
 
-                  {/* Content */}
-
                   <div className="relative mt-5">
-                    <h3
-                      className="text-lg font-bold text-black"
-                      style={{
-                        fontFamily: "'Fraunces', serif",
-                      }}
-                    >
+                    <h3 className="font-display text-lg font-bold text-secondary">
                       {section.title}
                     </h3>
 
-                    <p className="mt-3 text-sm leading-7 text-gray-600">
+                    <p className="mt-3 font-sans text-sm leading-7 text-text-secondary">
                       {section.content}
                     </p>
                   </div>
 
-                  {/* Indicator */}
-
-                  <div className="privacy-indicator mt-6 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.12em] text-orange-500">
+                  <div className="privacy-indicator mt-6 flex items-center gap-2 font-sans text-[11px] font-bold uppercase tracking-[0.12em] text-primary">
                     <span>Project Jhep</span>
                     <ChevronRight size={12} />
                   </div>
@@ -538,64 +475,51 @@ const PrivacyPolicy = () => {
             })}
           </div>
 
-          {/* ================================================================
-              CTA
-          ================================================================ */}
-
+          {/* CTA */}
           <section
             className="privacy-scale mt-12"
             style={{ animationDelay: "950ms" }}
           >
-            <div className="privacy-shimmer relative overflow-hidden rounded-[2rem] border border-orange-200 bg-orange-50 px-7 py-10 text-center shadow-[0_18px_50px_-35px_rgba(249,115,22,0.5)] md:px-10 md:py-12">
-              {/* Decorative shapes */}
-
-              <div className="privacy-float pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-orange-100/80" />
+            <div className="privacy-shimmer relative overflow-hidden rounded-[2rem] border border-border bg-accent-light px-7 py-10 text-center shadow-[var(--shadow-md)] md:px-10 md:py-12">
+              <div className="privacy-float pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-primary-light/80" />
 
               <div
-                className="privacy-float-slow pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-white/80"
+                className="privacy-float-slow pointer-events-none absolute -bottom-20 -left-10 h-40 w-40 rounded-full bg-surface/80"
                 style={{ animationDelay: "-3s" }}
               />
 
               <div className="relative">
-                {/* Icon */}
-
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 shadow-[0_10px_25px_-10px_rgba(249,115,22,0.7)]">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-[var(--shadow-md)]">
                   <Mail size={20} className="text-white" />
                 </div>
 
-                <h2
-                  className="mt-5 text-2xl font-bold text-black md:text-3xl"
-                  style={{
-                    fontFamily: "'Fraunces', serif",
-                  }}
-                >
+                <h2 className="mt-5 font-display text-2xl font-bold text-secondary md:text-3xl">
                   Have questions about your privacy?
                 </h2>
 
-                <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-gray-600 md:text-base">
+                <p className="mx-auto mt-3 max-w-xl font-sans text-sm leading-7 text-text-secondary md:text-base">
                   If you have questions about this Privacy Policy or how your
                   information is handled, we'd be happy to help.
                 </p>
 
                 <a
-                  href="mailto:support@projectjhep.org"
-                  className="privacy-contact mt-6 inline-flex items-center gap-2 rounded-full bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white"
+                  href="mailto:projectjhep@gmail.com"
+                  className="privacy-contact mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 font-sans text-sm font-semibold text-white"
                 >
-                  <Mail size={15} />
-                  Contact Support
-                  <ChevronRight size={15} />
+                  <Mail size={15} className="text-white" />
+                  <span className="text-white">Contact Support</span>
+                  <ChevronRight size={15} className="text-white" />
                 </a>
               </div>
             </div>
           </section>
 
           {/* FOOTER NOTE */}
-
           <div
-            className="privacy-fade mt-8 border-t border-orange-100 pt-6 text-center"
+            className="privacy-fade mt-8 border-t border-border-light pt-6 text-center"
             style={{ animationDelay: "1050ms" }}
           >
-            <p className="text-xs leading-6 text-gray-500">
+            <p className="font-sans text-xs leading-6 text-text-secondary">
               By using Project Jhep, you acknowledge that you have read and
               understood this Privacy Policy.
             </p>

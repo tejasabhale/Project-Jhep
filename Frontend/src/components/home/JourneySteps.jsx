@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef } from "react";
 import {
   BookOpen,
   MessageCircle,
@@ -5,9 +6,14 @@ import {
   Target,
   Trophy,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import {
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 
-import Reveal from "../../components/ui/Reveal";
+const EASE = [0.22, 1, 0.36, 1];
 
 const journeySteps = [
   {
@@ -43,311 +49,157 @@ const journeySteps = [
   },
 ];
 
-const desktopJourneyVariants = {
-  hidden: {
-    opacity: 0,
-    y: 35,
-    scale: 0.94,
-  },
-
-  visible: (index) => ({
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.65,
-      delay: index * 0.12,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  }),
-};
-
 export default function StudentJourney() {
+  const reduce = useReducedMotion();
+  const listRef = useRef(null);
+
+  /* End the mobile line at the center of the last icon */
+  useLayoutEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const last = el.querySelector("ol > li:last-child");
+      if (!last) return;
+      el.style.setProperty(
+        "--line-bottom",
+        `${Math.max(last.offsetHeight - 34, 0)}px`,
+      );
+    };
+
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  /* The orange line fills as the list scrolls through the viewport */
+  const { scrollYProgress } = useScroll({
+    target: listRef,
+    offset: ["start 75%", "end 60%"],
+  });
+  const progress = useTransform(scrollYProgress, [0, 1], [reduce ? 1 : 0, 1]);
+
+  const container = {
+    hidden: {},
+    show: { transition: { staggerChildren: reduce ? 0 : 0.12 } },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: reduce ? 0 : 28 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.65, ease: EASE } },
+  };
+
   return (
-    <section className="bg-[#FFFAF5] px-4 py-16 sm:px-6 sm:py-20 md:py-24">
-      <div className="mx-auto max-w-6xl">
-        {/* ================= Heading ================= */}
-        <Reveal>
-          <div className="mx-auto mb-12 max-w-2xl text-center sm:mb-16">
-            <span
-              className="inline-block rounded-full px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] sm:px-4 sm:text-xs"
-              style={{
-                background: "#FFEEE0",
-                color: "#C2410C",
-              }}
-            >
-              Student Journey
-            </span>
+    <section className="relative overflow-hidden bg-background px-4 py-16 sm:px-6 sm:py-20 md:py-24">
+      {/* Dot pattern, fading out at the edges */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-40 [background-image:radial-gradient(#f1dfcf_1.2px,transparent_1.2px)] [background-size:22px_22px] [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)]"
+      />
 
-            <h2
-              className="mt-4 text-[2rem] font-semibold leading-[1.15] sm:mt-5 sm:text-3xl md:text-[2.5rem]"
-              style={{
-                color: "#17213B",
-                fontFamily: "'Fraunces', serif",
-              }}
-            >
-              From{" "}
-              <span
-                style={{
-                  background: "linear-gradient(90deg, #FF7A30, #EA580C)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                Learning to Confidence
-              </span>
-            </h2>
+      <div className="relative mx-auto max-w-6xl">
+        {/* Heading */}
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.3 }}
+          className="mx-auto mb-14 max-w-2xl text-center sm:mb-20"
+        >
+          <motion.span
+            variants={item}
+            className="inline-block rounded-full border border-border bg-primary-light px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-primary-dark"
+          >
+            Student Journey
+          </motion.span>
 
-            <p
-              className="mx-auto mt-4 max-w-xl text-[13px] leading-6 sm:text-sm sm:leading-7 md:text-base"
-              style={{
-                color: "#5B6472",
-                fontFamily: "'Inter', sans-serif",
-              }}
-            >
-              Every student starts with simple words and gradually builds the
-              skills and confidence to communicate in English.
-            </p>
-          </div>
-        </Reveal>
+          <motion.h2
+            variants={item}
+            className="mt-5 font-display text-3xl font-bold leading-tight text-secondary sm:text-4xl md:text-5xl"
+          >
+            From <span className="text-primary">Learning to Confidence</span>
+          </motion.h2>
 
-        {/* ================= Journey ================= */}
-        <div className="relative">
-          {/* Desktop Connecting Line */}
+          <motion.p
+            variants={item}
+            className="mx-auto mt-4 max-w-xl text-sm leading-7 text-text-secondary md:text-base md:leading-8"
+          >
+            Every student starts with simple words and gradually builds the
+            skills and confidence to communicate in English.
+          </motion.p>
+        </motion.div>
+
+        {/* Journey */}
+        <div ref={listRef} className="relative">
+          {/* Desktop line: track + progress */}
           <div
-            className="absolute left-[10%] right-[10%] top-[34px] hidden h-px md:block"
-            style={{
-              background: "linear-gradient(90deg, #FBD0AD, #EA580C, #FBD0AD)",
-            }}
+            aria-hidden="true"
+            className="absolute left-[10%] right-[10%] top-[34px] hidden h-0.5 rounded-full bg-border md:block"
+          />
+          <motion.div
+            aria-hidden="true"
+            style={{ scaleX: progress }}
+            className="absolute left-[10%] right-[10%] top-[34px] hidden h-0.5 origin-left rounded-full bg-primary md:block"
           />
 
-          {/* Mobile Connecting Line */}
+          {/* Mobile line: track + progress */}
           <div
-            className="absolute bottom-[40px] left-[34px] top-[34px] w-px md:hidden"
-            style={{
-              background: "linear-gradient(180deg, #FBD0AD, #EA580C, #FBD0AD)",
-            }}
+            aria-hidden="true"
+            className="absolute bottom-[var(--line-bottom,34px)] left-[34px] top-[34px] w-0.5 rounded-full bg-border md:hidden"
+          />
+          <motion.div
+            aria-hidden="true"
+            style={{ scaleY: progress }}
+            className="absolute bottom-[var(--line-bottom,34px)] left-[34px] top-[34px] w-0.5 origin-top rounded-full bg-primary md:hidden"
           />
 
-          <div className="space-y-8 md:grid md:grid-cols-5 md:gap-4 md:space-y-0">
+          <motion.ol
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.1 }}
+            className="relative space-y-10 md:grid md:grid-cols-5 md:gap-6 md:space-y-0"
+          >
             {journeySteps.map((step, index) => {
               const Icon = step.icon;
 
               return (
-                <div key={step.number}>
-                  {/* ================= Mobile Animation ================= */}
-                  <div className="md:hidden">
-                    <Reveal>
-                      <div className="group relative flex items-start text-left">
-                        {/* Icon */}
-                        <div
-                          className="relative z-10 flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-2xl border bg-white transition-all duration-300 group-hover:-translate-y-1"
-                          style={{
-                            borderColor: "#FBDBBE",
-                            boxShadow: "0 8px 20px -16px rgba(23, 33, 59, 0.3)",
-                          }}
-                        >
-                          <Icon
-                            size={25}
-                            strokeWidth={1.8}
-                            style={{
-                              color: "#EA580C",
-                            }}
-                          />
+                <motion.li key={step.number} variants={item}>
+                  {/* Hover styles live on the inner div, not the animated li */}
+                  <div className="group flex items-start gap-5 md:flex-col md:items-center md:gap-0 md:text-center">
+                    {/* Icon tile */}
+                    <div className="relative z-10 flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-2xl border border-border bg-surface text-primary-dark shadow-[var(--shadow-sm)] ring-4 ring-background transition-all duration-300 group-hover:-translate-y-1 group-hover:border-primary group-hover:bg-primary group-hover:text-white group-hover:shadow-[var(--shadow-md)]">
+                      <Icon size={26} strokeWidth={1.8} aria-hidden="true" />
 
-                          {/* Step Number */}
-                          <span
-                            className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold"
-                            style={{
-                              background: "#EA580C",
-                              color: "#FFFFFF",
-                            }}
-                          >
-                            {index + 1}
-                          </span>
-                        </div>
-
-                        {/* Content */}
-                        <div className="ml-5 flex-1">
-                          <span
-                            className="text-[9px] font-semibold uppercase tracking-[0.15em] sm:text-[10px]"
-                            style={{
-                              color: "#C2410C",
-                              fontFamily: "'Inter', sans-serif",
-                            }}
-                          >
-                            Step {step.number}
-                          </span>
-
-                          <h3
-                            className="mt-1.5 text-[16px] font-semibold sm:text-base"
-                            style={{
-                              color: "#17213B",
-                              fontFamily: "'Fraunces', serif",
-                            }}
-                          >
-                            {step.title}
-                          </h3>
-
-                          <p
-                            className="mt-1.5 max-w-[280px] text-xs leading-5 sm:text-[13px]"
-                            style={{
-                              color: "#6B7280",
-                              fontFamily: "'Inter', sans-serif",
-                            }}
-                          >
-                            {step.description}
-                          </p>
-                        </div>
-                      </div>
-                    </Reveal>
-                  </div>
-
-                  {/* ================= Desktop Animation ================= */}
-                  <motion.div
-                    className="group relative hidden items-start text-left md:block md:text-center"
-                    variants={desktopJourneyVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{
-                      once: true,
-                      amount: 0.3,
-                    }}
-                    custom={index}
-                  >
-                    {/* Icon */}
-                    <div
-                      className="relative z-10 mx-auto flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-2xl border bg-white transition-all duration-300 group-hover:-translate-y-1 group-hover:scale-[1.04]"
-                      style={{
-                        borderColor: "#FBDBBE",
-                        boxShadow: "0 8px 20px -16px rgba(23, 33, 59, 0.3)",
-                      }}
-                    >
-                      <Icon
-                        size={25}
-                        strokeWidth={1.8}
-                        className="transition-transform duration-300 group-hover:scale-110"
-                        style={{
-                          color: "#EA580C",
-                        }}
-                      />
-
-                      {/* Step Number */}
                       <span
-                        className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold"
-                        style={{
-                          background: "#EA580C",
-                          color: "#FFFFFF",
-                        }}
+                        aria-hidden="true"
+                        className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary-dark text-[11px] font-bold text-white ring-2 ring-background"
                       >
                         {index + 1}
                       </span>
                     </div>
 
-                    {/* Content */}
-                    <div className="mt-6">
-                      <span
-                        className="text-[10px] font-semibold uppercase tracking-[0.15em]"
-                        style={{
-                          color: "#C2410C",
-                          fontFamily: "'Inter', sans-serif",
-                        }}
-                      >
+                    {/* Text */}
+                    <div className="flex-1 md:mt-6">
+                      <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary-dark">
                         Step {step.number}
                       </span>
 
-                      <h3
-                        className="mt-2 text-lg font-semibold"
-                        style={{
-                          color: "#17213B",
-                          fontFamily: "'Fraunces', serif",
-                        }}
-                      >
+                      <h3 className="mt-1.5 font-display text-lg font-bold text-secondary md:text-xl">
                         {step.title}
                       </h3>
 
-                      <p
-                        className="mx-auto mt-2 max-w-[190px] text-sm leading-6"
-                        style={{
-                          color: "#6B7280",
-                          fontFamily: "'Inter', sans-serif",
-                        }}
-                      >
+                      <p className="mt-2 max-w-[280px] text-sm leading-6 text-text-secondary md:mx-auto md:max-w-[200px]">
                         {step.description}
                       </p>
                     </div>
-                  </motion.div>
-                </div>
+                  </div>
+                </motion.li>
               );
             })}
-          </div>
+          </motion.ol>
         </div>
-
-        {/* ================= Bottom Journey Indicator ================= */}
-        <Reveal>
-          <div className="mx-auto mt-12 w-full max-w-3xl sm:mt-14">
-            <div
-              className="rounded-2xl border bg-white px-4 py-4 sm:px-5 md:px-6"
-              style={{
-                borderColor: "#FBDBBE",
-              }}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p
-                    className="text-xs font-semibold sm:text-sm"
-                    style={{
-                      color: "#17213B",
-                      fontFamily: "'Inter', sans-serif",
-                    }}
-                  >
-                    Every step matters
-                  </p>
-
-                  <p
-                    className="mt-1 text-[11px] leading-5 sm:text-xs"
-                    style={{
-                      color: "#8A93A3",
-                      fontFamily: "'Inter', sans-serif",
-                    }}
-                  >
-                    Learn at your own pace and keep moving forward.
-                  </p>
-                </div>
-
-                <div
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-                  style={{
-                    background: "#FFEEE0",
-                  }}
-                >
-                  <Trophy
-                    size={17}
-                    style={{
-                      color: "#EA580C",
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Progress Bar */}
-              <div
-                className="mt-4 h-1.5 overflow-hidden rounded-full"
-                style={{
-                  background: "#FFF1E4",
-                }}
-              >
-                <div
-                  className="h-full w-full rounded-full"
-                  style={{
-                    background: "linear-gradient(90deg, #FFB37A, #EA580C)",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </Reveal>
       </div>
     </section>
   );
