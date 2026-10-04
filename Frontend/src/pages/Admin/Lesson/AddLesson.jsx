@@ -186,14 +186,10 @@ export default function AddLesson() {
       toast.success(
         addQuiz
           ? "Lesson and quiz created successfully"
-          : "Lesson created successfully"
+          : "Lesson created successfully",
       );
 
-      navigate(
-        formData.topic
-          ? `/admin/lessons/manage?topicId=${formData.topic}`
-          : "/admin/lessons/manage"
-      );
+      navigate("/admin/lessons/manage");
     } catch (error) {
       console.error("Create lesson error:", error);
       toast.error(error.response?.data?.message || "Failed to create lesson");
@@ -248,7 +244,8 @@ export default function AddLesson() {
                   Attach an Assessment Quiz
                 </h3>
                 <p className="text-xs text-text-secondary">
-                  Optional: Automatically link a quiz to this lesson upon creation.
+                  Optional: Automatically link a quiz to this lesson upon
+                  creation.
                 </p>
               </div>
             </div>

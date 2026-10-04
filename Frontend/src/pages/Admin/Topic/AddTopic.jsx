@@ -15,7 +15,6 @@ export default function AddTopic() {
     description: "",
     order: 1,
     isPublished: false,
-    thumbnail: null,
   };
 
   const handleSubmit = async (formData) => {
@@ -27,10 +26,6 @@ export default function AddTopic() {
       data.append("description", formData.description);
       data.append("order", formData.order);
       data.append("isPublished", formData.isPublished);
-
-      if (formData.thumbnail instanceof File) {
-        data.append("thumbnail", formData.thumbnail);
-      }
 
       await saveTopic(data);
       toast.success("Topic created successfully");

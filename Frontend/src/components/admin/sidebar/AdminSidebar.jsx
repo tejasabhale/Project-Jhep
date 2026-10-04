@@ -7,6 +7,31 @@ import {
   adminUtilityItems,
 } from "../../../config/adminMenu";
 
+/* Slim scrollbar for the dark sidebar. Hidden until the menu is hovered. */
+const scrollbarStyles = `
+.admin-sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+  transition: scrollbar-color 0.2s ease;
+}
+.admin-sidebar-scroll:hover {
+  scrollbar-color: rgb(255 255 255 / 0.28) transparent;
+}
+.admin-sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.admin-sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 999px;
+}
+.admin-sidebar-scroll:hover::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.28);
+}
+`;
+
 export default function AdminSidebar({ open, onClose }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,6 +69,8 @@ export default function AdminSidebar({ open, onClose }) {
 
   return (
     <>
+      <style>{scrollbarStyles}</style>
+
       {/* Mobile Backdrop */}
       {open && (
         <div
@@ -130,7 +157,7 @@ export default function AdminSidebar({ open, onClose }) {
         </div>
 
         {/* Navigation items */}
-        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+        <nav className="admin-sidebar-scroll flex-1 space-y-5 overflow-y-auto px-3 py-4">
           {adminMenuSections.map((section) => (
             <div key={section.label}>
               <p className="mb-1.5 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.15em] text-white">

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import ThumbnailUpload from "../common/ThumbnailUpload";
 import PublishToggle from "./PublishToggle";
 import {
   AdminFormSection,
@@ -25,7 +24,6 @@ export default function TopicForm({
         title: initialData.title || "",
         description: initialData.description || "",
         order: initialData.order ?? 1,
-        thumbnail: initialData.thumbnail || "",
         isPublished: Boolean(initialData.isPublished),
       });
     }
@@ -38,13 +36,6 @@ export default function TopicForm({
     setForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleImage = (file) => {
-    setForm((prev) => ({
-      ...prev,
-      thumbnail: file,
     }));
   };
 
@@ -111,20 +102,6 @@ export default function TopicForm({
               />
             </AdminFormField>
           </div>
-        </div>
-      </AdminFormSection>
-
-      {/* Media / Thumbnail */}
-      <AdminFormSection
-        title="Topic Thumbnail"
-        description="Visual cover image shown in student cards and curriculum overviews."
-      >
-        <div className="max-w-md">
-          <ThumbnailUpload
-            image={form.thumbnail}
-            onChange={handleImage}
-            label="Upload Topic Thumbnail"
-          />
         </div>
       </AdminFormSection>
 
