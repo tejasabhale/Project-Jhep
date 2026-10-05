@@ -34,7 +34,7 @@ router.get(
 router.post(
   "/",
   verifyJWT,
-  authorizeRoles("admin", "owner"),
+  authorizeRoles("admin", "owner", "content_creator"),
   upload.single("thumbnail"),
   validateObjectId("topicId", "body"),
   createLesson,
@@ -43,7 +43,16 @@ router.post(
 router.patch(
   "/:lessonId",
   verifyJWT,
-  authorizeRoles("admin", "owner"),
+  authorizeRoles("admin", "owner", "content_creator"),
+  upload.single("thumbnail"),
+  validateObjectId("lessonId"),
+  updateLesson,
+);
+
+router.put(
+  "/:lessonId",
+  verifyJWT,
+  authorizeRoles("admin", "owner", "content_creator"),
   upload.single("thumbnail"),
   validateObjectId("lessonId"),
   updateLesson,
@@ -52,7 +61,7 @@ router.patch(
 router.delete(
   "/:lessonId",
   verifyJWT,
-  authorizeRoles("admin", "owner"),
+  authorizeRoles("admin", "owner", "content_creator"),
   validateObjectId("lessonId"),
   deleteLesson,
 );
@@ -60,7 +69,7 @@ router.delete(
 router.patch(
   "/:lessonId/featured",
   verifyJWT,
-  authorizeRoles("admin", "owner"),
+  authorizeRoles("admin", "owner", "content_creator"),
   toggleFeaturedLesson,
 );
 

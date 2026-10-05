@@ -46,9 +46,18 @@ export default function Navbar() {
   const { pathname } = useLocation();
   const { isAuthenticated, user, logout } = useAuth();
 
-  const isAdmin = user?.role === "admin";
-  const dashboardPath = isAdmin ? "/admin" : "/content";
-  const dashboardLabel = isAdmin ? "Admin panel" : "Start learning";
+  const isAdminOrOwner = user?.role === "admin" || user?.role === "owner";
+  const isContentCreator = user?.role === "content_creator";
+  const dashboardPath = isContentCreator
+    ? "/admin/topics/manage"
+    : isAdminOrOwner
+    ? "/admin"
+    : "/content";
+  const dashboardLabel = isContentCreator
+    ? "Content Studio"
+    : isAdminOrOwner
+    ? "Admin panel"
+    : "Start learning";
 
   const displayName = user?.name || user?.email || "Account";
   const initial = displayName.charAt(0).toUpperCase();
@@ -228,7 +237,11 @@ export default function Navbar() {
                     className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm text-slate-700 transition-colors hover:bg-orange-50 hover:text-orange-700"
                   >
                     <LayoutDashboard className="h-4 w-4" />
-                    {isAdmin ? "Admin panel" : "Dashboard"}
+                    {isContentCreator
+                      ? "Content Studio"
+                      : isAdminOrOwner
+                      ? "Admin panel"
+                      : "Dashboard"}
                   </button>
 
                   <button
@@ -310,7 +323,11 @@ export default function Navbar() {
                     onClick={() => go(dashboardPath)}
                     className={`${btnPrimary} w-full sm:flex-1`}
                   >
-                    {isAdmin ? "Admin panel" : "Dashboard"}
+                    {isContentCreator
+                      ? "Content Studio"
+                      : isAdminOrOwner
+                      ? "Admin panel"
+                      : "Dashboard"}
                   </button>
 
                   <button

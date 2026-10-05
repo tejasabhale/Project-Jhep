@@ -11,6 +11,7 @@ import Loader from "../components/common/Loader";
 import GuestRoute from "./GuestRoute";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminRoutes from "./AdminRoutes";
+import AdminOnlyRoute from "./AdminOnlyRoute";
 import HomeRoute from "./HomeRoute";
 
 // Public / User Pages
@@ -116,64 +117,53 @@ const AppRoutes = () => {
 
       <Route element={<AdminRoutes />}>
         <Route element={<AdminLayout />}>
-          <Route path="/admin" element={<Admin />} />
+          {/* Content Management (Admin, Owner & Content Creator) */}
           <Route path="/admin/profile" element={<Profile />} />
 
           {/* Topic Management */}
-
           <Route path="/admin/topics/add" element={<AddTopic />} />
-
           <Route path="/admin/topics/manage" element={<ManageTopics />} />
-
           <Route path="/admin/topics/edit/:topicId" element={<EditTopic />} />
 
           {/* Lesson Management */}
-
           <Route path="/admin/lessons/add" element={<AddLesson />} />
-
           <Route path="/admin/lessons/manage" element={<ManageLessons />} />
-
           <Route
             path="/admin/lessons/edit/:lessonId"
             element={<EditLesson />}
           />
 
           {/* Quiz Management */}
-
           <Route path="/admin/quizzes/manage" element={<ManageQuizzes />} />
-
           <Route path="/admin/quizzes/add" element={<AddQuiz />} />
-
           <Route path="/admin/quizzes/edit/:quizId" element={<EditQuiz />} />
 
-          {/* User Activity  */}
+          {/* Admin & Owner Only Routes */}
+          <Route element={<AdminOnlyRoute />}>
+            <Route path="/admin" element={<Admin />} />
 
-          <Route path="/admin/activity" element={<Activity />} />
+            {/* User Activity */}
+            <Route path="/admin/activity" element={<Activity />} />
 
-          {/* Team Members  */}
+            {/* Team Members */}
+            <Route path="/admin/team/add" element={<AddTeamMember />} />
+            <Route path="/admin/team/manage" element={<ManageTeamMembers />} />
+            <Route path="/admin/team/edit/:teamId" element={<EditTeamMember />} />
 
-          <Route path="/admin/team/add" element={<AddTeamMember />} />
+            {/* User Management */}
+            <Route path="/admin/users" element={<Users />} />
+            <Route path="/admin/users/manage" element={<Users />} />
+            <Route path="/admin/users/add" element={<Users />} />
 
-          <Route path="/admin/team/manage" element={<ManageTeamMembers />} />
+            {/* Schools Management */}
+            <Route path="/admin/schools/manage" element={<ManageSchools />} />
 
-          <Route path="/admin/team/edit/:teamId" element={<EditTeamMember />} />
-
-          {/* User Management  */}
-
-          <Route path="/admin/users" element={<Users />} />
-          <Route path="/admin/users/manage" element={<Users />} />
-          <Route path="/admin/users/add" element={<Users />} />
-
-          {/* Schools Management */}
-
-          <Route path="/admin/schools/manage" element={<ManageSchools />} />
-
-          {/* Testimonial Management */}
-
-          <Route
-            path="/admin/testimonials/manage"
-            element={<ManageTestimonials />}
-          />
+            {/* Testimonial Management */}
+            <Route
+              path="/admin/testimonials/manage"
+              element={<ManageTestimonials />}
+            />
+          </Route>
         </Route>
       </Route>
 

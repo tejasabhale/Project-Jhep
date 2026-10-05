@@ -50,7 +50,7 @@ export default function AdminHeader({ sidebarOpen, onToggleSidebar }) {
 
         <div className="flex items-center gap-2">
           <span className="hidden sm:inline font-sans text-xs font-semibold uppercase tracking-wider text-text-muted">
-            Admin
+            {user?.role === "content_creator" ? "Content" : "Admin"}
           </span>
           <span className="hidden sm:inline text-text-muted/60">/</span>
           <h2 className="font-display text-sm sm:text-base font-bold text-text-primary">
@@ -86,7 +86,11 @@ export default function AdminHeader({ sidebarOpen, onToggleSidebar }) {
             </p>
             <p className="flex items-center gap-1 text-[10px] text-text-muted capitalize">
               <Shield size={10} className="text-primary" />
-              {user?.role || "Administrator"}
+              {user?.role === "content_creator"
+                ? "Content Creator"
+                : user?.role === "owner"
+                ? "Owner"
+                : "Administrator"}
             </p>
           </div>
         </div>

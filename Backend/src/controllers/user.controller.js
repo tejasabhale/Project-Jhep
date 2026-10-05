@@ -34,9 +34,9 @@ export const createUser = asyncHandler(async (req, res) => {
   let allowedRoles = [];
 
   if (req.user.role === "owner") {
-    allowedRoles = ["admin", "user"];
+    allowedRoles = ["admin", "user", "content_creator"];
   } else if (req.user.role === "admin") {
-    allowedRoles = ["user"];
+    allowedRoles = ["user", "content_creator"];
   } else {
     throw new ApiError(403, "Access denied.");
   }
@@ -162,9 +162,9 @@ export const updateUser = asyncHandler(async (req, res) => {
     let allowedRoles = [];
 
     if (req.user.role === "owner") {
-      allowedRoles = ["admin", "user"];
+      allowedRoles = ["admin", "user", "content_creator"];
     } else {
-      allowedRoles = ["user"];
+      allowedRoles = ["user", "content_creator"];
     }
 
     if (!allowedRoles.includes(role)) {

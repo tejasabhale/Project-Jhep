@@ -67,6 +67,16 @@ export default function AdminSidebar({ open, onClose }) {
     .charAt(0)
     .toUpperCase();
 
+  const filteredSections = adminMenuSections
+    .filter((section) => !section.roles || section.roles.includes(user?.role))
+    .map((section) => ({
+      ...section,
+      items: section.items.filter(
+        (item) => !item.roles || item.roles.includes(user?.role)
+      ),
+    }))
+    .filter((section) => section.items.length > 0);
+
   return (
     <>
       <style>{scrollbarStyles}</style>
@@ -98,7 +108,7 @@ export default function AdminSidebar({ open, onClose }) {
           <button
             type="button"
             onClick={() => {
-              navigate("/admin");
+              navigate(user?.role === "content_creator" ? "/admin/topics/manage" : "/admin");
 
               if (window.innerWidth < 1024) {
                 onClose?.();
@@ -120,7 +130,7 @@ export default function AdminSidebar({ open, onClose }) {
               </p>
 
               <p className="mt-1 font-sans text-[10px] font-semibold uppercase tracking-[0.14em] text-white">
-                Admin Panel
+                {user?.role === "content_creator" ? "Content Studio" : "Admin Panel"}
               </p>
             </div>
           </button>
@@ -150,7 +160,13 @@ export default function AdminSidebar({ open, onClose }) {
 
               <p className="flex items-center gap-1 font-sans text-[11px] text-white">
                 <Shield size={10} className="text-primary" />
-                <span>Administrator</span>
+                <span>
+                  {user?.role === "content_creator"
+                    ? "Content Creator"
+                    : user?.role === "owner"
+                    ? "Owner"
+                    : "Administrator"}
+                </span>
               </p>
             </div>
           </div>
@@ -158,7 +174,7 @@ export default function AdminSidebar({ open, onClose }) {
 
         {/* Navigation items */}
         <nav className="admin-sidebar-scroll flex-1 space-y-5 overflow-y-auto px-3 py-4">
-          {adminMenuSections.map((section) => (
+          {filteredSections.map((section) => (
             <div key={section.label}>
               <p className="mb-1.5 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.15em] text-white">
                 {section.label}

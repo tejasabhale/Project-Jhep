@@ -44,6 +44,11 @@ export default function AdminStatusBadge({ status, type = "status", size = "sm",
     bgClass = "bg-purple-50 text-purple-700 border-purple-200";
     dotClass = "bg-purple-600";
     Icon = Shield;
+  } else if (norm === "content_creator" || norm === "content creator") {
+    label = "Content Creator";
+    bgClass = "bg-teal-50 text-teal-700 border-teal-200";
+    dotClass = "bg-teal-500";
+    Icon = FileText;
   } else if (norm === "user") {
     label = "User";
     bgClass = "bg-secondary-light text-secondary border-secondary/20";

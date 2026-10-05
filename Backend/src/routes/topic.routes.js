@@ -30,7 +30,7 @@ router.get("/:topicId", validateObjectId("topicId"), getTopicById);
 router.post(
   "/",
   verifyJWT,
-  authorizeRoles("admin", "owner"),
+  authorizeRoles("admin", "owner", "content_creator"),
   upload.single("thumbnail"),
   createTopic,
 );
@@ -39,7 +39,16 @@ router.patch(
   "/:topicId",
   validateObjectId("topicId"),
   verifyJWT,
-  authorizeRoles("admin", "owner"),
+  authorizeRoles("admin", "owner", "content_creator"),
+  upload.single("thumbnail"),
+  updateTopic,
+);
+
+router.put(
+  "/:topicId",
+  validateObjectId("topicId"),
+  verifyJWT,
+  authorizeRoles("admin", "owner", "content_creator"),
   upload.single("thumbnail"),
   updateTopic,
 );
@@ -48,7 +57,7 @@ router.delete(
   "/:topicId",
   validateObjectId("topicId"),
   verifyJWT,
-  authorizeRoles("admin", "owner"),
+  authorizeRoles("admin", "owner", "content_creator"),
   deleteTopic,
 );
 

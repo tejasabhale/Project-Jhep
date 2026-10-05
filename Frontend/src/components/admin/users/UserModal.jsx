@@ -178,6 +178,7 @@ export default function UserModal({
                 className="h-10 w-full rounded-xl border border-border bg-background py-2 pl-9 pr-8 text-sm text-text-primary transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="user">User (Standard Access)</option>
+                <option value="content_creator">Content Creator</option>
                 {isOwner && (
                   <option value="admin">Administrator</option>
                 )}

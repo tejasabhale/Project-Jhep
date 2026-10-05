@@ -20,28 +20,41 @@ const router = Router();
 // Student
 router.get("/lesson/:lessonId", verifyJWT, getQuizByLesson);
 
-// Admin
+// Admin & Content Management
 router.get(
   "/admin",
   verifyJWT,
-  authorizeRoles("admin", "owner"),
+  authorizeRoles("admin", "owner", "content_creator"),
   getAllQuizzes,
 );
 
 router.get(
   "/admin/:quizId",
   verifyJWT,
-  authorizeRoles("admin", "owner"),
+  authorizeRoles("admin", "owner", "content_creator"),
   validateObjectId("quizId"),
   getQuizByIdAdmin,
 );
 
-router.post("/", verifyJWT, authorizeRoles("admin", "owner"), createQuiz);
+router.post(
+  "/",
+  verifyJWT,
+  authorizeRoles("admin", "owner", "content_creator"),
+  createQuiz,
+);
 
 router.patch(
   "/:quizId",
   verifyJWT,
-  authorizeRoles("admin", "owner"),
+  authorizeRoles("admin", "owner", "content_creator"),
+  validateObjectId("quizId"),
+  updateQuiz,
+);
+
+router.put(
+  "/:quizId",
+  verifyJWT,
+  authorizeRoles("admin", "owner", "content_creator"),
   validateObjectId("quizId"),
   updateQuiz,
 );
@@ -49,7 +62,7 @@ router.patch(
 router.delete(
   "/:quizId",
   verifyJWT,
-  authorizeRoles("admin", "owner"),
+  authorizeRoles("admin", "owner", "content_creator"),
   validateObjectId("quizId"),
   deleteQuiz,
 );

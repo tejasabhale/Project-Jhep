@@ -6,6 +6,7 @@ import {
   Crown,
   ShieldCheck,
   UserRound,
+  FileText,
 } from "lucide-react";
 
 export default function UserFilters({
@@ -34,6 +35,12 @@ export default function UserFilters({
       label: "Admin",
       icon: <ShieldCheck size={16} />,
       style: "text-orange-600 bg-orange-50",
+    },
+    {
+      value: "content_creator",
+      label: "Content Creator",
+      icon: <FileText size={16} />,
+      style: "text-teal-600 bg-teal-50",
     },
     {
       value: "user",

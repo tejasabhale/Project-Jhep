@@ -10,9 +10,13 @@ const GuestRoute = () => {
   }
 
   if (isAuthenticated) {
-    return (
-      <Navigate to={["admin", "owner"].includes(user.role) ? "/admin" : "/content"} replace />
-    );
+    const destination =
+      user?.role === "content_creator"
+        ? "/admin/topics/manage"
+        : ["admin", "owner"].includes(user?.role)
+        ? "/admin"
+        : "/content";
+    return <Navigate to={destination} replace />;
   }
 
   return <Outlet />;

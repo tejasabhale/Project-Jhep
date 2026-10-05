@@ -9,9 +9,14 @@ const HomeRoute = () => {
     return <Home />;
   }
 
-  return (
-    <Navigate to={user?.role === "admin" ? "/admin" : "/content"} replace />
-  );
+  const destination =
+    user?.role === "content_creator"
+      ? "/admin/topics/manage"
+      : ["admin", "owner"].includes(user?.role)
+      ? "/admin"
+      : "/content";
+
+  return <Navigate to={destination} replace />;
 };
 
 export default HomeRoute;

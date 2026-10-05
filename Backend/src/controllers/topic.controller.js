@@ -157,7 +157,8 @@ export const getTopicById = asyncHandler(async (req, res) => {
     topic: topicId,
   };
 
-  const isAdmin = req.user && ["admin", "owner"].includes(req.user.role);
+  const isAdmin =
+    req.user && ["admin", "owner", "content_creator"].includes(req.user.role);
 
   if (!isAdmin) {
     lessonFilter.isPublished = true;

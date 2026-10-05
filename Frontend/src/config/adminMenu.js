@@ -13,6 +13,7 @@ import {
 export const adminMenuSections = [
   {
     label: "Overview",
+    roles: ["admin", "owner"],
     items: [
       {
         name: "Dashboard",
@@ -24,6 +25,7 @@ export const adminMenuSections = [
   },
   {
     label: "Content",
+    roles: ["admin", "owner", "content_creator"],
     items: [
       {
         name: "Topics",
@@ -44,6 +46,7 @@ export const adminMenuSections = [
   },
   {
     label: "Community",
+    roles: ["admin", "owner"],
     items: [
       {
         name: "Schools",
@@ -64,6 +67,7 @@ export const adminMenuSections = [
   },
   {
     label: "People & Access",
+    roles: ["admin", "owner"],
     items: [
       {
         name: "Manage Users",

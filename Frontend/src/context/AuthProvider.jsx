@@ -124,6 +124,7 @@ const AuthProvider = ({ children }) => {
       isAuthenticated,
 
       isAdmin: user?.role === "admin",
+      isContentCreator: user?.role === "content_creator",
 
       login,
       logout,

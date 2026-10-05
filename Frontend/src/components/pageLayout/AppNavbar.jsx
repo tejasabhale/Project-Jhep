@@ -82,8 +82,14 @@ const AppNavbar = () => {
 
   const role = user?.role?.toLowerCase();
   const isAdminOrOwner = role === "admin" || role === "owner";
-  const dashboardPath = isAdminOrOwner ? "/admin" : "/content";
-  const profilePath = isAdminOrOwner ? "/admin/profile" : "/profile";
+  const isContentCreator = role === "content_creator";
+  const dashboardPath = isContentCreator
+    ? "/admin/topics/manage"
+    : isAdminOrOwner
+    ? "/admin"
+    : "/content";
+  const profilePath =
+    isAdminOrOwner || isContentCreator ? "/admin/profile" : "/profile";
 
   const displayName = user?.fullName || "Profile";
 
@@ -203,7 +209,11 @@ const AppNavbar = () => {
               Project <span className="text-orange-500">Jhep</span>
             </span>
             <span className="mt-1 block text-xs font-medium text-slate-400">
-              {isAdminOrOwner ? "Admin panel" : "Learn English"}
+              {isAdminOrOwner
+                ? "Admin panel"
+                : isContentCreator
+                ? "Content panel"
+                : "Learn English"}
             </span>
           </span>
         </NavLink>
@@ -262,7 +272,11 @@ const AppNavbar = () => {
                   {displayName}
                 </span>
                 <span className="block text-xs capitalize leading-tight text-slate-400">
-                  {user?.role || "User"}
+                  {user?.role === "content_creator"
+                    ? "Content Creator"
+                    : user?.role === "owner"
+                    ? "Owner"
+                    : user?.role || "User"}
                 </span>
               </span>
 
@@ -316,6 +330,14 @@ const AppNavbar = () => {
                     label="Admin panel"
                     hint="Manage Project Jhep"
                     onClick={() => go("/admin")}
+                  />
+                )}
+                {isContentCreator && (
+                  <MenuItem
+                    icon={BookOpen}
+                    label="Content Studio"
+                    hint="Manage topics, lessons & quizzes"
+                    onClick={() => go("/admin/topics/manage")}
                   />
                 )}
 

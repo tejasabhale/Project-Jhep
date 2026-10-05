@@ -5,6 +5,7 @@ import {
   AtSign,
   Crown,
   User,
+  BookOpen,
 } from "lucide-react";
 
 const ProfileCard = ({ user }) => {
@@ -23,6 +24,12 @@ const ProfileCard = ({ user }) => {
       icon: Crown,
       iconClass: "text-amber-600",
       bgClass: "bg-amber-50",
+    },
+    content_creator: {
+      label: "Content Creator",
+      icon: BookOpen,
+      iconClass: "text-teal-600",
+      bgClass: "bg-teal-50",
     },
     user: {
       label: "User",
